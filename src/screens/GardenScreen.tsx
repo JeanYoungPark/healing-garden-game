@@ -1,106 +1,95 @@
-// 🌱 Healing Garden - Garden Screen
+// 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
-import React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Grid } from '../components/Grid';
+import React, { useRef } from 'react';
+import { StyleSheet, View, SafeAreaView, Alert } from 'react-native';
+import { GardenArea } from '../components/GardenArea';
+import { ResourceBar } from '../components/ResourceBar';
+import { LayeredBackground } from '../components/LayeredBackground';
+import { SeedInventory } from '../components/SeedInventory';
 import { useGardenStore } from '../stores/gardenStore';
 import { COLORS } from '../utils/colors';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
+import { PlantType } from '../types';
 
 export const GardenScreen: React.FC = () => {
-  const { plants, gridSize, gold, plantSeed, spendGold } = useGardenStore();
+  const { plants, level, gold, tickets, plantSeed, spendGold } = useGardenStore();
+  const gardenRef = useRef<View>(null);
 
-  const handleSlotPress = (slotIndex: number) => {
-    // 이미 식물이 심어져 있는지 확인
-    const existingPlant = plants.find((p) => p.slotIndex === slotIndex);
+  const handleSeedDrop = async (seedType: PlantType, absolutePosition: { x: number; y: number }) => {
+    const seedConfig = PLANT_CONFIGS[seedType];
 
-    if (existingPlant) {
-      // TODO: 물주기 또는 수확 액션
-      Alert.alert('🌱', '식물이 자라는 중입니다!');
-    } else {
-      // 빈 칸 - 씨앗 심기 (임시로 장미만)
-      const roseSeed = PLANT_CONFIGS.rose;
+    // 정원 영역 내 상대 좌표로 변환
+    if (gardenRef.current) {
+      gardenRef.current.measure((x, y, width, height, pageX, pageY) => {
+        const relativeX = absolutePosition.x - pageX;
+        const relativeY = absolutePosition.y - pageY;
 
-      if (spendGold(roseSeed.seedPrice)) {
-        plantSeed(slotIndex, 'rose');
-        Alert.alert('🌱 심기 완료', `${roseSeed.name}을 심었습니다!`);
-      } else {
-        Alert.alert('💰 골드 부족', `${roseSeed.seedPrice} 골드가 필요합니다.`);
-      }
+        // 정원 영역 안인지 체크
+        if (relativeX >= 0 && relativeX <= width && relativeY >= 0 && relativeY <= height) {
+          // 골드 체크
+          if (spendGold(seedConfig.seedPrice)) {
+            const success = plantSeed({ x: relativeX, y: relativeY }, seedType);
+
+            if (!success) {
+              // 너무 가까운 위치 - 골드 환불
+              useGardenStore.getState().addGold(seedConfig.seedPrice);
+            }
+            // 성공 시 아무 알럿 없이 식물만 심어짐
+          } else {
+            Alert.alert('💰 골드가 부족해요', `${seedConfig.seedPrice} 골드가 필요해요`, [
+              { text: '확인', style: 'cancel' },
+            ]);
+          }
+        }
+        // 정원 영역 밖에 드롭 시 아무 일도 일어나지 않음
+      });
     }
   };
 
+  const handlePlantPress = (plantId: string) => {
+    Alert.alert('🌱 식물 정보', '식물이 자라는 중입니다!', [
+      { text: '확인', style: 'default' },
+    ]);
+  };
+
   return (
-    <LinearGradient
-      colors={['#E3F2FD', COLORS.background]}
-      style={styles.container}
-    >
+    <LayeredBackground>
       <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
+        {/* Header - 리소스 바 */}
         <View style={styles.header}>
-          <Text style={styles.title}>🌱 힐링 정원</Text>
-          <View style={styles.goldContainer}>
-            <Text style={styles.goldText}>💰 {gold}</Text>
-          </View>
+          <ResourceBar level={level} gold={gold} tickets={tickets} />
         </View>
 
-        {/* Garden Grid */}
-        <Grid plants={plants} gridSize={gridSize} onSlotPress={handleSlotPress} />
+        {/* Garden Area - 드래그 앤 드롭 */}
+        <GardenArea
+          ref={gardenRef}
+          plants={plants}
+          onPlantPress={handlePlantPress}
+        />
 
-        {/* Footer Info */}
-        <View style={styles.footer}>
-          <Text style={styles.infoText}>
-            빈 칸을 눌러 장미를 심어보세요 (10 💰)
-          </Text>
-        </View>
+        {/* Seed Inventory - 씨앗 드래그 */}
+        <SeedInventory onSeedDrop={handleSeedDrop} gold={gold} />
       </SafeAreaView>
-    </LinearGradient>
+    </LayeredBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  goldContainer: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)', // 반투명 화이트
+    // 부드러운 그림자
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  goldText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.gold,
-  },
-  footer: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  infoText: {
-    fontSize: 14,
-    color: COLORS.textLight,
-    textAlign: 'center',
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

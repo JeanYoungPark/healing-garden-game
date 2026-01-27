@@ -1,14 +1,14 @@
-// 🌱 Healing Garden - Type Definitions
+// 🍓 Healing Garden - Type Definitions
 
-export type PlantType = 'rose' | 'sunflower' | 'tulip' | 'lavender' | 'cherry';
+export type PlantType = 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
 
-export type PlantStage = 0 | 1 | 2 | 3; // 씨앗, 새싹, 성장, 개화
+export type PlantStage = 0 | 1 | 2 | 3; // 씨앗, 새싹, 꽃, 과일
 
 export type Rarity = 'common' | 'rare' | 'epic';
 
 export interface Plant {
   id: string;
-  slotIndex: number;
+  position: { x: number; y: number }; // 화면 상의 절대 좌표
   type: PlantType;
   stage: PlantStage;
   plantedAt: Date;
@@ -28,8 +28,9 @@ export interface PlantConfig {
 
 export interface GardenState {
   plants: Plant[];
-  gridSize: 3 | 4 | 5;
+  level: number;
   gold: number;
+  tickets: number;
   collection: PlantType[];
   lastSaveTime: Date;
 }

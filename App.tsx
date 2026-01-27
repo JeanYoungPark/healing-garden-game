@@ -1,11 +1,22 @@
-import { StatusBar } from 'expo-status-bar';
-import { GardenScreen } from './src/screens/GardenScreen';
+/**
+ * 🌱 Healing Garden
+ * 힐링 정원 키우기 게임
+ *
+ * @format
+ */
 
-export default function App() {
+import React from 'react';
+import { StatusBar } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { MainNavigator } from './src/navigation/MainNavigator';
+
+function App() {
   return (
-    <>
-      <GardenScreen />
-      <StatusBar style="auto" />
-    </>
+    <NavigationContainer>
+      <StatusBar barStyle="dark-content" />
+      <MainNavigator />
+    </NavigationContainer>
   );
 }
+
+export default App;
