@@ -1,7 +1,8 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
 import React, { useRef } from 'react';
-import { StyleSheet, View, SafeAreaView, Alert } from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GardenArea } from '../components/GardenArea';
 import { ResourceBar } from '../components/ResourceBar';
 import { LayeredBackground } from '../components/LayeredBackground';
@@ -14,6 +15,7 @@ import { PlantType } from '../types';
 export const GardenScreen: React.FC = () => {
   const { plants, level, gold, tickets, plantSeed, spendGold } = useGardenStore();
   const gardenRef = useRef<View>(null);
+  const insets = useSafeAreaInsets();
 
   const handleSeedDrop = async (seedType: PlantType, absolutePosition: { x: number; y: number }) => {
     const seedConfig = PLANT_CONFIGS[seedType];
@@ -54,7 +56,7 @@ export const GardenScreen: React.FC = () => {
 
   return (
     <LayeredBackground>
-      <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.safeArea, { paddingTop: insets.top }]}>
         {/* Header - 리소스 바 */}
         <View style={styles.header}>
           <ResourceBar level={level} gold={gold} tickets={tickets} />
@@ -73,7 +75,7 @@ export const GardenScreen: React.FC = () => {
         {/* <View style={styles.inventoryContainer}>
           <SeedInventory onSeedDrop={handleSeedDrop} gold={gold} />
         </View> */}
-      </SafeAreaView>
+      </View>
     </LayeredBackground>
   );
 };

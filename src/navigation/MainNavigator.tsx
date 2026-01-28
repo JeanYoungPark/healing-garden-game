@@ -3,6 +3,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GardenScreen } from '../screens/GardenScreen';
 import { ShopScreen } from '../screens/ShopScreen';
 import { CollectionScreen } from '../screens/CollectionScreen';
@@ -12,13 +13,15 @@ import { COLORS } from '../utils/colors';
 const Tab = createBottomTabNavigator();
 
 export const MainNavigator: React.FC = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: COLORS.text,
         tabBarInactiveTintColor: COLORS.textLight,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { height: 65 + insets.bottom, paddingBottom: 8 + insets.bottom }],
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarIconStyle: styles.tabBarIcon,
       }}
@@ -90,8 +93,6 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: COLORS.white,
     borderTopWidth: 0,
-    height: 65,
-    paddingBottom: 8,
     paddingTop: 8,
     // 부드러운 그림자
     shadowColor: COLORS.shadow,
