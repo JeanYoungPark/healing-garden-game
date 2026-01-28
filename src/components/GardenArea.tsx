@@ -1,9 +1,11 @@
 // 🍓 Healing Garden - Free Garden Area (자유 배치)
 
 import React, { forwardRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, ImageBackground, Dimensions } from 'react-native';
 import { Plant } from '../types';
 import { COLORS } from '../utils/colors';
+
+const { width, height } = Dimensions.get('window');
 
 interface GardenAreaProps {
   plants: Plant[];
@@ -23,6 +25,10 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
   plants,
   onPlantPress,
 }, ref) => {
+  // 3x3 그리드 생성
+  const gridSlots = Array.from({ length: 9 }, (_, index) => index);
+  const plotSize = Math.min(width, height) * 0.25; // 화면 크기에 따라 조정
+
   return (
     <View style={styles.container}>
       {/* 드롭 가능한 정원 영역 */}
@@ -30,14 +36,37 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         ref={ref}
         style={styles.gardenArea}
       >
+        {/* 3x3 밭 그리드 */}
+        <View style={styles.gridContainer}>
+          {gridSlots.map((index) => {
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+
+            return (
+              <ImageBackground
+                key={index}
+                source={require('../assets/farm-plot.png')}
+                style={[
+                  styles.plotSlot,
+                  {
+                    width: plotSize,
+                    height: plotSize,
+                  }
+                ]}
+                resizeMode="contain"
+              />
+            );
+          })}
+        </View>
+
         {/* 안내 텍스트 (식물 없을 때만) */}
-        {plants.length === 0 && (
+        {/* {plants.length === 0 && (
           <View style={styles.guideContainer}>
             <Text style={styles.guideText}>
               씨앗을 끌어서 정원에 심어보세요 🌱
             </Text>
           </View>
-        )}
+        )} */}
 
         {/* 식물들 렌더링 */}
         {plants.map((plant) => (
@@ -65,36 +94,50 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
+    flex: 1,
+    position: 'relative',
   },
   gardenArea: {
-    width: '100%',
-    height: 400,
-    backgroundColor: 'rgba(212, 229, 196, 0.4)', // 반투명 잔디색
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: 'rgba(212, 229, 196, 0.6)',
-    position: 'relative',
-    // 부드러운 그림자
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 4,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '90%',
+    maxWidth: 400,
+    gap: 8,
+    marginTop: 200,
+  },
+  plotSlot: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 4,
   },
   guideContainer: {
     position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -150 }, { translateY: -15 }],
-    width: 300,
+    top: '40%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 20,
   },
   guideText: {
     fontSize: 15,
     color: COLORS.textLight,
     textAlign: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    fontFamily: 'Gaegu-Regular',
   },
   plantContainer: {
     position: 'absolute',

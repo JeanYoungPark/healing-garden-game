@@ -60,15 +60,19 @@ export const GardenScreen: React.FC = () => {
           <ResourceBar level={level} gold={gold} tickets={tickets} />
         </View>
 
-        {/* Garden Area - 드래그 앤 드롭 */}
-        <GardenArea
-          ref={gardenRef}
-          plants={plants}
-          onPlantPress={handlePlantPress}
-        />
+        {/* Garden Area - 드래그 앤 드롭 (전체 영역) */}
+        <View style={styles.gardenContainer}>
+          <GardenArea
+            ref={gardenRef}
+            plants={plants}
+            onPlantPress={handlePlantPress}
+          />
+        </View>
 
-        {/* Seed Inventory - 씨앗 드래그 */}
-        <SeedInventory onSeedDrop={handleSeedDrop} gold={gold} />
+        {/* Seed Inventory - 씨앗 드래그 (하단 고정) */}
+        {/* <View style={styles.inventoryContainer}>
+          <SeedInventory onSeedDrop={handleSeedDrop} gold={gold} />
+        </View> */}
       </SafeAreaView>
     </LayeredBackground>
   );
@@ -82,14 +86,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)', // 반투명 화이트
-    // 부드러운 그림자
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 4,
+    overflow: 'visible',
+  },
+  gardenContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  inventoryContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });

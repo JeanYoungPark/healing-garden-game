@@ -1,7 +1,7 @@
 // 🌱 Healing Garden - Resource Bar Component (Kawaii Cozy Style)
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Image, ImageBackground } from 'react-native';
 import { COLORS } from '../utils/colors';
 
 interface ResourceItemProps {
@@ -40,26 +40,49 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      {/* 레벨 */}
-      <ResourceItem
-        icon="⭐"
-        value={level}
-        backgroundColor={COLORS.lavender}
-      />
+      {/* 레벨 박스 */}
+      <ImageBackground
+        source={require('../assets/header-box.png')}
+        style={styles.statBox}
+        resizeMode="stretch"
+      >
+        {/* 카피바라 아이콘 */}
+        <View style={styles.capybaraContainer}>
+          <Image
+            source={require('../assets/capybara-level.png')}
+            style={styles.capybaraImage}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={[styles.statContent, styles.levelContent]}>
+          <Text style={styles.label}>LV</Text>
+          <Text style={styles.valueText}>{level}</Text>
+        </View>
+      </ImageBackground>
 
-      {/* 코인 */}
-      <ResourceItem
-        icon="✨"
-        value={gold}
-        backgroundColor={COLORS.primary}
-      />
+      {/* 코인 박스 */}
+      <ImageBackground
+        source={require('../assets/header-box.png')}
+        style={styles.statBox}
+        resizeMode="stretch"
+      >
+        <View style={styles.statContent}>
+          <Text style={styles.icon}>💰</Text>
+          <Text style={styles.valueText}>{gold}</Text>
+        </View>
+      </ImageBackground>
 
-      {/* 티켓 */}
-      <ResourceItem
-        icon="🎫"
-        value={tickets}
-        backgroundColor={COLORS.peach}
-      />
+      {/* 물뿌리개 박스 */}
+      <ImageBackground
+        source={require('../assets/header-box.png')}
+        style={styles.statBox}
+        resizeMode="stretch"
+      >
+        <View style={styles.statContent}>
+          <Text style={styles.icon}>💧</Text>
+          <Text style={styles.valueText}>{tickets}/3</Text>
+        </View>
+      </ImageBackground>
     </View>
   );
 };
@@ -68,7 +91,56 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 8,
+    paddingVertical: 16,
     gap: 8,
+    overflow: 'visible',
+  },
+  statBox: {
+    flex: 1,
+    height: 30,
+    position: 'relative',
+    overflow: 'visible',
+  },
+  capybaraContainer: {
+    position: 'absolute',
+    left: 5,
+    top: -5,
+    zIndex: 2,
+    width: 40,
+    height: 40,
+  },
+  capybaraImage: {
+    width: '100%',
+    height: '100%',
+  },
+  statContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    zIndex: 1,
+    paddingTop: 2,
+    paddingBottom: 6,
+  },
+  levelContent: {
+    paddingLeft: 35,
+  },
+  label: {
+    fontSize: 13,
+    color: '#A1887F',
+    fontFamily: 'Gaegu-Bold',
+  },
+  valueText: {
+    fontSize: 15,
+    color: '#A1887F',
+    fontFamily: 'Gaegu-Bold',
+  },
+  icon: {
+    fontSize: 16,
+    fontFamily: 'Gaegu-Regular',
   },
   resourceItem: {
     flexDirection: 'row',
@@ -76,7 +148,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    // 부드러운 그림자
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
@@ -84,10 +155,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     minWidth: 75,
     justifyContent: 'center',
-  },
-  icon: {
-    fontSize: 18,
-    marginRight: 6,
   },
   value: {
     fontSize: 18,

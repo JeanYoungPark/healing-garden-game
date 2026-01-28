@@ -199,9 +199,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '700',
     color: COLORS.text,
     marginBottom: 12,
+    fontFamily: 'Gaegu-Bold',
   },
   seedList: {
     flexDirection: 'row',
@@ -235,12 +235,13 @@ const styles = StyleSheet.create({
   },
   seedName: {
     fontSize: 13,
-    fontWeight: '600',
     color: COLORS.text,
+    fontFamily: 'Gaegu-Bold',
   },
   seedPrice: {
     fontSize: 12,
     color: COLORS.textLight,
+    fontFamily: 'Gaegu-Regular',
   },
   floatingSeed: {
     position: 'absolute',
@@ -270,11 +271,11 @@ const styles = StyleSheet.create({
   },
   dragHintText: {
     fontSize: 14,
-    fontWeight: '600',
     color: COLORS.text,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 12,
+    fontFamily: 'Gaegu-Bold',
   },
 });

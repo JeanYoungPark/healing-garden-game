@@ -1,0 +1,13 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Gaegu-Regular.ttf",
+      "sha1": "9762f395c88146197b2a8f5cafc1daf6acc72f88"
+    },
+    {
+      "path": "src/assets/fonts/Gaegu-Bold.ttf",
+      "sha1": "feb5773561512393b474453f69a793179ca5a1bc"
+    }
+  ]
+}
