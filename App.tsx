@@ -7,17 +7,14 @@
 
 import React from 'react';
 import { StatusBar } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { MainNavigator } from './src/navigation/MainNavigator';
+import { GardenScreen } from './src/screens/GardenScreen';
 
 function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar barStyle="dark-content" />
-        <MainNavigator />
-      </NavigationContainer>
+      <StatusBar barStyle="dark-content" />
+      <GardenScreen />
     </SafeAreaProvider>
   );
 }
