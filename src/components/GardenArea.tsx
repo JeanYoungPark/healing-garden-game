@@ -1,7 +1,8 @@
 // 🍓 Healing Garden - Free Garden Area (자유 배치)
 
 import React, { forwardRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, ImageBackground, Dimensions } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, ImageBackground, Image, Dimensions } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { Plant } from '../types';
 import { COLORS } from '../utils/colors';
 
@@ -36,27 +37,45 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         ref={ref}
         style={styles.gardenArea}
       >
-        {/* 3x3 밭 그리드 */}
-        <View style={styles.gridContainer}>
-          {gridSlots.map((index) => {
-            const row = Math.floor(index / 3);
-            const col = index % 3;
+        {/* 카피바라 애니메이션 - 밭 위쪽 */}
+        <LottieView
+          source={require('../assets/animations/capybara.json')}
+          autoPlay
+          loop
+          style={styles.capybaraAnimation}
+        />
 
-            return (
-              <ImageBackground
-                key={index}
-                source={require('../assets/farm-plot.png')}
-                style={[
-                  styles.plotSlot,
-                  {
-                    width: plotSize,
-                    height: plotSize,
-                  }
-                ]}
-                resizeMode="contain"
-              />
-            );
-          })}
+        {/* 밭과 울타리 그룹 */}
+        <View style={styles.farmGroup}>
+          {/* 3x3 밭 그리드 */}
+          <View style={styles.gridContainer}>
+            {gridSlots.map((index) => {
+              const row = Math.floor(index / 3);
+              const col = index % 3;
+
+              return (
+                <ImageBackground
+                  key={index}
+                  source={require('../assets/farm-plot.png')}
+                  style={[
+                    styles.plotSlot,
+                    {
+                      width: plotSize,
+                      height: plotSize,
+                    }
+                  ]}
+                  resizeMode="contain"
+                />
+              );
+            })}
+          </View>
+
+          {/* 울타리 - 밭 바로 아래 */}
+          <Image
+            source={require('../assets/fence.png')}
+            style={styles.fence}
+            resizeMode="contain"
+          />
         </View>
 
         {/* 안내 텍스트 (식물 없을 때만) */}
@@ -106,6 +125,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  capybaraAnimation: {
+    position: 'absolute',
+    top: '25%',
+    left: 20,
+    width: 120,
+    height: 120,
+    zIndex: 5,
+  },
+  farmGroup: {
+    marginTop: 200,
+    alignItems: 'center',
+    width: '100%',
+  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -114,12 +146,16 @@ const styles = StyleSheet.create({
     width: '90%',
     maxWidth: 400,
     gap: 8,
-    marginTop: 200,
   },
   plotSlot: {
     justifyContent: 'center',
     alignItems: 'center',
     margin: 4,
+  },
+  fence: {
+    width: '90%',
+    height: 80,
+    marginTop: -30,
   },
   guideContainer: {
     position: 'absolute',

@@ -1,7 +1,7 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
 import React, { useRef } from 'react';
-import { StyleSheet, View, Alert } from 'react-native';
+import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GardenArea } from '../components/GardenArea';
 import { ResourceBar } from '../components/ResourceBar';
@@ -62,6 +62,60 @@ export const GardenScreen: React.FC = () => {
           <ResourceBar level={level} gold={gold} tickets={tickets} />
         </View>
 
+        {/* Quest Button - 헤더 아래 오른쪽 */}
+        <TouchableOpacity
+          style={[styles.questButton, { top: 45 + insets.top }]}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={require('../assets/quest-icon.png')}
+            style={styles.questIcon}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        {/* Settings Button - 헤더 아래 오른쪽 */}
+        <TouchableOpacity
+          style={[styles.settingsButton, { top: 53 + insets.top }]}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={require('../assets/settings-icon.png')}
+            style={styles.settingsIcon}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        {/* Bottom Navigation - 가로 배치 */}
+        <View style={styles.bottomNav}>
+          {/* Collection Button */}
+          <TouchableOpacity style={styles.navButton} activeOpacity={0.7}>
+            <Image
+              source={require('../assets/collection-icon.png')}
+              style={styles.navIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          {/* Shop Button */}
+          <TouchableOpacity style={styles.navButton} activeOpacity={0.7}>
+            <Image
+              source={require('../assets/shop-icon.png')}
+              style={styles.navIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          {/* Seed Bag Button */}
+          <TouchableOpacity style={styles.navButton} activeOpacity={0.7}>
+            <Image
+              source={require('../assets/seed-bag-icon.png')}
+              style={styles.navIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+
         {/* Garden Area - 드래그 앤 드롭 (전체 영역) */}
         <View style={styles.gardenContainer}>
           <GardenArea
@@ -89,6 +143,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'visible',
+  },
+  questButton: {
+    position: 'absolute',
+    right: 58,
+    padding: 8,
+    zIndex: 10,
+  },
+  questIcon: {
+    width: 45,
+    height: 45,
+  },
+  settingsButton: {
+    position: 'absolute',
+    right: 8,
+    padding: 8,
+    zIndex: 10,
+  },
+  settingsIcon: {
+    width: 40,
+    height: 32,
+  },
+  bottomNav: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    zIndex: 10,
+  },
+  navButton: {
+    padding: 8,
+  },
+  navIcon: {
+    width: 48,
+    height: 48,
   },
   gardenContainer: {
     flex: 1,

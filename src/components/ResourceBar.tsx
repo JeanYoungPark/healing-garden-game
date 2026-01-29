@@ -66,9 +66,13 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
         style={styles.statBox}
         resizeMode="stretch"
       >
-        <View style={styles.statContent}>
-          <Text style={styles.icon}>💰</Text>
+        <View style={styles.statContentRight}>
           <Text style={styles.valueText}>{gold}</Text>
+          <Image
+            source={require('../assets/leaf-coin.png')}
+            style={styles.coinIcon}
+            resizeMode="contain"
+          />
         </View>
       </ImageBackground>
 
@@ -78,9 +82,13 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
         style={styles.statBox}
         resizeMode="stretch"
       >
-        <View style={styles.statContent}>
-          <Text style={styles.icon}>💧</Text>
+        <View style={styles.statContentRight}>
           <Text style={styles.valueText}>{tickets}/3</Text>
+          <Image
+            source={require('../assets/water-drop.png')}
+            style={styles.waterIcon}
+            resizeMode="contain"
+          />
         </View>
       </ImageBackground>
     </View>
@@ -105,11 +113,11 @@ const styles = StyleSheet.create({
   },
   capybaraContainer: {
     position: 'absolute',
-    left: 5,
-    top: -5,
+    left: 3,
+    top: -10,
     zIndex: 2,
-    width: 40,
-    height: 40,
+    width: 45,
+    height: 45,
   },
   capybaraImage: {
     width: '100%',
@@ -124,6 +132,17 @@ const styles = StyleSheet.create({
     zIndex: 1,
     paddingTop: 2,
     paddingBottom: 6,
+  },
+  statContentRight: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 6,
+    zIndex: 1,
+    paddingTop: 2,
+    paddingBottom: 6,
+    paddingRight: 12,
   },
   levelContent: {
     paddingLeft: 35,
@@ -141,6 +160,14 @@ const styles = StyleSheet.create({
   icon: {
     fontSize: 16,
     fontFamily: 'Gaegu-Regular',
+  },
+  coinIcon: {
+    width: 16,
+    height: 16,
+  },
+  waterIcon: {
+    width: 16,
+    height: 16,
   },
   resourceItem: {
     flexDirection: 'row',
