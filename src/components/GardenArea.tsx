@@ -28,7 +28,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
 }, ref) => {
   // 3x3 그리드 생성
   const gridSlots = Array.from({ length: 9 }, (_, index) => index);
-  const plotSize = Math.min(width, height) * 0.31; // 화면 크기에 따라 조정
+  const plotSize = Math.min(width, height) * 0.35; // 화면 크기에 따라 조정
 
   return (
     <View style={styles.container}>
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   farmGroup: {
-    marginTop: 80,
+    marginTop: 100,
     alignItems: 'center',
     width: '100%',
   },
@@ -165,12 +165,13 @@ const styles = StyleSheet.create({
   plotSlot: {
     justifyContent: 'center',
     alignItems: 'center',
-    margin: -2,
+    margin: -10,
+    marginTop: -40,
   },
   fence: {
     width: '90%',
     height: 80,
-    marginTop: 20,
+    marginTop: 40,
   },
   guideContainer: {
     position: 'absolute',
