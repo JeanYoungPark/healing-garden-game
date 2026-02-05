@@ -28,59 +28,61 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
           activeOpacity={1}
           onPress={onClose}
         />
+
+        {/* 탭 버튼 - overlay 레벨에 배치 */}
+        <View style={styles.tabContainer}>
+          {/* 동물도감 탭 */}
+          <TouchableOpacity
+            style={[styles.tab1, { zIndex: selectedTab === 'animal' ? 2 : 1 }]}
+            onPress={() => setSelectedTab('animal')}
+            activeOpacity={0.8}
+          >
+            {selectedTab === 'animal' ? (
+              <Image
+                source={require('../assets/ui/common/animal-tab-selected.png')}
+                style={styles.tabImage}
+                resizeMode="contain"
+              />
+            ) : (
+              <Image
+                source={require('../assets/ui/common/animal-tab-unselected.png')}
+                style={styles.tabImage}
+                resizeMode="contain"
+              />
+            )}
+          </TouchableOpacity>
+
+          {/* 선물 탭 */}
+          <TouchableOpacity
+            style={[styles.tab2, { zIndex: selectedTab === 'gift' ? 2 : 1 }]}
+            onPress={() => setSelectedTab('gift')}
+            activeOpacity={0.8}
+          >
+            {selectedTab === 'gift' ? (
+              <Image
+                source={require('../assets/ui/common/gift-tab-selected.png')}
+                style={styles.tabImage}
+                resizeMode="contain"
+              />
+            ) : (
+              <Image
+                source={require('../assets/ui/common/gift-tab-unselected.png')}
+                style={styles.tabImage}
+                resizeMode="contain"
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
         {/* 도감 컨텐츠 */}
-        <View style={styles.container}>
-          {/* 도감 배경 */}
+        <View style={styles.container} pointerEvents="box-none">
+          {/* 도감 배경 - 터치 투과 */}
           <ImageBackground
             source={require('../assets/garden/props/collection-bg.png')}
             style={styles.collectionBackground}
             resizeMode="contain"
+            pointerEvents="box-none"
           >
-            {/* 탭 버튼 - 배경 안에 위치 */}
-            <View style={styles.tabContainer}>
-              {/* 동물도감 탭 */}
-              <TouchableOpacity
-                style={[styles.tab1, { zIndex: selectedTab === 'animal' ? 12 : 11 }]}
-                onPress={() => setSelectedTab('animal')}
-                activeOpacity={0.8}
-              >
-                {selectedTab === 'animal' ? (
-                  <Image
-                    source={require('../assets/ui/common/animal-tab-selected.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <Image
-                    source={require('../assets/ui/common/animal-tab-unselected.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                  />
-                )}
-              </TouchableOpacity>
-
-              {/* 선물 탭 */}
-              <TouchableOpacity
-                style={[styles.tab2, { zIndex: selectedTab === 'gift' ? 12 : 11 }]}
-                onPress={() => setSelectedTab('gift')}
-                activeOpacity={0.8}
-              >
-                {selectedTab === 'gift' ? (
-                  <Image
-                    source={require('../assets/ui/common/gift-tab-selected.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <Image
-                    source={require('../assets/ui/common/gift-tab-unselected.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
-
             {/* 컬렉션 목록 */}
             <View style={styles.scrollContainer}>
               <ScrollView
@@ -96,7 +98,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
 
               {/* 하단 Fade 그라데이션 */}
               <LinearGradient
-                colors={['transparent', 'rgba(247, 230, 196, 0.95)']}
+                colors={['rgba(247, 230, 196, 0)', 'rgba(247, 230, 196, 0.95)']}
                 style={styles.fadeGradient}
                 pointerEvents="none"
               />
@@ -143,11 +145,12 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     position: 'absolute',
-    top: 55,
+    top: 145,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: 10,
+    elevation: 10,
   },
   tab1: {
     width: 120,

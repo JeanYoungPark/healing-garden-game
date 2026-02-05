@@ -60,7 +60,7 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) 
 
               {/* 하단 Fade 그라데이션 */}
               <LinearGradient
-                colors={['transparent', 'rgba(247, 230, 196, 0.95)']}
+                colors={['rgba(247, 230, 196, 0)', 'rgba(247, 230, 196, 0.95)']}
                 style={styles.fadeGradient}
                 pointerEvents="none"
               />

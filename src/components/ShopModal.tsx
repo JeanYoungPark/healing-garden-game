@@ -106,7 +106,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
 
               {/* 하단 Fade 그라데이션 */}
               <LinearGradient
-                colors={['transparent', 'rgba(183, 140, 87, 0.95)']}
+                colors={['rgba(183, 140, 87, 0)', 'rgba(183, 140, 87, 0.95)']}
                 style={styles.fadeGradient}
                 pointerEvents="none"
               />
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     position: 'absolute',
-    top: 142,
+    top: '21.6%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

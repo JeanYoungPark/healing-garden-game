@@ -30,7 +30,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
 
   return (
     <LayeredBackground>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         {!hideHeader && (
           <>
             {/* Header - 리소스 바 */}
