@@ -62,25 +62,37 @@ export const GardenScreen: React.FC = () => {
           <ResourceBar level={level} gold={gold} tickets={tickets} />
         </View>
 
-        {/* Quest Button - 헤더 아래 오른쪽 */}
+        {/* Quest Button - 헤더 아래 오른쪽 첫번째 */}
         <TouchableOpacity
-          style={[styles.questButton, { top: 45 + insets.top }]}
+          style={[styles.questButton, { top: 53 + insets.top }]}
           activeOpacity={0.7}
         >
           <Image
-            source={require('../assets/quest-icon.png')}
+            source={require('../assets/garden/icons/quest-icon.png')}
             style={styles.questIcon}
             resizeMode="contain"
           />
         </TouchableOpacity>
 
-        {/* Settings Button - 헤더 아래 오른쪽 */}
+        {/* Collection Button - 헤더 아래 오른쪽 두번째 */}
+        <TouchableOpacity
+          style={[styles.collectionButton, { top: 53 + insets.top }]}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={require('../assets/garden/icons/collection-icon.png')}
+            style={styles.collectionIcon}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        {/* Settings Button - 헤더 아래 오른쪽 세번째 */}
         <TouchableOpacity
           style={[styles.settingsButton, { top: 53 + insets.top }]}
           activeOpacity={0.7}
         >
           <Image
-            source={require('../assets/settings-icon.png')}
+            source={require('../assets/garden/icons/settings-icon.png')}
             style={styles.settingsIcon}
             resizeMode="contain"
           />
@@ -88,28 +100,20 @@ export const GardenScreen: React.FC = () => {
 
         {/* Bottom Navigation - 가로 배치 */}
         <View style={styles.bottomNav}>
-          {/* Collection Button */}
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.7}>
-            <Image
-              source={require('../assets/collection-icon.png')}
-              style={styles.navIcon}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
 
           {/* Shop Button */}
           <TouchableOpacity style={styles.navButton} activeOpacity={0.7}>
             <Image
-              source={require('../assets/shop-icon.png')}
-              style={styles.navIcon}
+              source={require('../assets/garden/icons/shop-icon.png')}
+              style={styles.shopIcon}
               resizeMode="contain"
             />
           </TouchableOpacity>
 
           {/* Seed Bag Button */}
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.seedBagButton} activeOpacity={0.7}>
             <Image
-              source={require('../assets/seed-bag-icon.png')}
+              source={require('../assets/garden/icons/seed-bag-icon.png')}
               style={styles.navIcon}
               resizeMode="contain"
             />
@@ -146,40 +150,58 @@ const styles = StyleSheet.create({
   },
   questButton: {
     position: 'absolute',
-    right: 58,
+    right: 99,
     padding: 8,
     zIndex: 10,
   },
   questIcon: {
-    width: 45,
-    height: 45,
+    width: 35,
+    height: 35,
+  },
+  collectionButton: {
+    position: 'absolute',
+    right: 53,
+    padding: 8,
+    zIndex: 10,
+  },
+  collectionIcon: {
+    width: 35,
+    height: 35,
   },
   settingsButton: {
     position: 'absolute',
-    right: 8,
+    right: 7,
     padding: 8,
     zIndex: 10,
   },
   settingsIcon: {
-    width: 40,
-    height: 32,
+    width: 35,
+    height: 35,
   },
   bottomNav: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 20,
+    left: 7,
+    bottom: 7,
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
+    justifyContent: 'flex-start',
+    gap: 0,
     zIndex: 10,
   },
   navButton: {
     padding: 8,
   },
+  seedBagButton: {
+    padding: 8,
+    marginTop: 4,
+    marginLeft: -8,
+  },
   navIcon: {
-    width: 48,
-    height: 48,
+    width: 37,
+    height: 37,
+  },
+  shopIcon: {
+    width: 44,
+    height: 44,
   },
   gardenContainer: {
     flex: 1,

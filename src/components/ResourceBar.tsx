@@ -42,14 +42,14 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
     <View style={styles.container}>
       {/* 레벨 박스 */}
       <ImageBackground
-        source={require('../assets/header-box.png')}
+        source={require('../assets/ui/common/header-box.png')}
         style={styles.statBox}
         resizeMode="stretch"
       >
         {/* 카피바라 아이콘 */}
         <View style={styles.capybaraContainer}>
           <Image
-            source={require('../assets/capybara-level.png')}
+            source={require('../assets/ui/common/capybara-level.png')}
             style={styles.capybaraImage}
             resizeMode="contain"
           />
@@ -62,14 +62,14 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
 
       {/* 코인 박스 */}
       <ImageBackground
-        source={require('../assets/header-box.png')}
+        source={require('../assets/ui/common/header-box.png')}
         style={styles.statBox}
         resizeMode="stretch"
       >
         <View style={styles.statContentRight}>
           <Text style={styles.valueText}>{gold}</Text>
           <Image
-            source={require('../assets/leaf-coin.png')}
+            source={require('../assets/ui/common/leaf-coin.png')}
             style={styles.coinIcon}
             resizeMode="contain"
           />
@@ -78,14 +78,14 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
 
       {/* 물뿌리개 박스 */}
       <ImageBackground
-        source={require('../assets/header-box.png')}
+        source={require('../assets/ui/common/header-box.png')}
         style={styles.statBox}
         resizeMode="stretch"
       >
         <View style={styles.statContentRight}>
           <Text style={styles.valueText}>{tickets}/3</Text>
           <Image
-            source={require('../assets/water-drop.png')}
+            source={require('../assets/ui/common/water-drop.png')}
             style={styles.waterIcon}
             resizeMode="contain"
           />
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 8,
+    paddingHorizontal: 15,
     paddingVertical: 16,
     gap: 8,
     overflow: 'visible',
@@ -113,11 +113,11 @@ const styles = StyleSheet.create({
   },
   capybaraContainer: {
     position: 'absolute',
-    left: 3,
-    top: -10,
+    left: 7,
+    top: -5,
     zIndex: 2,
-    width: 45,
-    height: 45,
+    width: 35,
+    height: 35,
   },
   capybaraImage: {
     width: '100%',
@@ -142,10 +142,10 @@ const styles = StyleSheet.create({
     zIndex: 1,
     paddingTop: 2,
     paddingBottom: 6,
-    paddingRight: 12,
+    paddingRight: 18,
   },
   levelContent: {
-    paddingLeft: 35,
+    paddingLeft: 28,
   },
   label: {
     fontSize: 13,
@@ -162,12 +162,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Gaegu-Regular',
   },
   coinIcon: {
-    width: 16,
-    height: 16,
+    width: 10,
+    height: 10,
   },
   waterIcon: {
-    width: 16,
-    height: 16,
+    width: 10,
+    height: 10,
   },
   resourceItem: {
     flexDirection: 'row',

@@ -17,7 +17,7 @@ export const LayeredBackground: React.FC<{ children: React.ReactNode }> = ({ chi
 
       {/* 잔디 배경 이미지 (하단 90%) */}
       <ImageBackground
-        source={require('../assets/garden-background.png')}
+        source={require('../assets/garden/backgrounds/garden-background.png')}
         style={styles.groundContainer}
         resizeMode="cover"
         imageStyle={styles.backgroundImage}
@@ -44,10 +44,10 @@ const styles = StyleSheet.create({
   },
   groundContainer: {
     position: 'absolute',
+    top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    height: '90%',
     overflow: 'hidden',
   },
   backgroundImage: {

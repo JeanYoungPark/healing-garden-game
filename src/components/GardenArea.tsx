@@ -28,7 +28,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
 }, ref) => {
   // 3x3 그리드 생성
   const gridSlots = Array.from({ length: 9 }, (_, index) => index);
-  const plotSize = Math.min(width, height) * 0.25; // 화면 크기에 따라 조정
+  const plotSize = Math.min(width, height) * 0.31; // 화면 크기에 따라 조정
 
   return (
     <View style={styles.container}>
@@ -45,6 +45,13 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
           style={styles.capybaraAnimation}
         />
 
+        {/* 우체통 아이콘 - 카피바라 오른쪽 */}
+        <Image
+          source={require('../assets/garden/icons/post-box.png')}
+          style={styles.postBoxIcon}
+          resizeMode="contain"
+        />
+
         {/* 밭과 울타리 그룹 */}
         <View style={styles.farmGroup}>
           {/* 3x3 밭 그리드 */}
@@ -56,7 +63,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
               return (
                 <ImageBackground
                   key={index}
-                  source={require('../assets/farm-plot.png')}
+                  source={require('../assets/garden/props/farm-plot.png')}
                   style={[
                     styles.plotSlot,
                     {
@@ -72,7 +79,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
 
           {/* 울타리 - 밭 바로 아래 */}
           <Image
-            source={require('../assets/fence.png')}
+            source={require('../assets/garden/props/fence.png')}
             style={styles.fence}
             resizeMode="contain"
           />
@@ -127,14 +134,22 @@ const styles = StyleSheet.create({
   },
   capybaraAnimation: {
     position: 'absolute',
-    top: '25%',
-    left: 20,
+    top: '15%',
+    left: 15,
+    width: 120,
+    height: 120,
+    zIndex: 5,
+  },
+  postBoxIcon: {
+    position: 'absolute',
+    top: '15%',
+    right: 15,
     width: 120,
     height: 120,
     zIndex: 5,
   },
   farmGroup: {
-    marginTop: 200,
+    marginTop: 80,
     alignItems: 'center',
     width: '100%',
   },
@@ -145,17 +160,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '90%',
     maxWidth: 400,
-    gap: 8,
+    gap: 0,
   },
   plotSlot: {
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 4,
+    margin: -2,
   },
   fence: {
     width: '90%',
     height: 80,
-    marginTop: -30,
+    marginTop: 20,
   },
   guideContainer: {
     position: 'absolute',
