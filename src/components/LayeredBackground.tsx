@@ -15,7 +15,7 @@ export const LayeredBackground: React.FC<{ children: React.ReactNode }> = ({ chi
         style={styles.sky}
       />
 
-      {/* 잔디 배경 이미지 (하단 90%) */}
+      {/* 잔디 배경 이미지 */}
       <ImageBackground
         source={require('../assets/garden/backgrounds/garden-background.png')}
         style={styles.groundContainer}

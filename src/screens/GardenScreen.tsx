@@ -1,21 +1,30 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GardenArea } from '../components/GardenArea';
-import { ResourceBar } from '../components/ResourceBar';
-import { LayeredBackground } from '../components/LayeredBackground';
+import { ScreenLayout } from '../components/ScreenLayout';
 import { SeedInventory } from '../components/SeedInventory';
+import { SeedBagModal } from '../components/SeedBagModal';
+import { ShopModal } from '../components/ShopModal';
+import { QuestModal } from '../components/QuestModal';
+import { CollectionModal } from '../components/CollectionModal';
 import { useGardenStore } from '../stores/gardenStore';
 import { COLORS } from '../utils/colors';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PlantType } from '../types';
 
-export const GardenScreen: React.FC = () => {
+interface GardenScreenProps {
+  navigation?: any;
+}
+
+export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const { plants, level, gold, tickets, plantSeed, spendGold } = useGardenStore();
   const gardenRef = useRef<View>(null);
-  const insets = useSafeAreaInsets();
+  const [seedBagVisible, setSeedBagVisible] = useState(false);
+  const [shopVisible, setShopVisible] = useState(false);
+  const [questVisible, setQuestVisible] = useState(false);
+  const [collectionVisible, setCollectionVisible] = useState(false);
 
   const handleSeedDrop = async (seedType: PlantType, absolutePosition: { x: number; y: number }) => {
     const seedConfig = PLANT_CONFIGS[seedType];
@@ -55,54 +64,20 @@ export const GardenScreen: React.FC = () => {
   };
 
   return (
-    <LayeredBackground>
-      <View style={[styles.safeArea, { paddingTop: insets.top }]}>
-        {/* Header - 리소스 바 */}
-        <View style={styles.header}>
-          <ResourceBar level={level} gold={gold} tickets={tickets} />
-        </View>
-
-        {/* Quest Button - 헤더 아래 오른쪽 첫번째 */}
-        <TouchableOpacity
-          style={[styles.questButton, { top: 53 + insets.top }]}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/garden/icons/quest-icon.png')}
-            style={styles.questIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-
-        {/* Collection Button - 헤더 아래 오른쪽 두번째 */}
-        <TouchableOpacity
-          style={[styles.collectionButton, { top: 53 + insets.top }]}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/garden/icons/collection-icon.png')}
-            style={styles.collectionIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-
-        {/* Settings Button - 헤더 아래 오른쪽 세번째 */}
-        <TouchableOpacity
-          style={[styles.settingsButton, { top: 53 + insets.top }]}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/garden/icons/settings-icon.png')}
-            style={styles.settingsIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-
+    <ScreenLayout
+      onQuestPress={() => setQuestVisible(true)}
+      onCollectionPress={() => setCollectionVisible(true)}
+    >
+      <View style={styles.container}>
         {/* Bottom Navigation - 가로 배치 */}
         <View style={styles.bottomNav}>
 
           {/* Shop Button */}
-          <TouchableOpacity style={styles.navButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.navButton}
+            activeOpacity={0.7}
+            onPress={() => setShopVisible(true)}
+          >
             <Image
               source={require('../assets/garden/icons/shop-icon.png')}
               style={styles.shopIcon}
@@ -111,7 +86,11 @@ export const GardenScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Seed Bag Button */}
-          <TouchableOpacity style={styles.seedBagButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.seedBagButton}
+            activeOpacity={0.7}
+            onPress={() => setSeedBagVisible(true)}
+          >
             <Image
               source={require('../assets/garden/icons/seed-bag-icon.png')}
               style={styles.navIcon}
@@ -134,49 +113,37 @@ export const GardenScreen: React.FC = () => {
           <SeedInventory onSeedDrop={handleSeedDrop} gold={gold} />
         </View> */}
       </View>
-    </LayeredBackground>
+
+      {/* Seed Bag Modal */}
+      <SeedBagModal
+        visible={seedBagVisible}
+        onClose={() => setSeedBagVisible(false)}
+      />
+
+      {/* Shop Modal */}
+      <ShopModal
+        visible={shopVisible}
+        onClose={() => setShopVisible(false)}
+      />
+
+      {/* Quest Modal */}
+      <QuestModal
+        visible={questVisible}
+        onClose={() => setQuestVisible(false)}
+      />
+
+      {/* Collection Modal */}
+      <CollectionModal
+        visible={collectionVisible}
+        onClose={() => setCollectionVisible(false)}
+      />
+    </ScreenLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'visible',
-  },
-  questButton: {
-    position: 'absolute',
-    right: 99,
-    padding: 8,
-    zIndex: 10,
-  },
-  questIcon: {
-    width: 35,
-    height: 35,
-  },
-  collectionButton: {
-    position: 'absolute',
-    right: 53,
-    padding: 8,
-    zIndex: 10,
-  },
-  collectionIcon: {
-    width: 35,
-    height: 35,
-  },
-  settingsButton: {
-    position: 'absolute',
-    right: 7,
-    padding: 8,
-    zIndex: 10,
-  },
-  settingsIcon: {
-    width: 35,
-    height: 35,
   },
   bottomNav: {
     position: 'absolute',

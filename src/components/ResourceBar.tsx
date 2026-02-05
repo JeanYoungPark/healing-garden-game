@@ -162,8 +162,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Gaegu-Regular',
   },
   coinIcon: {
-    width: 10,
-    height: 10,
+    width: 14,
+    height: 14,
   },
   waterIcon: {
     width: 10,
