@@ -15,6 +15,7 @@ interface ScreenLayoutProps {
   hideHeader?: boolean;
   onQuestPress?: () => void;
   onCollectionPress?: () => void;
+  onSettingsPress?: () => void;
 }
 
 export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
@@ -24,6 +25,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   hideHeader = false,
   onQuestPress,
   onCollectionPress,
+  onSettingsPress,
 }) => {
   const insets = useSafeAreaInsets();
   const { level, gold, tickets } = useGardenStore();
@@ -68,6 +70,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
             <TouchableOpacity
               style={[styles.settingsButton, { top: 53 + insets.top }]}
               activeOpacity={0.7}
+              onPress={onSettingsPress}
             >
               <Image
                 source={require('../assets/garden/icons/settings-icon.png')}

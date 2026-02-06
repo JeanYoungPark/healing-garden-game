@@ -1,7 +1,7 @@
 // 🌱 Healing Garden - Collection Modal
 
 import React from 'react';
-import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -35,19 +35,21 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
           <TouchableOpacity
             style={[styles.tab1, { zIndex: selectedTab === 'animal' ? 2 : 1 }]}
             onPress={() => setSelectedTab('animal')}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
             {selectedTab === 'animal' ? (
               <Image
                 source={require('../assets/ui/common/animal-tab-selected.png')}
                 style={styles.tabImage}
                 resizeMode="contain"
+                fadeDuration={0}
               />
             ) : (
               <Image
                 source={require('../assets/ui/common/animal-tab-unselected.png')}
                 style={styles.tabImage}
                 resizeMode="contain"
+                fadeDuration={0}
               />
             )}
           </TouchableOpacity>
@@ -56,19 +58,21 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
           <TouchableOpacity
             style={[styles.tab2, { zIndex: selectedTab === 'gift' ? 2 : 1 }]}
             onPress={() => setSelectedTab('gift')}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
             {selectedTab === 'gift' ? (
               <Image
                 source={require('../assets/ui/common/gift-tab-selected.png')}
                 style={styles.tabImage}
                 resizeMode="contain"
+                fadeDuration={0}
               />
             ) : (
               <Image
                 source={require('../assets/ui/common/gift-tab-unselected.png')}
                 style={styles.tabImage}
                 resizeMode="contain"
+                fadeDuration={0}
               />
             )}
           </TouchableOpacity>
@@ -81,7 +85,6 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
             source={require('../assets/garden/props/collection-bg.png')}
             style={styles.collectionBackground}
             resizeMode="contain"
-            pointerEvents="box-none"
           >
             {/* 컬렉션 목록 */}
             <View style={styles.scrollContainer}>
@@ -92,13 +95,61 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                 nestedScrollEnabled={true}
               >
                 <View style={styles.grid}>
-                  {/* TODO: 도감 아이템 추가 */}
+                  {selectedTab === 'animal' && (
+                    <>
+                      {[1, 2, 3, 4].map((item) => (
+                        <View key={item} style={styles.giftItemWrapper}>
+                          <Image
+                            source={require('../assets/ui/common/gift-item-box.png')}
+                            style={styles.giftItemBox}
+                            resizeMode="contain"
+                          />
+                          <Image
+                            source={
+                              item === 1 ? require('../assets/ui/common/animal-item-01.png') :
+                              item === 2 ? require('../assets/ui/common/animal-item-02.png') :
+                              item === 3 ? require('../assets/ui/common/animal-item-03.png') :
+                              require('../assets/ui/common/animal-item-04.png')
+                            }
+                            style={styles.giftItem}
+                            resizeMode="contain"
+                          />
+                          <Text style={styles.giftItemText}>???</Text>
+                        </View>
+                      ))}
+                    </>
+                  )}
+                  {selectedTab === 'gift' && (
+                    <>
+                      {[1, 2, 3, 4, 5].map((item) => (
+                        <View key={item} style={styles.giftItemWrapper}>
+                          <Image
+                            source={require('../assets/ui/common/gift-item-box.png')}
+                            style={styles.giftItemBox}
+                            resizeMode="contain"
+                          />
+                          <Image
+                            source={
+                              item === 1 ? require('../assets/ui/common/gift-item-01.png') :
+                              item === 2 ? require('../assets/ui/common/gift-item-02.png') :
+                              item === 3 ? require('../assets/ui/common/gift-item-03.png') :
+                              item === 4 ? require('../assets/ui/common/gift-item-04.png') :
+                              require('../assets/ui/common/gift-item-05.png')
+                            }
+                            style={styles.giftItem}
+                            resizeMode="contain"
+                          />
+                          <Text style={styles.giftItemText}>???</Text>
+                        </View>
+                      ))}
+                    </>
+                  )}
                 </View>
               </ScrollView>
 
               {/* 하단 Fade 그라데이션 */}
               <LinearGradient
-                colors={['rgba(247, 230, 196, 0)', 'rgba(247, 230, 196, 0.95)']}
+                colors={['rgba(252, 239, 215, 0)', 'rgba(252, 239, 215, 0.95)']}
                 style={styles.fadeGradient}
                 pointerEvents="none"
               />
@@ -131,12 +182,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   collectionBackground: {
-    width: width - 10,
+    width: width - 30,
     height: height * 0.8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -145,7 +195,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     position: 'absolute',
-    top: 145,
+    top: 195,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -153,11 +203,11 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   tab1: {
-    width: 120,
+    width: 140,
     height: 60,
   },
   tab2: {
-    width:120,
+    width:140,
     height: 60,
     marginLeft: -1,
   },
@@ -191,13 +241,41 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 40,
   },
   scrollContent: {
     paddingVertical: 0
   },
   grid: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    
+  },
+  giftItemWrapper: {
+    width: '50%',
+    position: 'relative',
+  },
+  giftItemBox: {
+    width: '100%',
+    height: 140,
+    marginBottom: 10,
+  },
+  giftItem: {
+    position: 'absolute',
+    width: '50%',
+    height: 75,
+    top: 20,
+    left: '25%',
+  },
+  giftItemText: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    fontSize: 18,
+    fontFamily: 'Gaegu-Bold',
+    color: '#8B6F47',
   },
 });

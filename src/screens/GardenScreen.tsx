@@ -9,6 +9,7 @@ import { SeedBagModal } from '../components/SeedBagModal';
 import { ShopModal } from '../components/ShopModal';
 import { QuestModal } from '../components/QuestModal';
 import { CollectionModal } from '../components/CollectionModal';
+import { SettingsModal } from '../components/SettingsModal';
 import { useGardenStore } from '../stores/gardenStore';
 import { COLORS } from '../utils/colors';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
@@ -25,6 +26,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const [shopVisible, setShopVisible] = useState(false);
   const [questVisible, setQuestVisible] = useState(false);
   const [collectionVisible, setCollectionVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
 
   const handleSeedDrop = async (seedType: PlantType, absolutePosition: { x: number; y: number }) => {
     const seedConfig = PLANT_CONFIGS[seedType];
@@ -67,6 +69,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
     <ScreenLayout
       onQuestPress={() => setQuestVisible(true)}
       onCollectionPress={() => setCollectionVisible(true)}
+      onSettingsPress={() => setSettingsVisible(true)}
     >
       <View style={styles.container}>
         {/* Bottom Navigation - 가로 배치 */}
@@ -136,6 +139,12 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
       <CollectionModal
         visible={collectionVisible}
         onClose={() => setCollectionVisible(false)}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
       />
     </ScreenLayout>
   );

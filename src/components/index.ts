@@ -9,3 +9,4 @@ export { SeedBagModal } from './SeedBagModal';
 export { ShopModal } from './ShopModal';
 export { QuestModal } from './QuestModal';
 export { CollectionModal } from './CollectionModal';
+export { SettingsModal } from './SettingsModal';

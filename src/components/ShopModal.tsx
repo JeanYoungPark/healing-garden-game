@@ -1,7 +1,7 @@
 // 🌱 Healing Garden - Shop Modal
 
 import React from 'react';
-import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Dimensions, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -12,9 +12,28 @@ interface ShopModalProps {
 }
 
 export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
-  // 임시로 6개의 상점 아이템 생성
-  const shopItems = Array.from({ length: 6 }, (_, i) => i);
   const [selectedTab, setSelectedTab] = React.useState<'tab1' | 'tab2'>('tab1');
+
+  // farm-plot 이미지 및 가격 매핑
+  const farmPlotData = [
+    { image: require('../assets/shop/farm-plot-decor-01.png'), price: 0 },
+    { image: require('../assets/shop/farm-plot-decor-02.png'), price: 5000 },
+    { image: require('../assets/shop/farm-plot-decor-03.png'), price: 10000 },
+    { image: require('../assets/shop/farm-plot-decor-04.png'), price: 20000 },
+    { image: require('../assets/shop/farm-plot-decor-05.png'), price: 30000 },
+  ];
+
+  // fence-decor 이미지 및 가격 매핑
+  const fenceDecorData = [
+    { image: require('../assets/shop/fence-decor-01.png'), price: 0 },
+    { image: require('../assets/shop/fence-decor-02.png'), price: 5000 },
+    { image: require('../assets/shop/fence-decor-03.png'), price: 10000 },
+    { image: require('../assets/shop/fence-decor-04.png'), price: 20000 },
+    { image: require('../assets/shop/fence-decor-05.png'), price: 30000 },
+  ];
+
+  // 선택된 탭에 따라 표시할 데이터 결정
+  const shopItemsData = selectedTab === 'tab1' ? farmPlotData : fenceDecorData;
 
   return (
     <Modal
@@ -40,44 +59,48 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
           >
             {/* 탭 버튼 */}
             <View style={styles.tabContainer}>
-              {/* 탭 1 */}
+              {/* 탭 1 - 밭 */}
               <TouchableOpacity
                 style={[styles.tab1, { zIndex: selectedTab === 'tab1' ? 12 : 11 }]}
                 onPress={() => setSelectedTab('tab1')}
-                activeOpacity={0.8}
+                activeOpacity={1}
               >
                 {selectedTab === 'tab1' ? (
                   <Image
-                    source={require('../assets/ui/common/tab-selected.png')}
+                    source={require('../assets/ui/common/shop-tab3.png')}
                     style={styles.tabImage}
                     resizeMode="contain"
+                    fadeDuration={0}
                   />
                 ) : (
                   <Image
-                    source={require('../assets/ui/common/tab-unselected.png')}
+                    source={require('../assets/ui/common/shop-tab1.png')}
                     style={styles.tabImage}
                     resizeMode="contain"
+                    fadeDuration={0}
                   />
                 )}
               </TouchableOpacity>
 
-              {/* 탭 2 */}
+              {/* 탭 2 - 울타리 */}
               <TouchableOpacity
                 style={[styles.tab2, { zIndex: selectedTab === 'tab2' ? 12 : 11 }]}
                 onPress={() => setSelectedTab('tab2')}
-                activeOpacity={0.8}
+                activeOpacity={1}
               >
                 {selectedTab === 'tab2' ? (
                   <Image
-                    source={require('../assets/ui/common/tab-selected.png')}
+                    source={require('../assets/ui/common/shop-tab2.png')}
                     style={styles.tabImage}
                     resizeMode="contain"
+                    fadeDuration={0}
                   />
                 ) : (
                   <Image
-                    source={require('../assets/ui/common/tab-unselected.png')}
+                    source={require('../assets/ui/common/shop-tab4.png')}
                     style={styles.tabImage}
                     resizeMode="contain"
+                    fadeDuration={0}
                   />
                 )}
               </TouchableOpacity>
@@ -92,13 +115,32 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                 nestedScrollEnabled={true}
               >
                 <View style={styles.grid}>
-                  {shopItems.map((index) => (
+                  {shopItemsData.map((item, index) => (
                     <View key={index} style={styles.itemBoxWrapper}>
                       <Image
                         source={require('../assets/garden/props/shop-item-box.png')}
                         style={styles.itemBox}
                         resizeMode="contain"
                       />
+                      <Image
+                        source={item.image}
+                        style={[
+                          styles.itemImage,
+                          selectedTab === 'tab1' && (index === 3 || index === 4) && { width: '85%', left: '6%', top: '-5%' }
+                        ]}
+                        resizeMode="contain"
+                      />
+                      {/* 가격 표시 */}
+                      <View style={styles.priceContainer}>
+                        <Image
+                          source={require('../assets/ui/common/leaf-coin-shop.png')}
+                          style={styles.priceIcon}
+                          resizeMode="contain"
+                        />
+                        <Text style={styles.priceText}>
+                          {item.price === 0 ? '기본' : item.price.toLocaleString()}
+                        </Text>
+                      </View>
                     </View>
                   ))}
                 </View>
@@ -150,19 +192,19 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     position: 'absolute',
-    top: '21.6%',
+    top: '23.3%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
   tab1: {
-    width: 120,
+    width: 110,
     height: 60,
     zIndex: 12,
   },
   tab2: {
-    width:120,
+    width:110,
     height: 60,
     marginLeft: -17,
     zIndex: 11,
@@ -197,7 +239,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 40,
   },
   scrollContent: {
     paddingVertical: 0
@@ -209,9 +251,37 @@ const styles = StyleSheet.create({
   },
   itemBoxWrapper: {
     width: '50%',
-  },
+    position: 'relative',
+    },
   itemBox: {
     width: '100%',
     height: 160,
+  },
+  itemImage: {
+    position: 'absolute',
+    width: '68%',
+    height: 100,
+    top: 5,
+    left: '14%',
+  },
+  priceContainer: {
+    position: 'absolute',
+    top: 90,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    marginLeft: -10,
+  },
+  priceIcon: {
+    width: 16,
+    height: 16,
+  },
+  priceText: {
+    fontSize: 16,
+    fontFamily: 'Gaegu-Bold',
+    color: '#A1887F',
   },
 });
