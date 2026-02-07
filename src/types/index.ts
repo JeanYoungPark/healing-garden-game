@@ -35,8 +35,3 @@ export interface GardenState {
   lastSaveTime: Date;
 }
 
-export interface Decoration {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-}

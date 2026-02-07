@@ -1,9 +1,21 @@
 // 🌱 Healing Garden - Settings Modal
 
 import React from 'react';
-import { StyleSheet, View, Image, Modal, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Image, Modal, ImageBackground, TouchableOpacity, Text } from 'react-native';
+import { modalStyles } from '../styles/modalStyles';
+import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 
-const { width, height } = Dimensions.get('window');
+// 배경 크기 계산 (settings-bg: 1099 x 1047)
+const { bgWidth, bgHeight } = calcBackgroundSize(1099, 1047);
+
+// 아이템 크기 계산 (settings-item: 784 x 127) - 배경 너비의 85%
+const { width: itemWidth, height: itemHeight } = calcElementSize(bgWidth, 0.8, 784, 127);
+
+// 텍스트 크기 (아이템 높이 기준)
+const itemFontSize = itemHeight * 0.5;
+
+// 모달 제목 크기 계산 (배경 너비 기준)
+const modalTitleFontSize = bgWidth * 0.07;
 
 interface SettingsModalProps {
   visible: boolean;
@@ -36,22 +48,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
             style={styles.settingsBackground}
             resizeMode="contain"
           >
+            {/* 모달 제목 */}
+            <Text style={styles.modalTitle}>설정</Text>
+
             {/* 설정 아이템들 */}
             <View style={styles.itemsContainer}>
-              {/* 아이템 1 - 토글 */}
+              {/* 아이템 1 - 소리 토글 */}
               <View style={styles.itemRow}>
                 <Image
                   source={require('../assets/ui/common/settings-item1.png')}
                   style={styles.settingsItem}
                   resizeMode="contain"
                 />
+                <Text style={styles.itemLabel}>소리</Text>
                 <TouchableOpacity
                   style={styles.toggleButton}
                   onPress={() => setSoundEnabled(!soundEnabled)}
                   activeOpacity={0.8}
                 >
                   <View style={styles.toggleContainer}>
-                    {/* 배경 */}
                     <Image
                       source={
                         soundEnabled
@@ -62,7 +77,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                       resizeMode="contain"
                       fadeDuration={0}
                     />
-                    {/* 토글 */}
                     <Image
                       source={
                         soundEnabled
@@ -71,7 +85,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                       }
                       style={[
                         styles.toggleImage,
-                        { left: soundEnabled ? 36 : 0 }
+                        { left: soundEnabled ? itemWidth * 0.14 : 0 }
                       ]}
                       resizeMode="contain"
                       fadeDuration={0}
@@ -80,20 +94,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                 </TouchableOpacity>
               </View>
 
-              {/* 아이템 2 - 토글 */}
+              {/* 아이템 2 - 알림 토글 */}
               <View style={styles.itemRow}>
                 <Image
                   source={require('../assets/ui/common/settings-item2.png')}
                   style={styles.settingsItem}
                   resizeMode="contain"
                 />
+                <Text style={styles.itemLabel}>알림</Text>
                 <TouchableOpacity
                   style={styles.toggleButton}
                   onPress={() => setNotificationEnabled(!notificationEnabled)}
                   activeOpacity={0.8}
                 >
                   <View style={styles.toggleContainer}>
-                    {/* 배경 */}
                     <Image
                       source={
                         notificationEnabled
@@ -104,7 +118,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                       resizeMode="contain"
                       fadeDuration={0}
                     />
-                    {/* 토글 */}
                     <Image
                       source={
                         notificationEnabled
@@ -113,7 +126,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                       }
                       style={[
                         styles.toggleImage,
-                        { left: notificationEnabled ? 36 : 0 }
+                        { left: notificationEnabled ? itemWidth * 0.14 : 0 }
                       ]}
                       resizeMode="contain"
                       fadeDuration={0}
@@ -122,19 +135,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                 </TouchableOpacity>
               </View>
 
-              {/* 아이템 3 - 라벨만 */}
-              <Image
-                source={require('../assets/ui/common/settings-item3.png')}
-                style={styles.settingsItem}
-                resizeMode="contain"
-              />
+              {/* 아이템 3 - 고객센터 */}
+              <TouchableOpacity style={styles.itemRow} activeOpacity={0.8}>
+                <Image
+                  source={require('../assets/ui/common/settings-item3.png')}
+                  style={styles.settingsItem}
+                  resizeMode="contain"
+                />
+                <Text style={styles.itemLabel}>고객센터</Text>
+              </TouchableOpacity>
 
-              {/* 아이템 4 - 라벨만 */}
-              <Image
-                source={require('../assets/ui/common/settings-item4.png')}
-                style={styles.settingsItem}
-                resizeMode="contain"
-              />
+              {/* 아이템 4 - 게임종료 */}
+              <TouchableOpacity style={styles.itemRow} activeOpacity={0.8}>
+                <Image
+                  source={require('../assets/ui/common/settings-item4.png')}
+                  style={styles.settingsItem}
+                  resizeMode="contain"
+                />
+                <Text style={styles.itemLabel}>게임종료</Text>
+              </TouchableOpacity>
             </View>
           </ImageBackground>
         </View>
@@ -157,71 +176,65 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  ...modalStyles,
   settingsBackground: {
-    width: width - 30,
-    height: height * 0.75,
+    width: bgWidth,
+    height: bgHeight,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
+  },
+  modalTitle: {
+    position: 'absolute',
+    top: '8%',
+    fontSize: modalTitleFontSize,
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
   },
   itemsContainer: {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
-    marginTop: 30,
+    gap: bgHeight * 0.03,
+    marginTop: bgHeight * 0.08,
   },
   itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: width * 0.7,
+    width: itemWidth,
+    height: itemHeight,
     position: 'relative',
+    justifyContent: 'center',
   },
   settingsItem: {
-    width: width * 0.7,
-    height: 50,
+    width: itemWidth,
+    height: itemHeight,
+    position: 'absolute',
+    left: -itemWidth * 0.02,
+  },
+  itemLabel: {
+    position: 'absolute',
+    left: itemWidth * 0.17,
+    fontSize: itemFontSize,
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
   },
   toggleButton: {
     position: 'absolute',
-    right: 10,
+    right: itemWidth * 0.04,
     padding: 5,
   },
   toggleContainer: {
     position: 'relative',
-    width: 60,
-    height: 30,
+    width: itemWidth * 0.24,
+    height: itemWidth * 0.18,
   },
   toggleBg: {
     position: 'absolute',
-    width: 60,
-    height: 30,
+    width: itemWidth * 0.24,
+    height: itemWidth * 0.18,
   },
   toggleImage: {
     position: 'absolute',
-    width: 25,
-    height: 25 ,
-    top: 2.5,
-  },
-  closeButton: {
-    position: 'absolute',
-    bottom: 7,
-    right: 7,
-    zIndex: 100,
-    padding: 8,
-  },
-  closeIcon: {
-    width: 50,
-    height: 50,
+    width: itemWidth * 0.1,
+    height: itemWidth * 0.1,
+    top: itemWidth * 0.039,
   },
 });

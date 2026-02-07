@@ -4,7 +4,6 @@ import React, { useRef, useState } from 'react';
 import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
 import { GardenArea } from '../components/GardenArea';
 import { ScreenLayout } from '../components/ScreenLayout';
-import { SeedInventory } from '../components/SeedInventory';
 import { SeedBagModal } from '../components/SeedBagModal';
 import { ShopModal } from '../components/ShopModal';
 import { QuestModal } from '../components/QuestModal';
@@ -114,10 +113,6 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
           />
         </View>
 
-        {/* Seed Inventory - 씨앗 드래그 (하단 고정) */}
-        {/* <View style={styles.inventoryContainer}>
-          <SeedInventory onSeedDrop={handleSeedDrop} gold={gold} />
-        </View> */}
       </View>
 
       {/* Seed Bag Modal */}
@@ -191,11 +186,5 @@ const styles = StyleSheet.create({
   gardenContainer: {
     flex: 1,
     position: 'relative',
-  },
-  inventoryContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
   },
 });

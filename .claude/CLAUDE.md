@@ -231,6 +231,77 @@ interface PlantConfig {
 
 ---
 
+## 🎨 UI 컴포넌트 개발 규칙
+
+### 반응형 크기 계산
+모든 모달과 UI 요소는 `src/utils/responsive.ts`의 유틸리티 함수를 사용:
+
+```typescript
+// 배경 이미지 크기 계산 (화면 비율에 맞게)
+const { bgWidth, bgHeight } = calcBackgroundSize(원본너비, 원본높이);
+
+// 요소 크기 계산 (부모 너비 기준 비율)
+const { width, height } = calcElementSize(부모너비, 비율, 원본너비, 원본높이);
+```
+
+### 모달 공통 스타일
+`src/styles/modalStyles.ts`에 공통 스타일 정의:
+- `overlay`: 반투명 배경
+- `container`: 중앙 정렬 컨테이너
+- `closeButton`: 닫기 버튼 위치
+- `closeIcon`: 닫기 아이콘 크기
+
+사용법:
+```typescript
+import { modalStyles } from '../styles/modalStyles';
+
+const styles = StyleSheet.create({
+  ...modalStyles,
+  // 컴포넌트별 스타일 추가
+});
+```
+
+### 모달 타이틀 규칙
+- **폰트 크기**: `bgWidth * 0.07` (배경 너비 기준 7%)
+- **폰트**: `Gaegu-Regular`
+- **색상**: `#7a6854`
+- **위치**: `position: 'absolute'`, `top: '5%'` ~ `'8%'`
+
+### 텍스트 스타일 가이드
+```
+모달 타이틀: Gaegu-Regular, #7a6854
+아이템 제목: Gaegu-Bold, #7a6854
+본문/설명: Gaegu-Regular, #7a6854
+가격 텍스트: Gaegu-Bold, #A1887F
+```
+
+### 모달 목록
+| 모달 | 배경 크기 | 파일 |
+|------|-----------|------|
+| 우편함 | 1136 x 1437 | MailboxModal.tsx |
+| 퀘스트 | 1071 x 1483 | QuestModal.tsx |
+| 도감 | 1070 x 1351 | CollectionModal.tsx |
+| 상점 | 1200 x 1646 | ShopModal.tsx |
+| 씨앗가방 | 1000 x 1402 | SeedBagModal.tsx |
+| 설정 | 1099 x 1047 | SettingsModal.tsx |
+
+### 에셋 관리
+- **경로**: `src/assets/`
+  - `garden/props/`: 모달 배경, 게임 오브젝트
+  - `ui/common/`: 공통 UI 요소 (버튼, 탭, 토글 등)
+  - `shop/`: 상점 아이템 이미지
+- **네이밍**: 기능별 명확한 이름 사용 (예: `settings-bg.png`, `mail-item.png`)
+
+### 그라데이션 색상 (하단 페이드)
+```
+우편함: rgba(196, 146, 91, 0) → rgba(196, 146, 91, 0.95)
+씨앗가방: rgba(247, 230, 196, 0) → rgba(247, 230, 196, 0.95)
+도감: rgba(252, 239, 215, 0) → rgba(252, 239, 215, 0.95)
+상점: rgba(183, 140, 87, 0) → rgba(183, 140, 87, 0.95)
+```
+
+---
+
 ## 📅 개발 계획
 
 ### Phase 1: 프로토타입 (3-4일)

@@ -4,9 +4,10 @@ import React from 'react';
 import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
+import { modalStyles } from '../styles/modalStyles';
 
-// 배경 크기 계산 (collection-bg: 1200 x 1409)
-const { bgWidth, bgHeight } = calcBackgroundSize(1200, 1409);
+// 배경 크기 계산 (collection-bg: 1070 x 1351)
+const { bgWidth, bgHeight } = calcBackgroundSize(1070, 1351);
 
 // 탭 크기 계산 (animal-tab: 500 x 143)
 const { width: tabWidth, height: tabHeight } = calcElementSize(bgWidth, 0.42, 500, 143);
@@ -26,11 +27,14 @@ const tabMarginLeft = -tabWidth * 0.01;
 // 탭 위치 (배경 높이 기준 퍼센트)
 
 // 스크롤 영역 마진 (배경 높이 기준)
-const scrollMarginTop = bgHeight * 0.17;
+const scrollMarginTop = bgHeight * 0.18;
 const scrollMarginBottom = bgHeight * 0.1;
 
 // 하단 그라데이션 높이 (배경 높이 기준)
 const fadeHeight = bgHeight * 0.04;
+
+// 모달 제목 크기 계산 (배경 너비 기준)
+const modalTitleFontSize = bgWidth * 0.07;
 
 interface CollectionModalProps {
   visible: boolean;
@@ -63,6 +67,9 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
             style={styles.collectionBackground}
             resizeMode="stretch"
           >
+            {/* 모달 제목 */}
+            <Text style={[styles.modalTitle, { fontSize: modalTitleFontSize }]}>도감</Text>
+
             {/* 탭 버튼 - 배경 안에 배치 */}
             <View style={styles.tabContainer}>
               {/* 동물도감 탭 */}
@@ -126,7 +133,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                         <View key={item} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
                           <Image
                             source={require('../assets/ui/common/gift-item-box.png')}
-                            style={[styles.giftItemBox, { width: itemBoxWidth, height: itemBoxHeight }]}
+                            style={{ width: itemBoxWidth, height: itemBoxHeight }}
                             resizeMode="contain"
                           />
                           <Image
@@ -150,7 +157,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                         <View key={item} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
                           <Image
                             source={require('../assets/ui/common/gift-item-box.png')}
-                            style={[styles.giftItemBox, { width: itemBoxWidth, height: itemBoxHeight }]}
+                            style={{ width: itemBoxWidth, height: itemBoxHeight }}
                             resizeMode="contain"
                           />
                           <Image
@@ -200,15 +207,10 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  ...modalStyles,
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    ...modalStyles.container,
+    marginTop: bgHeight * 0.07,
   },
   collectionBackground: {
     width: bgWidth,
@@ -217,9 +219,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
   },
+  modalTitle: {
+    position: 'absolute',
+    top: '3%',
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
+  },
   tabContainer: {
     position: 'absolute',
-    top: '-9.6%',
+    top: '-9%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -236,17 +244,6 @@ const styles = StyleSheet.create({
   tabImage: {
     width: '100%',
     height: '100%',
-  },
-  closeButton: {
-    position: 'absolute',
-    bottom: 7,
-    right: 7,
-    zIndex: 100,
-    padding: 8,
-  },
-  closeIcon: {
-    width: 50,
-    height: 50,
   },
   scrollContainer: {
     flex: 1,
@@ -277,7 +274,6 @@ const styles = StyleSheet.create({
   giftItemWrapper: {
     position: 'relative',
   },
-  giftItemBox: {},
   giftItem: {
     position: 'absolute',
     width: '70%',

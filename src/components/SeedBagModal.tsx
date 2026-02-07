@@ -1,9 +1,10 @@
 // 🌱 Healing Garden - Seed Bag Modal
 
 import React from 'react';
-import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
+import { modalStyles } from '../styles/modalStyles';
 
 // 배경 크기 계산 (seed-bag: 1000 x 1402)
 const { bgWidth, bgHeight } = calcBackgroundSize(1000, 1402);
@@ -20,6 +21,9 @@ const fadeHeight = bgHeight * 0.05;
 
 // 씨앗 박스 간격 (배경 높이 기준)
 const seedBoxMargin = bgHeight * 0.01;
+
+// 모달 제목 크기 계산 (배경 너비 기준)
+const modalTitleFontSize = bgWidth * 0.07;
 
 interface SeedBagModalProps {
   visible: boolean;
@@ -52,6 +56,9 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) 
             style={styles.seedBagBackground}
             resizeMode="stretch"
           >
+            {/* 모달 제목 */}
+            <Text style={styles.modalTitle}>씨앗</Text>
+
             {/* 씨앗 박스 그리드 */}
             <View style={styles.scrollContainer}>
               <ScrollView
@@ -65,7 +72,7 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) 
                     <View key={index} style={[styles.seedBoxWrapper, { marginBottom: seedBoxMargin }]}>
                       <Image
                         source={require('../assets/garden/props/seed-box.png')}
-                        style={[styles.seedBox, { width: seedBoxWidth, height: seedBoxHeight }]}
+                        style={{ width: seedBoxWidth, height: seedBoxHeight }}
                         resizeMode="contain"
                       />
                     </View>
@@ -101,32 +108,19 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) 
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  ...modalStyles,
   seedBagBackground: {
     width: bgWidth,
     height: bgHeight,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButton: {
+  modalTitle: {
     position: 'absolute',
-    bottom: 7,
-    right: 7,
-    zIndex: 100,
-    padding: 8,
-  },
-  closeIcon: {
-    width: 50,
-    height: 50,
+    top: '4%',
+    fontSize: modalTitleFontSize,
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
   },
   scrollContainer: {
     flex: 1,
@@ -155,5 +149,4 @@ const styles = StyleSheet.create({
   seedBoxWrapper: {
     width: '100%',
   },
-  seedBox: {},
 });

@@ -4,12 +4,22 @@ import React from 'react';
 import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
+import { modalStyles } from '../styles/modalStyles';
 
-// 배경 크기 계산 (shop-bg: 1200 x 1646)
-const { bgWidth, bgHeight } = calcBackgroundSize(1200, 1646);
+// 배경 크기 계산 (shop-bg: 1079 x 1488)
+const { bgWidth, bgHeight } = calcBackgroundSize(1079, 1488);
 
-// 탭 크기 계산 (shop-tab: 500 x 202)
-const { width: tabWidth, height: tabHeight } = calcElementSize(bgWidth, 0.35, 500, 202);
+// 탭 크기 계산 (shop-tab: 414 x 144)
+const { width: tabWidth, height: tabHeight } = calcElementSize(bgWidth, 0.33, 414, 144);
+
+// 탭 간격 (음수로 겹침)
+const tabGap = -bgWidth * 0.01;
+
+// 모달 제목 크기 계산 (배경 너비 기준)
+const modalTitleFontSize = bgWidth * 0.07;
+
+// 탭 텍스트 크기 계산 (탭 높이 기준)
+const tabFontSize = tabHeight * 0.55;
 
 // 아이템 박스 크기 계산 (shop-item-box: 500 x 600)
 const { width: itemBoxWidth, height: itemBoxHeight } = calcElementSize(bgWidth, 0.41, 500, 600);
@@ -19,12 +29,9 @@ const itemImageHeight = itemBoxHeight * 0.5;
 const itemImageTop = itemBoxHeight * 0.13;
 const priceTop = itemBoxHeight * 0.6;
 
-// 탭 겹침 (탭 너비 기준)
-const tabMarginLeft = -tabWidth * 0.15;
-
 // 스크롤 영역 마진 (배경 높이 기준)
-const scrollMarginTop = bgHeight * 0.26;
-const scrollMarginBottom = bgHeight * 0.1;
+const scrollMarginTop = bgHeight * 0.27;
+const scrollMarginBottom = bgHeight * 0.07;
 
 // 하단 그라데이션 높이 (배경 높이 기준)
 const fadeHeight = bgHeight * 0.04;
@@ -86,52 +93,45 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
             style={styles.shopBackground}
             resizeMode="stretch"
           >
+            {/* 모달 제목 */}
+            <Text style={styles.modalTitle}>상점</Text>
+
             {/* 탭 버튼 */}
             <View style={styles.tabContainer}>
               {/* 탭 1 - 밭 */}
               <TouchableOpacity
-                style={[styles.tab1, { width: tabWidth, height: tabHeight, zIndex: selectedTab === 'tab1' ? 12 : 11 }]}
+                style={[styles.tab, { width: tabWidth, height: tabHeight }]}
                 onPress={() => setSelectedTab('tab1')}
-                activeOpacity={1}
+                activeOpacity={0.8}
               >
-                {selectedTab === 'tab1' ? (
-                  <Image
-                    source={require('../assets/ui/common/shop-tab3.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                    fadeDuration={0}
-                  />
-                ) : (
-                  <Image
-                    source={require('../assets/ui/common/shop-tab1.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                    fadeDuration={0}
-                  />
-                )}
+                <Image
+                  source={selectedTab === 'tab1'
+                    ? require('../assets/ui/common/shop-tab-on.png')
+                    : require('../assets/ui/common/shop-tab-off.png')
+                  }
+                  style={styles.tabImage}
+                  resizeMode="contain"
+                  fadeDuration={0}
+                />
+                <Text style={styles.tabLabel}>밭</Text>
               </TouchableOpacity>
 
               {/* 탭 2 - 울타리 */}
               <TouchableOpacity
-                style={[styles.tab2, { width: tabWidth, height: tabHeight, zIndex: selectedTab === 'tab2' ? 12 : 11 }]}
+                style={[styles.tab, { width: tabWidth, height: tabHeight }]}
                 onPress={() => setSelectedTab('tab2')}
-                activeOpacity={1}
+                activeOpacity={0.8}
               >
-                {selectedTab === 'tab2' ? (
-                  <Image
-                    source={require('../assets/ui/common/shop-tab2.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                    fadeDuration={0}
-                  />
-                ) : (
-                  <Image
-                    source={require('../assets/ui/common/shop-tab4.png')}
-                    style={styles.tabImage}
-                    resizeMode="contain"
-                    fadeDuration={0}
-                  />
-                )}
+                <Image
+                  source={selectedTab === 'tab2'
+                    ? require('../assets/ui/common/shop-tab-on.png')
+                    : require('../assets/ui/common/shop-tab-off.png')
+                  }
+                  style={styles.tabImage}
+                  resizeMode="contain"
+                  fadeDuration={0}
+                />
+                <Text style={styles.tabLabel}>울타리</Text>
               </TouchableOpacity>
             </View>
 
@@ -148,7 +148,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                     <View key={index} style={[styles.itemBoxWrapper, { width: itemBoxWidth }]}>
                       <Image
                         source={require('../assets/garden/props/shop-item-box.png')}
-                        style={[styles.itemBox, { width: itemBoxWidth, height: itemBoxHeight }]}
+                        style={{ width: itemBoxWidth, height: itemBoxHeight }}
                         resizeMode="contain"
                       />
                       <Image
@@ -203,51 +203,42 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  ...modalStyles,
   shopBackground: {
     width: bgWidth,
     height: bgHeight,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  modalTitle: {
+    position: 'absolute',
+    top: '9%',
+    fontSize: modalTitleFontSize,
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
+  },
   tabContainer: {
     position: 'absolute',
-    top: '14.3%',
+    top: '15.7%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
-  tab1: {
-    zIndex: 12,
-  },
-  tab2: {
-    marginLeft: tabMarginLeft,
-    zIndex: 11,
+  tab: {
+    marginLeft: tabGap,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   tabImage: {
     width: '100%',
     height: '100%',
-  },
-  closeButton: {
     position: 'absolute',
-    bottom: 7,
-    right: 7,
-    zIndex: 100,
-    padding: 8,
   },
-  closeIcon: {
-    width: 50,
-    height: 50,
+  tabLabel: {
+    fontSize: tabFontSize,
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
   },
   scrollContainer: {
     flex: 1,
@@ -277,7 +268,6 @@ const styles = StyleSheet.create({
   itemBoxWrapper: {
     position: 'relative',
   },
-  itemBox: {},
   itemImage: {
     position: 'absolute',
     width: '68%',

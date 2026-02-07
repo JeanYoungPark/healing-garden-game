@@ -4,7 +4,6 @@ import React, { forwardRef } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, ImageBackground, Image, Dimensions } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { Plant } from '../types';
-import { COLORS } from '../utils/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -64,25 +63,20 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         <View style={styles.farmGroup}>
           {/* 3x3 밭 그리드 */}
           <View style={styles.gridContainer}>
-            {gridSlots.map((index) => {
-              const row = Math.floor(index / 3);
-              const col = index % 3;
-
-              return (
-                <ImageBackground
-                  key={index}
-                  source={require('../assets/garden/props/farm-plot.png')}
-                  style={[
-                    styles.plotSlot,
-                    {
-                      width: plotSize,
-                      height: plotSize,
-                    }
-                  ]}
-                  resizeMode="contain"
-                />
-              );
-            })}
+            {gridSlots.map((index) => (
+              <ImageBackground
+                key={index}
+                source={require('../assets/garden/props/farm-plot.png')}
+                style={[
+                  styles.plotSlot,
+                  {
+                    width: plotSize,
+                    height: plotSize,
+                  }
+                ]}
+                resizeMode="contain"
+              />
+            ))}
           </View>
 
           {/* 울타리 - 밭 바로 아래 */}
@@ -92,15 +86,6 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
             resizeMode="contain"
           />
         </View>
-
-        {/* 안내 텍스트 (식물 없을 때만) */}
-        {/* {plants.length === 0 && (
-          <View style={styles.guideContainer}>
-            <Text style={styles.guideText}>
-              씨앗을 끌어서 정원에 심어보세요 🌱
-            </Text>
-          </View>
-        )} */}
 
         {/* 식물들 렌더링 */}
         {plants.map((plant) => (
@@ -184,24 +169,6 @@ const styles = StyleSheet.create({
     width: '90%',
     height: 80,
     marginTop: 40,
-  },
-  guideContainer: {
-    position: 'absolute',
-    top: '40%',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  guideText: {
-    fontSize: 15,
-    color: COLORS.textLight,
-    textAlign: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    fontFamily: 'Gaegu-Regular',
   },
   plantContainer: {
     position: 'absolute',

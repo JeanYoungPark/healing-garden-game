@@ -1,9 +1,15 @@
 // 🌱 Healing Garden - Quest Modal
 
 import React from 'react';
-import { StyleSheet, View, Image, Modal, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Image, Modal, ImageBackground, TouchableOpacity, Text } from 'react-native';
+import { calcBackgroundSize } from '../utils/responsive';
+import { modalStyles } from '../styles/modalStyles';
 
-const { width, height } = Dimensions.get('window');
+// 배경 크기 계산 (quest-bg: 1071 x 1483)
+const { bgWidth, bgHeight } = calcBackgroundSize(1071, 1483);
+
+// 모달 제목 크기 계산 (배경 너비 기준)
+const modalTitleFontSize = bgWidth * 0.07;
 
 interface QuestModalProps {
   visible: boolean;
@@ -31,8 +37,11 @@ export const QuestModal: React.FC<QuestModalProps> = ({ visible, onClose }) => {
           <ImageBackground
             source={require('../assets/garden/props/quest-bg.png')}
             style={styles.questBackground}
-            resizeMode="contain"
+            resizeMode="stretch"
           >
+            {/* 모달 제목 */}
+            <Text style={[styles.modalTitle, { fontSize: modalTitleFontSize }]}>일일 퀘스트</Text>
+
             {/* TODO: 퀘스트 내용 추가 */}
           </ImageBackground>
         </View>
@@ -55,31 +64,17 @@ export const QuestModal: React.FC<QuestModalProps> = ({ visible, onClose }) => {
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  ...modalStyles,
   questBackground: {
-    width: width - 30,
-    height: height * 0.75,
+    width: bgWidth,
+    height: bgHeight,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButton: {
+  modalTitle: {
     position: 'absolute',
-    bottom: 7,
-    right: 7,
-    zIndex: 100,
-    padding: 8,
-  },
-  closeIcon: {
-    width: 50,
-    height: 50,
+    top: '5.7%',
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
   },
 });

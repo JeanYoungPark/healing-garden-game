@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
+import { modalStyles } from '../styles/modalStyles';
 
 // 배경 크기 계산 (mailbox-bg: 1136 x 1437)
 const { bgWidth, bgHeight } = calcBackgroundSize(1136, 1437);
@@ -33,8 +34,8 @@ interface MailboxModalProps {
 const titleFontSize = mailItemHeight * 0.22;
 const dateFontSize = mailItemHeight * 0.16;
 
-// 모달 제목 크기 계산 (배경 높이 기준)
-const modalTitleFontSize = bgHeight * 0.06;
+// 모달 제목 크기 계산 (배경 너비 기준)
+const modalTitleFontSize = bgWidth * 0.07;
 
 // 편지 상세 배경 크기 계산 (mail-detail-bg: 994 x 1344)
 const { bgWidth: detailBgWidth, bgHeight: detailBgHeight } = calcBackgroundSize(994, 1344);
@@ -108,7 +109,7 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose }) 
                     >
                       <Image
                         source={require('../assets/garden/props/mail-item.png')}
-                        style={[styles.mailItem, { width: mailItemWidth, height: mailItemHeight }]}
+                        style={{ width: mailItemWidth, height: mailItemHeight }}
                         resizeMode="contain"
                       />
                       {/* 우편 내용 */}
@@ -202,16 +203,7 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose }) 
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  ...modalStyles,
   mailboxBackground: {
     width: bgWidth,
     height: bgHeight,
@@ -220,20 +212,9 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     position: 'absolute',
-    top: '2.6%',
+    top: '3%',
     fontFamily: 'Gaegu-Regular',
     color: '#7a6854',
-  },
-  closeButton: {
-    position: 'absolute',
-    bottom: 7,
-    right: 7,
-    zIndex: 100,
-    padding: 8,
-  },
-  closeIcon: {
-    width: 50,
-    height: 50,
   },
   scrollContainer: {
     flex: 1,
@@ -264,7 +245,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
   },
-  mailItem: {},
   mailContent: {
     position: 'absolute',
     left: '12%',
