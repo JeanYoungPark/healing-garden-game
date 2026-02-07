@@ -30,7 +30,8 @@ export interface GardenState {
   plants: Plant[];
   level: number;
   gold: number;
-  tickets: number;
+  water: number; // 물방울 (최대 5, 30분마다 1개 충전)
+  lastWaterRechargeTime: Date; // 마지막 물 충전 시간
   collection: PlantType[];
   lastSaveTime: Date;
 }

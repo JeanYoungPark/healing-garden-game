@@ -5,16 +5,37 @@
  * @format
  */
 
-import React from 'react';
-import { StatusBar } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StatusBar, AppState, AppStateStatus } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GardenScreen } from './src/screens/GardenScreen';
+import { useGardenStore } from './src/stores/gardenStore';
 
 const Stack = createNativeStackNavigator();
 
 function App() {
+  const appState = useRef(AppState.currentState);
+  const rechargeWater = useGardenStore((state) => state.rechargeWater);
+
+  useEffect(() => {
+    // 앱 시작 시 물방울 충전 체크
+    rechargeWater();
+
+    // 앱이 포그라운드로 돌아올 때 물방울 충전
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        rechargeWater();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [rechargeWater]);
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>

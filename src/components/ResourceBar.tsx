@@ -7,13 +7,13 @@ import { COLORS } from '../utils/colors';
 interface ResourceBarProps {
   level: number;
   gold: number;
-  tickets: number;
+  water: number;
 }
 
 export const ResourceBar: React.FC<ResourceBarProps> = ({
   level,
   gold,
-  tickets,
+  water,
 }) => {
   return (
     <View style={styles.container}>
@@ -53,14 +53,14 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
         </View>
       </ImageBackground>
 
-      {/* 물뿌리개 박스 */}
+      {/* 물방울 박스 */}
       <ImageBackground
         source={require('../assets/ui/common/header-box.png')}
         style={styles.statBox}
         resizeMode="stretch"
       >
         <View style={styles.statContentRight}>
-          <Text style={styles.valueText}>{tickets}/3</Text>
+          <Text style={styles.valueText}>{water}/5</Text>
           <Image
             source={require('../assets/ui/common/water-drop.png')}
             style={styles.waterIcon}

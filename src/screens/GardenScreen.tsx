@@ -20,7 +20,7 @@ interface GardenScreenProps {
 }
 
 export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
-  const { plants, level, gold, tickets, plantSeed, spendGold } = useGardenStore();
+  const { plants, level, gold, water, plantSeed, spendGold } = useGardenStore();
   const gardenRef = useRef<View>(null);
   const [seedBagVisible, setSeedBagVisible] = useState(false);
   const [shopVisible, setShopVisible] = useState(false);

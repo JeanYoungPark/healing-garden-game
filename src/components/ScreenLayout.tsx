@@ -28,7 +28,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   onSettingsPress,
 }) => {
   const insets = useSafeAreaInsets();
-  const { level, gold, tickets } = useGardenStore();
+  const { level, gold, water } = useGardenStore();
 
   return (
     <LayeredBackground>
@@ -37,7 +37,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
           <>
             {/* Header - 리소스 바 */}
             <View style={styles.header}>
-              <ResourceBar level={level} gold={gold} tickets={tickets} />
+              <ResourceBar level={level} gold={gold} water={water} />
             </View>
 
             {/* Quest Button - 헤더 아래 오른쪽 첫번째 */}
