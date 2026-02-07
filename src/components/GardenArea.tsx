@@ -11,6 +11,7 @@ const { width, height } = Dimensions.get('window');
 interface GardenAreaProps {
   plants: Plant[];
   onPlantPress?: (plantId: string) => void;
+  onMailboxPress?: () => void;
 }
 
 // 과일 성장 단계 이모지
@@ -25,6 +26,7 @@ const PLANT_EMOJIS = {
 export const GardenArea = forwardRef<View, GardenAreaProps>(({
   plants,
   onPlantPress,
+  onMailboxPress,
 }, ref) => {
   // 3x3 그리드 생성
   const gridSlots = Array.from({ length: 9 }, (_, index) => index);
@@ -46,11 +48,17 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         />
 
         {/* 우체통 아이콘 - 카피바라 오른쪽 */}
-        <Image
-          source={require('../assets/garden/icons/post-box.png')}
+        <TouchableOpacity
           style={styles.postBoxIcon}
-          resizeMode="contain"
-        />
+          activeOpacity={0.7}
+          onPress={onMailboxPress}
+        >
+          <Image
+            source={require('../assets/garden/icons/post-box.png')}
+            style={styles.postBoxImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
 
         {/* 밭과 울타리 그룹 */}
         <View style={styles.farmGroup}>
@@ -147,6 +155,10 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     zIndex: 5,
+  },
+  postBoxImage: {
+    width: '100%',
+    height: '100%',
   },
   farmGroup: {
     marginTop: 100,

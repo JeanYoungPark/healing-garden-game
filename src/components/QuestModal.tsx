@@ -26,7 +26,7 @@ export const QuestModal: React.FC<QuestModalProps> = ({ visible, onClose }) => {
           onPress={onClose}
         />
         {/* 퀘스트 컨텐츠 */}
-        <View style={styles.container}>
+        <View style={styles.container} pointerEvents="box-none">
           {/* 퀘스트 배경 */}
           <ImageBackground
             source={require('../assets/garden/props/quest-bg.png')}

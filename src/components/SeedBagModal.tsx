@@ -1,10 +1,25 @@
 // 🌱 Healing Garden - Seed Bag Modal
 
 import React from 'react';
-import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 
-const { width, height } = Dimensions.get('window');
+// 배경 크기 계산 (seed-bag: 1000 x 1402)
+const { bgWidth, bgHeight } = calcBackgroundSize(1000, 1402);
+
+// 씨앗 박스 크기 계산 (seed-box: 800 x 300)
+const { width: seedBoxWidth, height: seedBoxHeight } = calcElementSize(bgWidth, 0.75, 800, 300);
+
+// 스크롤 영역 마진 (배경 높이 기준)
+const scrollMarginTop = bgHeight * 0.25;
+const scrollMarginBottom = bgHeight * 0.08;
+
+// 하단 그라데이션 높이 (배경 높이 기준)
+const fadeHeight = bgHeight * 0.05;
+
+// 씨앗 박스 간격 (배경 높이 기준)
+const seedBoxMargin = bgHeight * 0.01;
 
 interface SeedBagModalProps {
   visible: boolean;
@@ -30,12 +45,12 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) 
           onPress={onClose}
         />
         {/* 씨앗 가방 컨텐츠 */}
-        <View style={styles.container}>
+        <View style={styles.container} pointerEvents="box-none">
           {/* 씨앗 가방 배경 */}
           <ImageBackground
             source={require('../assets/garden/props/seed-bag.png')}
             style={styles.seedBagBackground}
-            resizeMode="contain"
+            resizeMode="stretch"
           >
             {/* 씨앗 박스 그리드 */}
             <View style={styles.scrollContainer}>
@@ -47,10 +62,10 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) 
               >
                 <View style={styles.grid}>
                   {seedSlots.map((index) => (
-                    <View key={index} style={styles.seedBoxWrapper}>
+                    <View key={index} style={[styles.seedBoxWrapper, { marginBottom: seedBoxMargin }]}>
                       <Image
                         source={require('../assets/garden/props/seed-box.png')}
-                        style={styles.seedBox}
+                        style={[styles.seedBox, { width: seedBoxWidth, height: seedBoxHeight }]}
                         resizeMode="contain"
                       />
                     </View>
@@ -97,8 +112,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   seedBagBackground: {
-    width: width - 30,
-    height: height * 0.75,
+    width: bgWidth,
+    height: bgHeight,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -115,9 +130,9 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
-    width: '80%',
-    marginTop: 190,
-    marginBottom: 130,
+    width: '74%',
+    marginTop: scrollMarginTop,
+    marginBottom: scrollMarginBottom,
     position: 'relative',
   },
   scrollView: {
@@ -128,7 +143,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: fadeHeight,
   },
   scrollContent: {
     paddingVertical: 0
@@ -139,10 +154,6 @@ const styles = StyleSheet.create({
   },
   seedBoxWrapper: {
     width: '100%',
-    marginBottom: 5,
   },
-  seedBox: {
-    width: '100%',
-    height: 90,
-  },
+  seedBox: {},
 });
