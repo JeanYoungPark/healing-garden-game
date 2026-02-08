@@ -1,35 +1,161 @@
-// 🍓 Healing Garden - Free Garden Area (자유 배치)
+// 🍓 Healing Garden - Garden Area (Grid-based)
 
-import React, { forwardRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, ImageBackground, Image, Dimensions } from 'react-native';
-import LottieView from 'lottie-react-native';
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, ImageBackground, Dimensions, Text, Animated } from 'react-native';
+import { CapybaraCharacter } from './CapybaraCharacter';
+import { WateringAnimation } from './WateringAnimation';
 import { Plant } from '../types';
+import { PLANT_CONFIGS } from '../utils/plantConfigs';
+import { PLANT_STAGE_IMAGES, PLANT_STAGE_SIZES } from '../utils/plantStageConfigs';
 
 const { width, height } = Dimensions.get('window');
 
 interface GardenAreaProps {
   plants: Plant[];
+  water: number;
+  plantingMode: boolean;
   onPlantPress?: (plantId: string) => void;
+  onSlotPress?: (slotIndex: number) => void;
+  onWaterPlant?: (plantId: string) => void;
   onMailboxPress?: () => void;
 }
 
-// 과일 성장 단계 이모지
-const PLANT_EMOJIS = {
-  strawberry: ['🌱', '🌿', '🌸', '🍓'],
-  watermelon: ['🌱', '🌿', '🌼', '🍉'],
-  peach: ['🌱', '🌿', '🌸', '🍑'],
-  grape: ['🌱', '🌿', '🌼', '🍇'],
-  apple: ['🌱', '🌿', '🌸', '🍎'],
+// 물 효과 적용된 실제 성장시간 계산 (최소 30%)
+const getEffectiveTime = (plant: Plant): number => {
+  const config = PLANT_CONFIGS[plant.type];
+  const minTime = config.growthTime * 0.3;
+  return Math.max(minTime, config.growthTime - plant.waterCount * config.waterBonus);
+};
+
+// 현재 성장 단계 계산 (시간 기반)
+const calculateStage = (plant: Plant): number => {
+  const effectiveTime = getEffectiveTime(plant);
+  const stageDuration = effectiveTime / 4;
+  const elapsed = (Date.now() - new Date(plant.plantedAt).getTime()) / (1000 * 60);
+  return Math.min(3, Math.floor(elapsed / stageDuration));
+};
+
+// 남은 시간 계산
+const getRemainingTime = (plant: Plant): string => {
+  const effectiveTime = getEffectiveTime(plant);
+  const elapsed = (Date.now() - new Date(plant.plantedAt).getTime()) / (1000 * 60);
+  const remaining = Math.max(0, effectiveTime - elapsed);
+
+  if (remaining === 0) return '수확 가능!';
+
+  const hours = Math.floor(remaining / 60);
+  const minutes = Math.ceil(remaining % 60);
+
+  if (hours > 0) return `${hours}시간 ${minutes}분`;
+  return `${minutes}분`;
+};
+
+// 떠오르는 시간 툴팁 컴포넌트
+const FloatingTooltip: React.FC<{ text: string; topOffset: number; onDone: () => void }> = ({ text, topOffset, onDone }) => {
+  const opacity = useRef(new Animated.Value(1)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: -15,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 1200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => onDone());
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.tooltip,
+        { top: topOffset, opacity, transform: [{ translateY }] },
+      ]}
+      pointerEvents="none"
+    >
+      <Text style={styles.tooltipText}>{text}</Text>
+    </Animated.View>
+  );
 };
 
 export const GardenArea = forwardRef<View, GardenAreaProps>(({
   plants,
+  water,
+  plantingMode,
   onPlantPress,
+  onSlotPress,
+  onWaterPlant,
   onMailboxPress,
 }, ref) => {
-  // 3x3 그리드 생성
-  const gridSlots = Array.from({ length: 9 }, (_, index) => index);
-  const plotSize = Math.min(width, height) * 0.35; // 화면 크기에 따라 조정
+  // 30초마다 리렌더 → 식물 성장 단계 자동 갱신
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const plotSize = width * 0.35;
+
+  // 밭 스케일 애니메이션 (심기 시 톡 효과)
+  const slotScales = useRef(
+    Array.from({ length: 9 }, () => new Animated.Value(1))
+  ).current;
+
+  const bounceSlot = useCallback((slotIndex: number) => {
+    const scale = slotScales[slotIndex];
+    scale.setValue(1);
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 1.08,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [slotScales]);
+
+  // 떠오르는 툴팁 상태: 고유 ID로 각 인스턴스 독립 관리
+  const tooltipIdRef = useRef(0);
+  const [tooltips, setTooltips] = useState<{ id: number; slotIndex: number }[]>([]);
+
+  // 슬롯에 심어진 식물 찾기
+  const getPlantInSlot = (slotIndex: number): Plant | undefined => {
+    return plants.find((p) => p.slotIndex === slotIndex);
+  };
+
+  const handlePlantTap = useCallback((slotIndex: number) => {
+    tooltipIdRef.current += 1;
+    const id = tooltipIdRef.current;
+    setTooltips((prev) => [...prev, { id, slotIndex }]);
+  }, []);
+
+  const handleTooltipDone = useCallback((id: number) => {
+    setTooltips((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  // 물주기 애니메이션 상태
+  const [wateringSlot, setWateringSlot] = useState<number | null>(null);
+
+  const handleLongPress = useCallback((slotIndex: number) => {
+    const plant = plants.find((p) => p.slotIndex === slotIndex);
+    if (!plant) return;
+    // 이미 수확 가능하면 무시
+    if (calculateStage(plant) >= 3) return;
+    // 물 없으면 무시
+    if (water <= 0) return;
+
+    setWateringSlot(slotIndex);
+    onWaterPlant?.(plant.id);
+  }, [plants, water, onWaterPlant]);
 
   return (
     <View style={styles.container}>
@@ -39,12 +165,9 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         style={styles.gardenArea}
       >
         {/* 카피바라 애니메이션 - 밭 위쪽 */}
-        <LottieView
-          source={require('../assets/animations/capybara.json')}
-          autoPlay
-          loop
-          style={styles.capybaraAnimation}
-        />
+        <View style={styles.capybaraAnimation}>
+          <CapybaraCharacter size={120} />
+        </View>
 
         {/* 우체통 아이콘 - 카피바라 오른쪽 */}
         <TouchableOpacity
@@ -61,21 +184,101 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
 
         {/* 밭과 울타리 그룹 */}
         <View style={styles.farmGroup}>
-          {/* 3x3 밭 그리드 */}
+          {/* 3x3 밭 그리드 - 행별 View로 zIndex 제어 */}
           <View style={styles.gridContainer}>
-            {gridSlots.map((index) => (
-              <ImageBackground
-                key={index}
-                source={require('../assets/garden/props/farm-plot.png')}
-                style={[
-                  styles.plotSlot,
-                  {
-                    width: plotSize,
-                    height: plotSize,
-                  }
-                ]}
-                resizeMode="contain"
-              />
+            {[0, 1, 2].map((row) => (
+              <View key={row} style={[styles.gridRow, { zIndex: row }]}>
+                {[0, 1, 2].map((col) => {
+                  const slotIndex = row * 3 + col;
+                  const plant = getPlantInSlot(slotIndex);
+                  const isEmpty = !plant;
+
+                  return (
+                    <TouchableOpacity
+                      key={slotIndex}
+                      activeOpacity={isEmpty ? 0.7 : 0.9}
+                      delayLongPress={400}
+                      onPress={() => {
+                        if (isEmpty) {
+                          bounceSlot(slotIndex);
+                          onSlotPress?.(slotIndex);
+                        } else if (plant && calculateStage(plant) >= 3) {
+                          bounceSlot(slotIndex);
+                          onPlantPress?.(plant.id);
+                        } else {
+                          handlePlantTap(slotIndex);
+                        }
+                      }}
+                      onLongPress={() => {
+                        if (!isEmpty) handleLongPress(slotIndex);
+                      }}
+                    >
+                      <Animated.View style={{ transform: [{ scale: slotScales[slotIndex] }] }}>
+                        <ImageBackground
+                          source={require('../assets/garden/props/farm-plot.png')}
+                          style={[
+                            styles.plotSlot,
+                            {
+                              width: plotSize,
+                              height: plotSize * 0.6,
+                            },
+                            plantingMode && isEmpty && styles.plotSlotHighlight,
+                          ]}
+                          resizeMode="contain"
+                        >
+                          {/* 탭 시 떠오르는 남은 시간 툴팁 */}
+                          {plant && tooltips
+                            .filter((t) => t.slotIndex === slotIndex)
+                            .map((t) => {
+                              const stage = calculateStage(plant);
+                              const typeSizes = PLANT_STAGE_SIZES[plant.type] || PLANT_STAGE_SIZES.carrot;
+                              const sz = typeSizes[stage];
+                              return (
+                                <FloatingTooltip
+                                  key={t.id}
+                                  text={getRemainingTime(plant)}
+                                  topOffset={-plotSize * sz.h}
+                                  onDone={() => handleTooltipDone(t.id)}
+                                />
+                              );
+                            })}
+                          {/* 식물이 심어져 있으면 이미지 표시 */}
+                          {plant && (() => {
+                            const stage = calculateStage(plant);
+                            const typeImages = PLANT_STAGE_IMAGES[plant.type] || PLANT_STAGE_IMAGES.carrot;
+                            const typeSizes = PLANT_STAGE_SIZES[plant.type] || PLANT_STAGE_SIZES.carrot;
+                            const size = typeSizes[stage];
+                            return (
+                              <>
+                                <Image
+                                  source={typeImages[stage]}
+                                  style={{
+                                    position: 'absolute',
+                                    width: plotSize * size.w,
+                                    height: plotSize * size.h,
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: [
+                                      { translateX: -(plotSize * size.w) / 2 + plotSize * size.ml },
+                                      { translateY: -(plotSize * size.h) / 2 + plotSize * size.mt },
+                                    ],
+                                  }}
+                                  resizeMode="contain"
+                                />
+                                <WateringAnimation
+                                  visible={wateringSlot === slotIndex}
+                                  plotSize={plotSize}
+                                  onComplete={() => setWateringSlot(null)}
+                                />
+                              </>
+                            );
+                          })()}
+                        </ImageBackground>
+                      </Animated.View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             ))}
           </View>
 
@@ -86,26 +289,6 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
             resizeMode="contain"
           />
         </View>
-
-        {/* 식물들 렌더링 */}
-        {plants.map((plant) => (
-          <TouchableOpacity
-            key={plant.id}
-            style={[
-              styles.plantContainer,
-              {
-                left: plant.position.x - 40, // 중앙 정렬 (80/2)
-                top: plant.position.y - 40,
-              },
-            ]}
-            onPress={() => onPlantPress?.(plant.id)}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.plantEmoji}>
-              {PLANT_EMOJIS[plant.type][plant.stage]}
-            </Text>
-          </TouchableOpacity>
-        ))}
       </View>
     </View>
   );
@@ -146,42 +329,46 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   farmGroup: {
-    marginTop: 100,
+    marginTop: height * 0.15,
+    alignItems: 'center',
+    width: '100%',
+    zIndex: 10,
+  },
+  gridContainer: {
     alignItems: 'center',
     width: '100%',
   },
-  gridContainer: {
+  gridRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '90%',
-    maxWidth: 400,
-    gap: 0,
   },
   plotSlot: {
     justifyContent: 'center',
     alignItems: 'center',
-    margin: -10,
-    marginTop: -40,
+    marginHorizontal: -width * 0.025, // 가로 겹침으로 크기 확보
+  },
+  plotSlotHighlight: {
+  },
+  tooltip: {
+    position: 'absolute',
+    alignSelf: 'center',
+    backgroundColor: '#f7e6c4',
+    borderWidth: 2,
+    borderColor: '#7a6854',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    zIndex: 20,
+  },
+  tooltipText: {
+    fontSize: 12,
+    fontFamily: 'Gaegu-Bold',
+    color: '#7a6854',
   },
   fence: {
-    width: '90%',
-    height: 80,
-    marginTop: 40,
-  },
-  plantContainer: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  plantEmoji: {
-    fontSize: 48,
+    width: width * 0.9,
+    height: width * 0.9 * 0.19, // 이미지 비율 132/700
+    marginTop: height * 0.04,
   },
 });

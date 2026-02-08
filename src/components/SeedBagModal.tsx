@@ -5,6 +5,9 @@ import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableO
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 import { modalStyles } from '../styles/modalStyles';
+import { useGardenStore } from '../stores/gardenStore';
+import { PLANT_CONFIGS } from '../utils/plantConfigs';
+import { PlantType } from '../types';
 
 // 배경 크기 계산 (seed-bag: 1000 x 1402)
 const { bgWidth, bgHeight } = calcBackgroundSize(1000, 1402);
@@ -25,14 +28,26 @@ const seedBoxMargin = bgHeight * 0.01;
 // 모달 제목 크기 계산 (배경 너비 기준)
 const modalTitleFontSize = bgWidth * 0.07;
 
+// 씨앗 이미지 크기
+const seedImageSize = seedBoxHeight * 0.7;
+
+// 씨앗 이미지 매핑 (구매한 씨앗용)
+const SEED_IMAGES: Partial<Record<PlantType, any>> = {
+};
+
 interface SeedBagModalProps {
   visible: boolean;
   onClose: () => void;
+  onSelectSeed: (seedType: PlantType) => void;
 }
 
-export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) => {
-  // 임시로 6개의 seed-box 생성
-  const seedSlots = Array.from({ length: 6 }, (_, i) => i);
+export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose, onSelectSeed }) => {
+  const seeds = useGardenStore((state) => state.seeds);
+
+  const handleSeedPress = (seedType: PlantType) => {
+    onSelectSeed(seedType);
+    onClose();
+  };
 
   return (
     <Modal
@@ -68,8 +83,50 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose }) 
                 nestedScrollEnabled={true}
               >
                 <View style={styles.grid}>
-                  {seedSlots.map((index) => (
-                    <View key={index} style={[styles.seedBoxWrapper, { marginBottom: seedBoxMargin }]}>
+                  {seeds.map((seedItem) => {
+                    const config = PLANT_CONFIGS[seedItem.type];
+                    const seedImage = SEED_IMAGES[seedItem.type];
+                    const countText = seedItem.count === -1 ? '무제한' : `${seedItem.count}개`;
+
+                    return (
+                      <TouchableOpacity
+                        key={seedItem.type}
+                        style={[styles.seedBoxWrapper, { marginBottom: seedBoxMargin }]}
+                        activeOpacity={0.7}
+                        onPress={() => handleSeedPress(seedItem.type)}
+                      >
+                        <ImageBackground
+                          source={require('../assets/garden/props/seed-box.png')}
+                          style={{ width: seedBoxWidth, height: seedBoxHeight }}
+                          resizeMode="contain"
+                        >
+                          <View style={styles.seedBoxContent}>
+                            {/* 씨앗 이미지 */}
+                            {seedImage ? (
+                              <Image
+                                source={seedImage}
+                                style={styles.seedImage}
+                                resizeMode="contain"
+                              />
+                            ) : (
+                              <Text style={styles.seedEmoji}>{config.emoji}</Text>
+                            )}
+
+                            {/* 씨앗 정보 */}
+                            <View style={styles.seedInfo}>
+                              <Text style={styles.seedName}>{config.name}</Text>
+                              <Text style={styles.seedDetail}>수확시간: {config.growthTime}분</Text>
+                              <Text style={styles.seedCount}>{countText}</Text>
+                            </View>
+                          </View>
+                        </ImageBackground>
+                      </TouchableOpacity>
+                    );
+                  })}
+
+                  {/* 빈 씨앗 박스 (총 6칸 채우기) */}
+                  {Array.from({ length: Math.max(0, 6 - seeds.length) }, (_, i) => (
+                    <View key={`empty-${i}`} style={[styles.seedBoxWrapper, { marginBottom: seedBoxMargin }]}>
                       <Image
                         source={require('../assets/garden/props/seed-box.png')}
                         style={{ width: seedBoxWidth, height: seedBoxHeight }}
@@ -140,7 +197,7 @@ const styles = StyleSheet.create({
     height: fadeHeight,
   },
   scrollContent: {
-    paddingVertical: 0
+    paddingVertical: 0,
   },
   grid: {
     flexDirection: 'column',
@@ -148,5 +205,39 @@ const styles = StyleSheet.create({
   },
   seedBoxWrapper: {
     width: '100%',
+  },
+  seedBoxContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: seedBoxWidth * 0.08,
+  },
+  seedImage: {
+    width: seedImageSize,
+    height: seedImageSize,
+  },
+  seedEmoji: {
+    fontSize: seedImageSize * 0.6,
+  },
+  seedInfo: {
+    flex: 1,
+    marginLeft: seedBoxWidth * 0.05,
+  },
+  seedName: {
+    fontSize: bgWidth * 0.05,
+    fontFamily: 'Gaegu-Bold',
+    color: '#7a6854',
+  },
+  seedDetail: {
+    fontSize: bgWidth * 0.035,
+    fontFamily: 'Gaegu-Regular',
+    color: '#A1887F',
+    marginTop: 2,
+  },
+  seedCount: {
+    fontSize: bgWidth * 0.03,
+    fontFamily: 'Gaegu-Regular',
+    color: '#A1887F',
+    marginTop: 2,
   },
 });

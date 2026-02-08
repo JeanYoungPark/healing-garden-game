@@ -1,7 +1,7 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
-import React, { useRef, useState } from 'react';
-import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
 import { GardenArea } from '../components/GardenArea';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { SeedBagModal } from '../components/SeedBagModal';
@@ -11,7 +11,6 @@ import { CollectionModal } from '../components/CollectionModal';
 import { SettingsModal } from '../components/SettingsModal';
 import { MailboxModal } from '../components/MailboxModal';
 import { useGardenStore } from '../stores/gardenStore';
-import { COLORS } from '../utils/colors';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PlantType } from '../types';
 
@@ -20,8 +19,7 @@ interface GardenScreenProps {
 }
 
 export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
-  const { plants, level, gold, water, plantSeed, spendGold } = useGardenStore();
-  const gardenRef = useRef<View>(null);
+  const { plants, water, plantSeedInSlot, useSeed, harvestPlant, addGold, waterPlant } = useGardenStore();
   const [seedBagVisible, setSeedBagVisible] = useState(false);
   const [shopVisible, setShopVisible] = useState(false);
   const [questVisible, setQuestVisible] = useState(false);
@@ -29,42 +27,59 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [mailboxVisible, setMailboxVisible] = useState(false);
 
-  const handleSeedDrop = async (seedType: PlantType, absolutePosition: { x: number; y: number }) => {
-    const seedConfig = PLANT_CONFIGS[seedType];
+  // 심기 모드 상태: null이면 기본(당근), 설정되면 선택된 씨앗
+  const [selectedSeed, setSelectedSeed] = useState<PlantType | null>(null);
 
-    // 정원 영역 내 상대 좌표로 변환
-    if (gardenRef.current) {
-      gardenRef.current.measure((x, y, width, height, pageX, pageY) => {
-        const relativeX = absolutePosition.x - pageX;
-        const relativeY = absolutePosition.y - pageY;
+  // 현재 심을 씨앗 타입 (선택된 게 없으면 기본 당근)
+  const currentSeedType = selectedSeed || 'carrot';
+  const isPlantingMode = selectedSeed !== null;
 
-        // 정원 영역 안인지 체크
-        if (relativeX >= 0 && relativeX <= width && relativeY >= 0 && relativeY <= height) {
-          // 골드 체크
-          if (spendGold(seedConfig.seedPrice)) {
-            const success = plantSeed({ x: relativeX, y: relativeY }, seedType);
+  const handleSlotPress = useCallback((slotIndex: number) => {
+    const seedType = currentSeedType;
 
-            if (!success) {
-              // 너무 가까운 위치 - 골드 환불
-              useGardenStore.getState().addGold(seedConfig.seedPrice);
-            }
-            // 성공 시 아무 알럿 없이 식물만 심어짐
-          } else {
-            Alert.alert('💰 골드가 부족해요', `${seedConfig.seedPrice} 골드가 필요해요`, [
-              { text: '확인', style: 'cancel' },
-            ]);
-          }
-        }
-        // 정원 영역 밖에 드롭 시 아무 일도 일어나지 않음
-      });
+    // 씨앗 소비
+    if (!useSeed(seedType)) return;
+
+    // 슬롯에 심기
+    const success = plantSeedInSlot(slotIndex, seedType);
+
+    if (!success) return;
+
+    // 한정 씨앗이 다 떨어지면 모드 해제
+    if (isPlantingMode) {
+      const seeds = useGardenStore.getState().seeds;
+      const seedItem = seeds.find((s) => s.type === seedType);
+      if (!seedItem || seedItem.count === 0) {
+        setSelectedSeed(null);
+      }
     }
-  };
+  }, [currentSeedType, isPlantingMode, plantSeedInSlot, useSeed]);
 
-  const handlePlantPress = (plantId: string) => {
-    Alert.alert('🌱 식물 정보', '식물이 자라는 중입니다!', [
-      { text: '확인', style: 'default' },
-    ]);
-  };
+  const handleSelectSeed = useCallback((seedType: PlantType) => {
+    // 당근 선택 시에는 기본 모드로 (인디케이터 안 보임)
+    if (seedType === 'carrot') {
+      setSelectedSeed(null);
+    } else {
+      setSelectedSeed(seedType);
+    }
+  }, []);
+
+  const handleCancelPlanting = useCallback(() => {
+    setSelectedSeed(null);
+  }, []);
+
+  const handleWaterPlant = useCallback((plantId: string) => {
+    waterPlant(plantId);
+  }, [waterPlant]);
+
+  const handlePlantPress = useCallback((plantId: string) => {
+    const plant = plants.find((p) => p.id === plantId);
+    if (!plant) return;
+
+    const config = PLANT_CONFIGS[plant.type];
+    addGold(config.harvestGold);
+    harvestPlant(plantId);
+  }, [plants, addGold, harvestPlant]);
 
   return (
     <ScreenLayout
@@ -103,12 +118,31 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Garden Area - 드래그 앤 드롭 (전체 영역) */}
+        {/* 심기 모드 인디케이터 */}
+        {isPlantingMode && (
+          <View style={styles.plantingIndicator}>
+            <Text style={styles.plantingText}>
+              {PLANT_CONFIGS[currentSeedType].emoji} {PLANT_CONFIGS[currentSeedType].name} 씨앗 심는 중...
+            </Text>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleCancelPlanting}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.cancelText}>취소</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Garden Area */}
         <View style={styles.gardenContainer}>
           <GardenArea
-            ref={gardenRef}
             plants={plants}
+            water={water}
+            plantingMode={isPlantingMode}
             onPlantPress={handlePlantPress}
+            onSlotPress={handleSlotPress}
+            onWaterPlant={handleWaterPlant}
             onMailboxPress={() => setMailboxVisible(true)}
           />
         </View>
@@ -119,6 +153,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
       <SeedBagModal
         visible={seedBagVisible}
         onClose={() => setSeedBagVisible(false)}
+        onSelectSeed={handleSelectSeed}
       />
 
       {/* Shop Modal */}
@@ -186,5 +221,39 @@ const styles = StyleSheet.create({
   gardenContainer: {
     flex: 1,
     position: 'relative',
+  },
+  plantingIndicator: {
+    position: 'absolute',
+    bottom: 60,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  plantingText: {
+    fontSize: 15,
+    fontFamily: 'Gaegu-Regular',
+    color: '#7a6854',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cancelButton: {
+    marginLeft: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+  },
+  cancelText: {
+    fontSize: 14,
+    fontFamily: 'Gaegu-Regular',
+    color: '#A1887F',
   },
 });

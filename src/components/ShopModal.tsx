@@ -5,6 +5,8 @@ import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableO
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 import { modalStyles } from '../styles/modalStyles';
+import { useGardenStore } from '../stores/gardenStore';
+import { GameAlert } from './GameAlert';
 
 // 배경 크기 계산 (shop-bg: 1079 x 1488)
 const { bgWidth, bgHeight } = calcBackgroundSize(1079, 1488);
@@ -49,6 +51,17 @@ interface ShopModalProps {
 
 export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
   const [selectedTab, setSelectedTab] = React.useState<'tab1' | 'tab2'>('tab1');
+  const [alertVisible, setAlertVisible] = React.useState(false);
+  const { gold, spendGold } = useGardenStore();
+
+  const handlePurchase = (price: number) => {
+    if (price === 0) return; // 기본 아이템
+    if (gold < price) {
+      setAlertVisible(true);
+      return;
+    }
+    spendGold(price);
+  };
 
   // farm-plot 이미지 및 가격 매핑
   const farmPlotData = [
@@ -145,7 +158,12 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
               >
                 <View style={styles.grid}>
                   {shopItemsData.map((item, index) => (
-                    <View key={index} style={[styles.itemBoxWrapper, { width: itemBoxWidth }]}>
+                    <TouchableOpacity
+                      key={index}
+                      style={[styles.itemBoxWrapper, { width: itemBoxWidth }]}
+                      activeOpacity={0.7}
+                      onPress={() => handlePurchase(item.price)}
+                    >
                       <Image
                         source={require('../assets/garden/props/shop-item-box.png')}
                         style={{ width: itemBoxWidth, height: itemBoxHeight }}
@@ -170,7 +188,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                           {item.price === 0 ? '기본' : item.price.toLocaleString()}
                         </Text>
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   ))}
                 </View>
               </ScrollView>
@@ -198,6 +216,13 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
           />
         </TouchableOpacity>
       </View>
+
+      {/* 골드 부족 토스트 */}
+      <GameAlert
+        visible={alertVisible}
+        message="골드가 부족해요!"
+        onClose={() => setAlertVisible(false)}
+      />
     </Modal>
   );
 };

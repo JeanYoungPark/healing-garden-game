@@ -3,12 +3,23 @@
 import { PlantConfig, PlantType } from '../types';
 
 export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
+  carrot: {
+    type: 'carrot',
+    name: '당근',
+    seedPrice: 0,
+    harvestGold: 50,
+    growthTime: 30, // 30분
+    waterBonus: 3, // 물 1회당 3분 단축
+    emoji: '🥕',
+    rarity: 'common',
+  },
   strawberry: {
     type: 'strawberry',
     name: '딸기',
     seedPrice: 10,
     harvestGold: 30,
     growthTime: 180, // 3시간
+    waterBonus: 18, // 물 1회당 18분 단축
     emoji: '🍓',
     rarity: 'common',
   },
@@ -18,6 +29,7 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     seedPrice: 25,
     harvestGold: 80,
     growthTime: 180,
+    waterBonus: 18,
     emoji: '🍉',
     rarity: 'common',
   },
@@ -27,6 +39,7 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     seedPrice: 50,
     harvestGold: 150,
     growthTime: 180,
+    waterBonus: 20,
     emoji: '🍑',
     rarity: 'rare',
   },
@@ -36,6 +49,7 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     seedPrice: 100,
     harvestGold: 320,
     growthTime: 240, // 4시간
+    waterBonus: 25,
     emoji: '🍇',
     rarity: 'rare',
   },
@@ -45,14 +59,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     seedPrice: 200,
     harvestGold: 700,
     growthTime: 300, // 5시간
+    waterBonus: 30,
     emoji: '🍎',
     rarity: 'epic',
   },
 };
-
-// 성장 시간 계산 헬퍼
-export const GROWTH_STAGE_DURATION = 60; // 각 단계당 60분
-
-// 물 효과 (25% 가속)
-export const WATER_BONUS = 0.25;
-export const MAX_WATER_PER_DAY = 3;

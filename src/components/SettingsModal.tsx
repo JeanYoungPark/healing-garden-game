@@ -4,6 +4,7 @@ import React from 'react';
 import { StyleSheet, View, Image, Modal, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import { modalStyles } from '../styles/modalStyles';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
+import { useGardenStore } from '../stores/gardenStore';
 
 // 배경 크기 계산 (settings-bg: 1099 x 1047)
 const { bgWidth, bgHeight } = calcBackgroundSize(1099, 1047);
@@ -23,8 +24,7 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
-  const [soundEnabled, setSoundEnabled] = React.useState(true);
-  const [notificationEnabled, setNotificationEnabled] = React.useState(true);
+  const { soundEnabled, notificationEnabled, toggleSound, toggleNotification } = useGardenStore();
 
   return (
     <Modal
@@ -60,10 +60,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                   style={styles.settingsItem}
                   resizeMode="contain"
                 />
-                <Text style={styles.itemLabel}>소리</Text>
+                <Text style={styles.itemLabel}>소리/진동</Text>
                 <TouchableOpacity
                   style={styles.toggleButton}
-                  onPress={() => setSoundEnabled(!soundEnabled)}
+                  onPress={toggleSound}
                   activeOpacity={0.8}
                 >
                   <View style={styles.toggleContainer}>
@@ -104,7 +104,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                 <Text style={styles.itemLabel}>알림</Text>
                 <TouchableOpacity
                   style={styles.toggleButton}
-                  onPress={() => setNotificationEnabled(!notificationEnabled)}
+                  onPress={toggleNotification}
                   activeOpacity={0.8}
                 >
                   <View style={styles.toggleContainer}>
@@ -154,6 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
                 />
                 <Text style={styles.itemLabel}>게임종료</Text>
               </TouchableOpacity>
+
             </View>
           </ImageBackground>
         </View>
