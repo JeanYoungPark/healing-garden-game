@@ -1,6 +1,8 @@
 // 🍓 Healing Garden - Type Definitions
 
-export type PlantType = 'carrot' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
+export type PlantType = 'carrot' | 'turnip' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
+
+export type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog';
 
 export type PlantStage = 0 | 1 | 2 | 3; // 씨앗, 새싹, 꽃, 과일
 
@@ -32,6 +34,11 @@ export interface PlantConfig {
   rarity: Rarity;
 }
 
+export interface AnimalVisitor {
+  type: AnimalType;
+  appearedAt: Date;
+}
+
 export interface GardenState {
   plants: Plant[];
   seeds: SeedItem[]; // 씨앗 가방
@@ -40,6 +47,9 @@ export interface GardenState {
   water: number; // 물방울 (최대 5, 2시간마다 1개 충전)
   lastWaterRechargeTime: Date; // 마지막 물 충전 시간
   collection: PlantType[];
+  seenCollection: PlantType[]; // 도감에서 확인한 수집 목록
+  visitors: AnimalVisitor[]; // 정원에 방문한 동물들
+  claimedAnimals: AnimalType[]; // 선물을 받은 동물들
   soundEnabled: boolean; // 소리/진동 설정
   notificationEnabled: boolean; // 알림 설정
   lastSaveTime: Date;

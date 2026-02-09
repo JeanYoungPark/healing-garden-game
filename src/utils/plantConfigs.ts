@@ -13,6 +13,16 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     emoji: '🥕',
     rarity: 'common',
   },
+  turnip: {
+    type: 'turnip',
+    name: '무',
+    seedPrice: 0, // 동물 선물로만 획득
+    harvestGold: 80,
+    growthTime: 60, // 1시간
+    waterBonus: 6, // 물 1회당 6분 단축
+    emoji: '🥬',
+    rarity: 'common',
+  },
   strawberry: {
     type: 'strawberry',
     name: '딸기',

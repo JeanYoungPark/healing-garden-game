@@ -5,6 +5,26 @@ import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableO
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 import { modalStyles } from '../styles/modalStyles';
+import { useGardenStore } from '../stores/gardenStore';
+import { PLANT_CONFIGS } from '../utils/plantConfigs';
+import { PLANT_STAGE_IMAGES } from '../utils/plantStageConfigs';
+import { PlantType } from '../types';
+
+const ALL_PLANTS: PlantType[] = ['carrot', 'turnip', 'strawberry', 'watermelon', 'peach', 'grape', 'apple'];
+
+// 도감용 이미지 (씨앗/대표 이미지)
+const COLLECTION_IMAGES: Partial<Record<PlantType, any>> = {
+  carrot: require('../assets/seeds/carrot-seed.png'),
+};
+
+// 미수집 작물 이미지
+const GIFT_ITEM_IMAGES = [
+  require('../assets/ui/common/gift-item-01.png'),
+  require('../assets/ui/common/gift-item-02.png'),
+  require('../assets/ui/common/gift-item-03.png'),
+  require('../assets/ui/common/gift-item-04.png'),
+  require('../assets/ui/common/gift-item-05.png'),
+];
 
 // 배경 크기 계산 (collection-bg: 1070 x 1351)
 const { bgWidth, bgHeight } = calcBackgroundSize(1070, 1351);
@@ -42,6 +62,7 @@ interface CollectionModalProps {
 }
 
 export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClose }) => {
+  const { collection, seenCollection } = useGardenStore();
   const [selectedTab, setSelectedTab] = React.useState<'animal' | 'gift'>('animal');
 
   return (
@@ -153,27 +174,39 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                   )}
                   {selectedTab === 'gift' && (
                     <>
-                      {[1, 2, 3, 4, 5].map((item) => (
-                        <View key={item} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
-                          <Image
-                            source={require('../assets/ui/common/gift-item-box.png')}
-                            style={{ width: itemBoxWidth, height: itemBoxHeight }}
-                            resizeMode="contain"
-                          />
-                          <Image
-                            source={
-                              item === 1 ? require('../assets/ui/common/gift-item-01.png') :
-                              item === 2 ? require('../assets/ui/common/gift-item-02.png') :
-                              item === 3 ? require('../assets/ui/common/gift-item-03.png') :
-                              item === 4 ? require('../assets/ui/common/gift-item-04.png') :
-                              require('../assets/ui/common/gift-item-05.png')
-                            }
-                            style={[styles.giftItem, { height: itemImageHeight, top: itemImageTop }]}
-                            resizeMode="contain"
-                          />
-                          <Text style={[styles.giftItemText, { bottom: itemTextBottom, fontSize: itemFontSize }]}>???</Text>
-                        </View>
-                      ))}
+                      {ALL_PLANTS.map((type, index) => {
+                        const collected = collection.includes(type);
+                        const isNew = collected && !seenCollection.includes(type);
+                        const config = PLANT_CONFIGS[type];
+                        return (
+                          <View key={type} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
+                            <Image
+                              source={require('../assets/ui/common/gift-item-box.png')}
+                              style={{ width: itemBoxWidth, height: itemBoxHeight }}
+                              resizeMode="contain"
+                            />
+                            {isNew && (
+                              <Text style={[styles.newBadge, { fontSize: itemBoxHeight * 0.08 }]}>NEW</Text>
+                            )}
+                            {collected ? (
+                              <Image
+                                source={COLLECTION_IMAGES[type] || PLANT_STAGE_IMAGES[type]?.[3]}
+                                style={[styles.giftItem, { height: itemImageHeight, top: itemImageTop }]}
+                                resizeMode="contain"
+                              />
+                            ) : (
+                              <Image
+                                source={GIFT_ITEM_IMAGES[index % GIFT_ITEM_IMAGES.length]}
+                                style={[styles.giftItem, { height: itemImageHeight, top: itemImageTop }]}
+                                resizeMode="contain"
+                              />
+                            )}
+                            <Text style={[styles.giftItemText, { bottom: itemTextBottom, fontSize: itemFontSize }]}>
+                              {collected ? config.name : '???'}
+                            </Text>
+                          </View>
+                        );
+                      })}
                     </>
                   )}
                 </View>
@@ -286,5 +319,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Gaegu-Bold',
     color: '#8B6F47',
+  },
+  newBadge: {
+    position: 'absolute',
+    top: '8%',
+    left: '8%',
+    zIndex: 10,
+    fontFamily: 'Gaegu-Bold',
+    color: '#E08080',
+    transform: [{ rotate: '-15deg' }],
+  },
+  lockedText: {
+    position: 'absolute',
+    width: '70%',
+    left: '13%',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontFamily: 'Gaegu-Bold',
+    color: '#C8B99A',
+    lineHeight: undefined,
   },
 });

@@ -1,7 +1,7 @@
 // 🌱 Healing Garden - Common Screen Layout
 
 import React from 'react';
-import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LayeredBackground } from './LayeredBackground';
 import { ResourceBar } from './ResourceBar';
@@ -28,7 +28,8 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   onSettingsPress,
 }) => {
   const insets = useSafeAreaInsets();
-  const { level, gold, water } = useGardenStore();
+  const { level, gold, water, collection, seenCollection } = useGardenStore();
+  const hasNewCollection = collection.length > seenCollection.length;
 
   return (
     <LayeredBackground>
@@ -64,6 +65,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
                 style={styles.topIcon}
                 resizeMode="contain"
               />
+              {hasNewCollection && <View style={styles.redDot} />}
             </TouchableOpacity>
 
             {/* Settings Button - 헤더 아래 오른쪽 세번째 */}
@@ -126,6 +128,17 @@ const styles = StyleSheet.create({
   topIcon: {
     width: 35,
     height: 35,
+  },
+  redDot: {
+    position: 'absolute',
+    top: 5,
+    right: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#E08080',
+    borderWidth: 1.5,
+    borderColor: '#F2C4C4',
   },
   content: {
     flex: 1,

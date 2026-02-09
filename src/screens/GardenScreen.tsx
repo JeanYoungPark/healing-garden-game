@@ -1,7 +1,7 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState, StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
 import { GardenArea } from '../components/GardenArea';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { SeedBagModal } from '../components/SeedBagModal';
@@ -10,22 +10,39 @@ import { QuestModal } from '../components/QuestModal';
 import { CollectionModal } from '../components/CollectionModal';
 import { SettingsModal } from '../components/SettingsModal';
 import { MailboxModal } from '../components/MailboxModal';
+import { GameAlert } from '../components/GameAlert';
 import { useGardenStore } from '../stores/gardenStore';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
-import { PlantType } from '../types';
+import { PlantType, AnimalType } from '../types';
 
 interface GardenScreenProps {
   navigation?: any;
 }
 
 export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
-  const { plants, water, plantSeedInSlot, useSeed, harvestPlant, addGold, waterPlant } = useGardenStore();
+  const { plants, water, visitors, plantSeedInSlot, useSeed, harvestPlant, addGold, waterPlant, markCollectionSeen, checkForNewVisitors, claimVisitor } = useGardenStore();
   const [seedBagVisible, setSeedBagVisible] = useState(false);
   const [shopVisible, setShopVisible] = useState(false);
   const [questVisible, setQuestVisible] = useState(false);
   const [collectionVisible, setCollectionVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [mailboxVisible, setMailboxVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertVisible, setAlertVisible] = useState(false);
+
+  // 앱 시작 및 포그라운드 복귀 시 동물 방문자 체크
+  const appState = useRef(AppState.currentState);
+  useEffect(() => {
+    checkForNewVisitors();
+
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        checkForNewVisitors();
+      }
+      appState.current = nextState;
+    });
+    return () => sub.remove();
+  }, [checkForNewVisitors]);
 
   // 심기 모드 상태: null이면 기본(당근), 설정되면 선택된 씨앗
   const [selectedSeed, setSelectedSeed] = useState<PlantType | null>(null);
@@ -80,6 +97,14 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
     addGold(config.harvestGold);
     harvestPlant(plantId);
   }, [plants, addGold, harvestPlant]);
+
+  const handleVisitorPress = useCallback((animalType: AnimalType) => {
+    const message = claimVisitor(animalType);
+    if (message) {
+      setAlertMessage(message);
+      setAlertVisible(true);
+    }
+  }, [claimVisitor]);
 
   return (
     <ScreenLayout
@@ -140,10 +165,12 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
             plants={plants}
             water={water}
             plantingMode={isPlantingMode}
+            visitors={visitors}
             onPlantPress={handlePlantPress}
             onSlotPress={handleSlotPress}
             onWaterPlant={handleWaterPlant}
             onMailboxPress={() => setMailboxVisible(true)}
+            onVisitorPress={handleVisitorPress}
           />
         </View>
 
@@ -171,7 +198,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
       {/* Collection Modal */}
       <CollectionModal
         visible={collectionVisible}
-        onClose={() => setCollectionVisible(false)}
+        onClose={() => { markCollectionSeen(); setCollectionVisible(false); }}
       />
 
       {/* Settings Modal */}
@@ -184,6 +211,14 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
       <MailboxModal
         visible={mailboxVisible}
         onClose={() => setMailboxVisible(false)}
+      />
+
+      {/* 동물 선물 알럿 */}
+      <GameAlert
+        visible={alertVisible}
+        message={alertMessage}
+        duration={2000}
+        onClose={() => setAlertVisible(false)}
       />
     </ScreenLayout>
   );

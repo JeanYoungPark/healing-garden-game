@@ -4,9 +4,11 @@ import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'rea
 import { StyleSheet, View, TouchableOpacity, Image, ImageBackground, Dimensions, Text, Animated } from 'react-native';
 import { CapybaraCharacter } from './CapybaraCharacter';
 import { WateringAnimation } from './WateringAnimation';
-import { Plant } from '../types';
+import { Plant, AnimalType, AnimalVisitor } from '../types';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PLANT_STAGE_IMAGES, PLANT_STAGE_SIZES } from '../utils/plantStageConfigs';
+import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
+import { RabbitCharacter } from './RabbitCharacter';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,10 +16,12 @@ interface GardenAreaProps {
   plants: Plant[];
   water: number;
   plantingMode: boolean;
+  visitors: AnimalVisitor[];
   onPlantPress?: (plantId: string) => void;
   onSlotPress?: (slotIndex: number) => void;
   onWaterPlant?: (plantId: string) => void;
   onMailboxPress?: () => void;
+  onVisitorPress?: (animalType: AnimalType) => void;
 }
 
 // 물 효과 적용된 실제 성장시간 계산 (최소 30%)
@@ -87,10 +91,12 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
   plants,
   water,
   plantingMode,
+  visitors,
   onPlantPress,
   onSlotPress,
   onWaterPlant,
   onMailboxPress,
+  onVisitorPress,
 }, ref) => {
   // 30초마다 리렌더 → 식물 성장 단계 자동 갱신
   const [, setTick] = useState(0);
@@ -168,6 +174,24 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         <View style={styles.capybaraAnimation}>
           <CapybaraCharacter size={120} />
         </View>
+
+        {/* 동물 방문자 - 카피바라 오른쪽 */}
+        {visitors.map((visitor, index) => (
+          <TouchableOpacity
+            key={visitor.type}
+            style={[styles.visitorContainer, { left: 150 + index * 70 }]}
+            activeOpacity={0.7}
+            onPress={() => onVisitorPress?.(visitor.type)}
+          >
+            {visitor.type === 'rabbit' ? (
+              <RabbitCharacter size={85} />
+            ) : (
+              <Text style={styles.visitorEmoji}>
+                {ANIMAL_CONFIGS[visitor.type].emoji}
+              </Text>
+            )}
+          </TouchableOpacity>
+        ))}
 
         {/* 우체통 아이콘 - 카피바라 오른쪽 */}
         <TouchableOpacity
@@ -315,6 +339,18 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     zIndex: 5,
+  },
+  visitorContainer: {
+    position: 'absolute',
+    top: '16.8%',
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 6,
+  },
+  visitorEmoji: {
+    fontSize: 40,
   },
   postBoxIcon: {
     position: 'absolute',

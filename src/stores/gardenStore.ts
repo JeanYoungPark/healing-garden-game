@@ -3,7 +3,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PlantType, SeedItem, GardenState } from '../types';
+import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, GardenState } from '../types';
+import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 
 // 상수
 const MAX_WATER = 5;
@@ -21,6 +22,10 @@ interface GardenStore extends GardenState {
   rechargeWater: () => void;
   toggleSound: () => void;
   toggleNotification: () => void;
+  markCollectionSeen: () => void;
+  // Animal actions
+  checkForNewVisitors: () => void;
+  claimVisitor: (animalType: AnimalType) => string | null; // returns gift message
 }
 
 // 물 충전량 계산 함수
@@ -52,6 +57,9 @@ export const useGardenStore = create<GardenStore>()(
       water: 5, // 시작 물방울 (최대치)
       lastWaterRechargeTime: new Date(),
       collection: [],
+      seenCollection: [],
+      visitors: [],
+      claimedAnimals: [],
       soundEnabled: true,
       notificationEnabled: true,
       lastSaveTime: new Date(),
@@ -182,19 +190,80 @@ export const useGardenStore = create<GardenStore>()(
       toggleNotification: () => {
         set((state) => ({ notificationEnabled: !state.notificationEnabled }));
       },
+
+      markCollectionSeen: () => {
+        set((state) => ({ seenCollection: [...state.collection] }));
+      },
+
+      // 새 동물 방문자 체크
+      checkForNewVisitors: () => {
+        const state = get();
+        const newVisitors: AnimalVisitor[] = [];
+
+        for (const [, config] of Object.entries(ANIMAL_CONFIGS)) {
+          // 이미 선물 받은 동물은 스킵
+          if (state.claimedAnimals.includes(config.type)) continue;
+          // 이미 방문 중인 동물은 스킵
+          if (state.visitors.some((v) => v.type === config.type)) continue;
+
+          if (config.trigger.type === 'harvest') {
+            // 특정 작물 수확 후 등장하는 동물
+            if (state.collection.includes(config.trigger.requiredPlant)) {
+              newVisitors.push({ type: config.type, appearedAt: new Date() });
+            }
+          }
+          // type === 'random' → 추후 구현
+        }
+
+        if (newVisitors.length > 0) {
+          set({
+            visitors: [...state.visitors, ...newVisitors],
+            lastSaveTime: new Date(),
+          });
+        }
+      },
+
+      // 동물 방문자 클릭 → 선물 수령
+      claimVisitor: (animalType: AnimalType) => {
+        const state = get();
+        const visitor = state.visitors.find((v) => v.type === animalType);
+        if (!visitor) return null;
+
+        const config = ANIMAL_CONFIGS[animalType];
+
+        // 씨앗 선물 추가
+        const existingSeed = state.seeds.find((s) => s.type === config.giftSeedType);
+        const updatedSeeds = existingSeed
+          ? state.seeds.map((s) =>
+              s.type === config.giftSeedType ? { ...s, count: s.count + config.giftSeedCount } : s
+            )
+          : [...state.seeds, { type: config.giftSeedType, count: config.giftSeedCount }];
+
+        set({
+          visitors: state.visitors.filter((v) => v.type !== animalType),
+          claimedAnimals: [...state.claimedAnimals, animalType],
+          seeds: updatedSeeds,
+          lastSaveTime: new Date(),
+        });
+
+        return config.giftMessage;
+      },
     }),
     {
       name: 'healing-garden-storage',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: (persistedState: any, version: number) => {
         if (version === 0) {
           persistedState.seeds = [];
           persistedState.plants = [];
         }
+        if (version < 2) {
+          persistedState.visitors = [];
+          persistedState.claimedAnimals = [];
+        }
         return persistedState;
       },
-      // Date 객체 직렬화/역직렬화 처리
       partialize: (state) => ({
         plants: state.plants,
         seeds: state.seeds,
@@ -203,6 +272,9 @@ export const useGardenStore = create<GardenStore>()(
         water: state.water,
         lastWaterRechargeTime: state.lastWaterRechargeTime,
         collection: state.collection,
+        seenCollection: state.seenCollection,
+        visitors: state.visitors,
+        claimedAnimals: state.claimedAnimals,
         soundEnabled: state.soundEnabled,
         notificationEnabled: state.notificationEnabled,
         lastSaveTime: state.lastSaveTime,

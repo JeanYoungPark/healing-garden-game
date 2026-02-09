@@ -119,6 +119,53 @@ Easing: ease-in-out
 
 ---
 
+## 🐾 동물 캐릭터 시스템
+
+### 개요
+정원에 동물 친구들이 방문하여 씨앗을 선물로 주는 시스템.
+카피바라는 항상 고정, 다른 동물은 조건부 또는 랜덤으로 등장.
+
+### 동물 목록
+| 동물 | 별명 | 등장 조건 | 선물 |
+|------|------|-----------|------|
+| 🐰 토끼 | 토깽이 | 당근 최초 수확 후 (고정) | 무 씨앗 x3 |
+| 🐢 거북이 | 거붕이 | 랜덤 (추후 구현) | 딸기 씨앗 x2 |
+| 🦔 고슴도치 | 도치 | 랜덤 (추후 구현) | 수박 씨앗 x2 |
+| 🦝 너구리 | 너굴이 | 랜덤 (추후 구현) | 복숭아 씨앗 x1 |
+| 🐸 개구리 | 개굴이 | 랜덤 (추후 구현) | 포도 씨앗 x1 |
+
+### 동작 규칙
+- **카피바라**: 항상 정원 왼쪽에 고정 (CapybaraCharacter)
+- **방문 동물**: 카피바라 오른쪽에 나란히 표시
+- **오프라인 유지**: 앱 종료/백그라운드에서도 동물 사라지지 않음 (visitors 상태 persist)
+- **선물 수령**: 동물 터치 → 알럿 메시지 → 씨앗 추가 → 동물 퇴장
+- **1회성**: 선물 받은 동물은 다시 등장하지 않음 (claimedAnimals로 추적)
+
+### 데이터 구조
+```typescript
+// src/types/index.ts
+type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog';
+interface AnimalVisitor { type: AnimalType; appearedAt: Date; }
+
+// GardenState에 추가
+visitors: AnimalVisitor[];      // 현재 방문 중인 동물
+claimedAnimals: AnimalType[];   // 선물 받은 동물 기록
+```
+
+### 관련 파일
+- `src/utils/animalConfigs.ts`: 동물별 설정 (이름, 선물, 등장 조건)
+- `src/stores/gardenStore.ts`: `checkForNewVisitors()`, `claimVisitor()`
+- `src/components/GardenArea.tsx`: 방문 동물 렌더링
+- `src/screens/GardenScreen.tsx`: 동물 터치 → 선물 수령 → 알럿
+
+### 추후 구현 필요
+- 동물별 전용 이미지 (현재 이모지 placeholder)
+- 랜덤 등장 로직 (trigger.type === 'random')
+- 도감 동물 탭 연동 (현재 하드코딩된 아이템)
+- 무(turnip) 전용 작물 이미지 (현재 당근 placeholder)
+
+---
+
 ## 🛠️ 기술 스택
 
 ### Core
@@ -165,6 +212,9 @@ interface GardenState {
   water: number;             // 물방울 (최대 5, 2시간마다 1개 충전)
   lastWaterRechargeTime: Date;
   collection: PlantType[];   // 수집한 식물
+  seenCollection: PlantType[]; // 도감에서 확인한 수집 목록
+  visitors: AnimalVisitor[];   // 정원에 방문한 동물들
+  claimedAnimals: AnimalType[]; // 선물을 받은 동물들
   soundEnabled: boolean;     // 소리/진동 설정
   notificationEnabled: boolean; // 알림 설정
   lastSaveTime: Date;
