@@ -39,6 +39,17 @@ export interface AnimalVisitor {
   appearedAt: Date;
 }
 
+export interface MailItem {
+  id: string;
+  title: string;
+  from: string;
+  content: string;
+  reward?: { type: 'seed'; seedType: PlantType; count: number };
+  isRead: boolean;
+  isClaimed: boolean; // 보상 수령 여부
+  createdAt: Date;
+}
+
 export interface GardenState {
   plants: Plant[];
   seeds: SeedItem[]; // 씨앗 가방
@@ -48,6 +59,7 @@ export interface GardenState {
   lastWaterRechargeTime: Date; // 마지막 물 충전 시간
   collection: PlantType[];
   seenCollection: PlantType[]; // 도감에서 확인한 수집 목록
+  mails: MailItem[]; // 우편함
   visitors: AnimalVisitor[]; // 정원에 방문한 동물들
   claimedAnimals: AnimalType[]; // 선물을 받은 동물들
   soundEnabled: boolean; // 소리/진동 설정

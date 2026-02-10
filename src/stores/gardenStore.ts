@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, GardenState } from '../types';
+import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, GardenState } from '../types';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 
 // 상수
@@ -23,9 +23,15 @@ interface GardenStore extends GardenState {
   toggleSound: () => void;
   toggleNotification: () => void;
   markCollectionSeen: () => void;
+  // Mail actions
+  initFirstVisitMail: () => void;
+  readMail: (mailId: string) => void;
+  claimMailReward: (mailId: string) => void;
   // Animal actions
   checkForNewVisitors: () => void;
   claimVisitor: (animalType: AnimalType) => string | null; // returns gift message
+  // Dev
+  resetGame: () => void;
 }
 
 // 물 충전량 계산 함수
@@ -58,6 +64,7 @@ export const useGardenStore = create<GardenStore>()(
       lastWaterRechargeTime: new Date(),
       collection: [],
       seenCollection: [],
+      mails: [],
       visitors: [],
       claimedAnimals: [],
       soundEnabled: true,
@@ -195,6 +202,59 @@ export const useGardenStore = create<GardenStore>()(
         set((state) => ({ seenCollection: [...state.collection] }));
       },
 
+      // 첫 방문 메일 생성
+      initFirstVisitMail: () => {
+        const state = get();
+        // 이미 메일이 있으면 스킵 (첫 방문 아님)
+        if (state.mails.length > 0) return;
+
+        const welcomeMail: MailItem = {
+          id: 'welcome',
+          title: '농장에 온 걸 환영해!',
+          from: '카피바라',
+          content: '안녕! 이 농장에 처음 온 것 같네\n가끔 친구들이 씨앗을 두고 가니까\n우편함을 자주 확인해봐!',
+          reward: { type: 'seed', seedType: 'turnip', count: 2 },
+          isRead: false,
+          isClaimed: false,
+          createdAt: new Date(),
+        };
+
+        set({ mails: [welcomeMail], lastSaveTime: new Date() });
+      },
+
+      // 메일 읽음 처리
+      readMail: (mailId: string) => {
+        set((state) => ({
+          mails: state.mails.map((m) =>
+            m.id === mailId ? { ...m, isRead: true } : m
+          ),
+        }));
+      },
+
+      // 메일 보상 수령
+      claimMailReward: (mailId: string) => {
+        const state = get();
+        const mail = state.mails.find((m) => m.id === mailId);
+        if (!mail || mail.isClaimed || !mail.reward) return;
+
+        if (mail.reward.type === 'seed') {
+          const existingSeed = state.seeds.find((s) => s.type === mail.reward!.seedType);
+          const updatedSeeds = existingSeed
+            ? state.seeds.map((s) =>
+                s.type === mail.reward!.seedType ? { ...s, count: s.count + mail.reward!.count } : s
+              )
+            : [...state.seeds, { type: mail.reward.seedType, count: mail.reward.count }];
+
+          set({
+            mails: state.mails.map((m) =>
+              m.id === mailId ? { ...m, isClaimed: true } : m
+            ),
+            seeds: updatedSeeds,
+            lastSaveTime: new Date(),
+          });
+        }
+      },
+
       // 새 동물 방문자 체크
       checkForNewVisitors: () => {
         const state = get();
@@ -248,10 +308,30 @@ export const useGardenStore = create<GardenStore>()(
 
         return config.giftMessage;
       },
+
+      resetGame: () => {
+        AsyncStorage.removeItem('healing-garden-storage');
+        set({
+          plants: [],
+          seeds: [],
+          level: 1,
+          gold: 0,
+          water: 5,
+          lastWaterRechargeTime: new Date(),
+          collection: [],
+          seenCollection: [],
+          mails: [],
+          visitors: [],
+          claimedAnimals: [],
+          soundEnabled: true,
+          notificationEnabled: true,
+          lastSaveTime: new Date(),
+        });
+      },
     }),
     {
       name: 'healing-garden-storage',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: (persistedState: any, version: number) => {
         if (version === 0) {
@@ -261,6 +341,9 @@ export const useGardenStore = create<GardenStore>()(
         if (version < 2) {
           persistedState.visitors = [];
           persistedState.claimedAnimals = [];
+        }
+        if (version < 3) {
+          persistedState.mails = [];
         }
         return persistedState;
       },
@@ -273,6 +356,7 @@ export const useGardenStore = create<GardenStore>()(
         lastWaterRechargeTime: state.lastWaterRechargeTime,
         collection: state.collection,
         seenCollection: state.seenCollection,
+        mails: state.mails,
         visitors: state.visitors,
         claimedAnimals: state.claimedAnimals,
         soundEnabled: state.soundEnabled,

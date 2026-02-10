@@ -5,6 +5,10 @@ import { StyleSheet, View, Image, Modal, ScrollView, ImageBackground, TouchableO
 import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 import { modalStyles } from '../styles/modalStyles';
+import { useGardenStore } from '../stores/gardenStore';
+import { MailItem } from '../types';
+import { PLANT_CONFIGS } from '../utils/plantConfigs';
+import { GameAlert } from './GameAlert';
 
 // 배경 크기 계산 (mailbox-bg: 1136 x 1437)
 const { bgWidth, bgHeight } = calcBackgroundSize(1136, 1437);
@@ -28,6 +32,7 @@ const fadeHeight = bgHeight * 0.04;
 interface MailboxModalProps {
   visible: boolean;
   onClose: () => void;
+  onClaimReward?: (message: string) => void;
 }
 
 // 텍스트 크기 계산 (아이템 높이 기준)
@@ -41,30 +46,32 @@ const modalTitleFontSize = bgWidth * 0.07;
 const { bgWidth: detailBgWidth, bgHeight: detailBgHeight } = calcBackgroundSize(994, 1344);
 
 // 편지 상세 텍스트 크기 계산
-const detailTitleFontSize = detailBgHeight * 0.03;
-const detailFromFontSize = detailBgHeight * 0.025;
-const detailContentFontSize = detailBgHeight * 0.028;
+const detailTitleFontSize = detailBgHeight * 0.045;
+const detailFromFontSize = detailBgHeight * 0.035;
+const detailContentFontSize = detailBgHeight * 0.04;
 
-// 메일 아이템 타입
-interface MailItem {
-  id: number;
-  title: string;
-  from: string;
-  isNew: boolean;
-  content?: string;
-}
-
-export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose }) => {
+export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose, onClaimReward }) => {
+  const { mails, readMail, claimMailReward } = useGardenStore();
   const [selectedMail, setSelectedMail] = useState<MailItem | null>(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
-  // 임시 우편 데이터
-  const mailItems: MailItem[] = [
-    { id: 0, title: '환영 선물이 도착했어요!', from: '정원지기', isNew: true, content: '정원에 오신 것을 환영해요!\n작은 선물을 준비했어요.\n앞으로 함께 예쁜 정원을 가꿔봐요!' },
-    { id: 1, title: '오늘의 출석 보상', from: '행운의 요정', isNew: true, content: '오늘도 정원에 와줘서 고마워요!\n매일 방문하면 특별한 선물이 있을지도...?' },
-    { id: 2, title: '주간 미션 완료 보상', from: '부지런한 벌', isNew: false, content: '이번 주도 열심히 미션을 완료했네요!\n당신의 노력에 박수를 보내요!' },
-    { id: 3, title: '따뜻한 선물을 보내요', from: '카피바라', isNew: false, content: '오늘 하루도 수고했어요.\n잠시 쉬어가도 괜찮아요.\n카피바라가 응원할게요!' },
-    { id: 4, title: '이벤트 참여 감사 선물', from: '무지개 나비', isNew: false, content: '이벤트에 참여해줘서 고마워요!\n무지개처럼 행복한 하루 보내세요!' },
-  ];
+  const handleMailPress = (mail: MailItem) => {
+    if (!mail.isRead) readMail(mail.id);
+    setSelectedMail(mail);
+  };
+
+  const handleClaimReward = (mail: MailItem) => {
+    if (mail.reward?.type === 'seed') {
+      const config = PLANT_CONFIGS[mail.reward.seedType];
+      const message = `${config.name} 씨앗 x${mail.reward.count}을 받았어!`;
+      setAlertMessage(message);
+      setAlertVisible(true);
+      onClaimReward?.(message);
+    }
+    claimMailReward(mail.id);
+    setSelectedMail(null);
+  };
 
   return (
     <Modal
@@ -100,12 +107,12 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose }) 
                 nestedScrollEnabled={true}
               >
                 <View style={styles.contentArea}>
-                  {mailItems.map((item) => (
+                  {mails.map((item) => (
                     <TouchableOpacity
                       key={item.id}
                       style={[styles.mailItemWrapper, { marginBottom: mailItemMargin }]}
                       activeOpacity={0.8}
-                      onPress={() => setSelectedMail(item)}
+                      onPress={() => handleMailPress(item)}
                     >
                       <Image
                         source={require('../assets/garden/props/mail-item.png')}
@@ -118,12 +125,8 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose }) 
                         <Text style={[styles.mailFrom, { fontSize: dateFontSize }]}>from. {item.from}</Text>
                       </View>
                       {/* 새 메일 뱃지 */}
-                      {item.isNew && (
-                        <Image
-                          source={require('../assets/garden/props/mail-new-badge.png')}
-                          style={[styles.newBadge, { width: badgeWidth, height: badgeHeight }]}
-                          resizeMode="contain"
-                        />
+                      {!item.isRead && (
+                        <View style={styles.newBadge} />
                       )}
                     </TouchableOpacity>
                   ))}
@@ -177,8 +180,40 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose }) 
                 {/* 편지 내용 */}
                 <View style={styles.detailContent}>
                   <Text style={[styles.detailTitle, { fontSize: detailTitleFontSize }]}>{selectedMail.title}</Text>
-                  <Text style={[styles.detailFrom, { fontSize: detailFromFontSize }]}>from. {selectedMail.from}</Text>
                   <Text style={[styles.detailBody, { fontSize: detailContentFontSize }]}>{selectedMail.content}</Text>
+                  <Text style={[styles.detailFrom, { fontSize: detailFromFontSize }]}>from. {selectedMail.from}</Text>
+
+                  {/* 보상 수령 */}
+                  {selectedMail.reward && !selectedMail.isClaimed && (
+                    <View style={styles.rewardArea}>
+                      {selectedMail.reward.type === 'seed' && (
+                        <View style={styles.seedBagWrapper}>
+                          <Image
+                            source={require('../assets/seeds/seed-bag.png')}
+                            style={styles.seedBagImage}
+                            resizeMode="contain"
+                          />
+                          <View style={styles.seedBagLabelWrapper}>
+                            <Text style={styles.seedBagLabel} adjustsFontSizeToFit numberOfLines={1}>{PLANT_CONFIGS[selectedMail.reward.seedType].name}</Text>
+                          </View>
+                        </View>
+                      )}
+                      <TouchableOpacity
+                        style={styles.rewardButton}
+                        activeOpacity={0.7}
+                        onPress={() => handleClaimReward(selectedMail)}
+                      >
+                        <Text style={styles.rewardButtonText}>
+                          {selectedMail.reward.type === 'seed'
+                            ? `${PLANT_CONFIGS[selectedMail.reward.seedType].name} 씨앗 x${selectedMail.reward.count} 받기`
+                            : '보상 받기'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  {selectedMail.reward && selectedMail.isClaimed && (
+                    <Text style={styles.rewardClaimed}>수령 완료!</Text>
+                  )}
                 </View>
               </ImageBackground>
             </View>
@@ -198,6 +233,14 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose }) 
           </View>
         </Modal>
       )}
+
+      {/* 씨앗 수령 알럿 */}
+      <GameAlert
+        visible={alertVisible}
+        message={alertMessage}
+        duration={2000}
+        onClose={() => setAlertVisible(false)}
+      />
     </Modal>
   );
 };
@@ -264,6 +307,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '15%',
     right: '8%',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#E08080',
+    borderWidth: 1.5,
+    borderColor: '#7a6854',
   },
   // 편지 상세 스타일
   detailOverlay: {
@@ -290,16 +339,68 @@ const styles = StyleSheet.create({
   detailTitle: {
     fontFamily: 'Gaegu-Bold',
     color: '#7a6854',
-    marginBottom: 8,
+    marginBottom: 24,
   },
   detailFrom: {
     fontFamily: 'Gaegu-Regular',
     color: '#7a6854',
-    marginBottom: 20,
+    marginTop: 28,
+    marginBottom: 10,
   },
   detailBody: {
     fontFamily: 'Gaegu-Regular',
     color: '#7a6854',
-    lineHeight: 28,
+    lineHeight: 22,
+  },
+  rewardArea: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  rewardButton: {
+    marginTop: 8,
+    backgroundColor: '#f7e6c4',
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#7a6854',
+  },
+  seedBagWrapper: {
+    width: 60,
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  seedBagImage: {
+    width: 60,
+    height: 60,
+  },
+  seedBagLabelWrapper: {
+    position: 'absolute',
+    left: -8,
+    right: 0,
+    top: 2,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  seedBagLabel: {
+    fontFamily: 'Gaegu-Bold',
+    fontSize: 16,
+    color: '#7a6854',
+    textAlign: 'center',
+  },
+  rewardButtonText: {
+    fontFamily: 'Gaegu-Bold',
+    color: '#7a6854',
+    fontSize: detailContentFontSize,
+    textAlign: 'center',
+  },
+  rewardClaimed: {
+    marginTop: 20,
+    fontFamily: 'Gaegu-Bold',
+    color: '#A1887F',
+    fontSize: detailContentFontSize,
+    textAlign: 'center',
   },
 });

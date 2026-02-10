@@ -85,55 +85,31 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose, on
                 <View style={styles.grid}>
                   {seeds.map((seedItem) => {
                     const config = PLANT_CONFIGS[seedItem.type];
-                    const seedImage = SEED_IMAGES[seedItem.type];
-                    const countText = seedItem.count === -1 ? '무제한' : `${seedItem.count}개`;
+                    const countText = seedItem.count === -1 ? '무제한' : `x${seedItem.count}`;
 
                     return (
                       <TouchableOpacity
                         key={seedItem.type}
-                        style={[styles.seedBoxWrapper, { marginBottom: seedBoxMargin }]}
+                        style={styles.seedItem}
                         activeOpacity={0.7}
                         onPress={() => handleSeedPress(seedItem.type)}
                       >
-                        <ImageBackground
-                          source={require('../assets/garden/props/seed-box.png')}
-                          style={{ width: seedBoxWidth, height: seedBoxHeight }}
-                          resizeMode="contain"
-                        >
-                          <View style={styles.seedBoxContent}>
-                            {/* 씨앗 이미지 */}
-                            {seedImage ? (
-                              <Image
-                                source={seedImage}
-                                style={styles.seedImage}
-                                resizeMode="contain"
-                              />
-                            ) : (
-                              <Text style={styles.seedEmoji}>{config.emoji}</Text>
-                            )}
-
-                            {/* 씨앗 정보 */}
-                            <View style={styles.seedInfo}>
-                              <Text style={styles.seedName}>{config.name}</Text>
-                              <Text style={styles.seedDetail}>수확시간: {config.growthTime}분</Text>
-                              <Text style={styles.seedCount}>{countText}</Text>
-                            </View>
+                        <View style={styles.seedBagIconWrapper}>
+                          <Image
+                            source={require('../assets/seeds/seed-bag.png')}
+                            style={styles.seedBagIcon}
+                            resizeMode="contain"
+                          />
+                          <View style={styles.seedBagIconLabelWrapper}>
+                            <Text style={styles.seedBagIconLabel} adjustsFontSizeToFit numberOfLines={1}>{config.name}</Text>
                           </View>
-                        </ImageBackground>
+                        </View>
+                        <Text style={styles.seedName}>{config.name}</Text>
+                        <Text style={styles.seedDetail}>{config.growthTime >= 60 ? `${Math.floor(config.growthTime / 60)}시간` : `${config.growthTime}분`}</Text>
+                        <Text style={styles.seedCount}>{countText}</Text>
                       </TouchableOpacity>
                     );
                   })}
-
-                  {/* 빈 씨앗 박스 (총 6칸 채우기) */}
-                  {Array.from({ length: Math.max(0, 6 - seeds.length) }, (_, i) => (
-                    <View key={`empty-${i}`} style={[styles.seedBoxWrapper, { marginBottom: seedBoxMargin }]}>
-                      <Image
-                        source={require('../assets/garden/props/seed-box.png')}
-                        style={{ width: seedBoxWidth, height: seedBoxHeight }}
-                        resizeMode="contain"
-                      />
-                    </View>
-                  ))}
                 </View>
               </ScrollView>
 
@@ -200,42 +176,59 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   grid: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-  },
-  seedBoxWrapper: {
-    width: '100%',
-  },
-  seedBoxContent: {
-    flex: 1,
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: bgHeight * 0.02,
+  },
+  seedItem: {
+    width: '46%',
     alignItems: 'center',
-    paddingHorizontal: seedBoxWidth * 0.08,
+    paddingVertical: 10,
+    backgroundColor: '#f7e6c4',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#d4b896',
   },
-  seedImage: {
-    width: seedImageSize,
-    height: seedImageSize,
+  seedBagIconWrapper: {
+    width: seedImageSize * 0.85,
+    height: seedImageSize * 0.85,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  seedEmoji: {
-    fontSize: seedImageSize * 0.6,
+  seedBagIcon: {
+    width: seedImageSize * 0.85,
+    height: seedImageSize * 0.85,
   },
-  seedInfo: {
-    flex: 1,
-    marginLeft: seedBoxWidth * 0.05,
+  seedBagIconLabelWrapper: {
+    position: 'absolute',
+    left: -8,
+    right: 0,
+    top: 2,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  seedBagIconLabel: {
+    fontFamily: 'Gaegu-Bold',
+    fontSize: 16,
+    color: '#7a6854',
+    textAlign: 'center',
   },
   seedName: {
-    fontSize: bgWidth * 0.05,
+    fontSize: bgWidth * 0.055,
     fontFamily: 'Gaegu-Bold',
     color: '#7a6854',
+    marginTop: 4,
   },
   seedDetail: {
-    fontSize: bgWidth * 0.035,
+    fontSize: bgWidth * 0.038,
     fontFamily: 'Gaegu-Regular',
     color: '#A1887F',
-    marginTop: 2,
+    marginTop: 1,
   },
   seedCount: {
-    fontSize: bgWidth * 0.03,
+    fontSize: bgWidth * 0.04,
     fontFamily: 'Gaegu-Regular',
     color: '#A1887F',
     marginTop: 2,

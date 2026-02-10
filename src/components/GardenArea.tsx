@@ -17,6 +17,7 @@ interface GardenAreaProps {
   water: number;
   plantingMode: boolean;
   visitors: AnimalVisitor[];
+  hasUnreadMail: boolean;
   onPlantPress?: (plantId: string) => void;
   onSlotPress?: (slotIndex: number) => void;
   onWaterPlant?: (plantId: string) => void;
@@ -92,6 +93,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
   water,
   plantingMode,
   visitors,
+  hasUnreadMail,
   onPlantPress,
   onSlotPress,
   onWaterPlant,
@@ -184,7 +186,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
             onPress={() => onVisitorPress?.(visitor.type)}
           >
             {visitor.type === 'rabbit' ? (
-              <RabbitCharacter size={85} />
+              <RabbitCharacter />
             ) : (
               <Text style={styles.visitorEmoji}>
                 {ANIMAL_CONFIGS[visitor.type].emoji}
@@ -204,6 +206,20 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
             style={styles.postBoxImage}
             resizeMode="contain"
           />
+          {hasUnreadMail && (
+            <View style={styles.mailAlert}>
+              {/* 갈색 테두리 (4방향 오프셋) */}
+              {[
+                { top: -1.5, left: 0 },
+                { top: 1.5, left: 0 },
+                { top: 0, left: -1.5 },
+                { top: 0, left: 1.5 },
+              ].map((offset, i) => (
+                <Text key={i} style={[styles.mailAlertStroke, offset]}>!</Text>
+              ))}
+              <Text style={styles.mailAlertText}>!</Text>
+            </View>
+          )}
         </TouchableOpacity>
 
         {/* 밭과 울타리 그룹 */}
@@ -280,12 +296,8 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                                     position: 'absolute',
                                     width: plotSize * size.w,
                                     height: plotSize * size.h,
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: [
-                                      { translateX: -(plotSize * size.w) / 2 + plotSize * size.ml },
-                                      { translateY: -(plotSize * size.h) / 2 + plotSize * size.mt },
-                                    ],
+                                    top: plotSize * size.mt,
+                                    left: (plotSize - plotSize * size.w) / 2 + plotSize * size.ml,
                                   }}
                                   resizeMode="contain"
                                 />
@@ -406,5 +418,24 @@ const styles = StyleSheet.create({
     width: width * 0.9,
     height: width * 0.9 * 0.19, // 이미지 비율 132/700
     marginTop: height * 0.04,
+  },
+  mailAlert: {
+    position: 'absolute',
+    top: -20,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  mailAlertStroke: {
+    position: 'absolute',
+    fontSize: 28,
+    fontFamily: 'Gaegu-Bold',
+    color: '#7a6854',
+  },
+  mailAlertText: {
+    fontSize: 28,
+    fontFamily: 'Gaegu-Bold',
+    color: '#FFD54F',
   },
 });

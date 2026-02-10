@@ -132,13 +132,13 @@ const styles = StyleSheet.create({
   redDot: {
     position: 'absolute',
     top: 5,
-    right: 8,
+    right: 10,
     width: 10,
     height: 10,
     borderRadius: 5,
     backgroundColor: '#E08080',
     borderWidth: 1.5,
-    borderColor: '#F2C4C4',
+    borderColor: '#7a6854',
   },
   content: {
     flex: 1,

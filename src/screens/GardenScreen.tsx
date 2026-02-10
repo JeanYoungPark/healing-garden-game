@@ -20,7 +20,7 @@ interface GardenScreenProps {
 }
 
 export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
-  const { plants, water, visitors, plantSeedInSlot, useSeed, harvestPlant, addGold, waterPlant, markCollectionSeen, checkForNewVisitors, claimVisitor } = useGardenStore();
+  const { plants, water, seeds, visitors, mails, plantSeedInSlot, useSeed, harvestPlant, addGold, waterPlant, markCollectionSeen, checkForNewVisitors, claimVisitor, initFirstVisitMail } = useGardenStore();
   const [seedBagVisible, setSeedBagVisible] = useState(false);
   const [shopVisible, setShopVisible] = useState(false);
   const [questVisible, setQuestVisible] = useState(false);
@@ -29,6 +29,11 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const [mailboxVisible, setMailboxVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertVisible, setAlertVisible] = useState(false);
+
+  // 첫 방문 메일 초기화
+  useEffect(() => {
+    initFirstVisitMail();
+  }, [initFirstVisitMail]);
 
   // 앱 시작 및 포그라운드 복귀 시 동물 방문자 체크
   const appState = useRef(AppState.currentState);
@@ -140,6 +145,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
               style={styles.navIcon}
               resizeMode="contain"
             />
+            {seeds.length > 0 && <View style={styles.seedBadge} />}
           </TouchableOpacity>
         </View>
 
@@ -166,6 +172,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
             water={water}
             plantingMode={isPlantingMode}
             visitors={visitors}
+            hasUnreadMail={mails.some((m) => !m.isRead)}
             onPlantPress={handlePlantPress}
             onSlotPress={handleSlotPress}
             onWaterPlant={handleWaterPlant}
@@ -211,6 +218,10 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
       <MailboxModal
         visible={mailboxVisible}
         onClose={() => setMailboxVisible(false)}
+        onClaimReward={(message) => {
+          setAlertMessage(message);
+          setAlertVisible(true);
+        }}
       />
 
       {/* 동물 선물 알럿 */}
@@ -244,6 +255,17 @@ const styles = StyleSheet.create({
     padding: 8,
     marginTop: 4,
     marginLeft: -8,
+  },
+  seedBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#E08080',
+    borderWidth: 1.5,
+    borderColor: '#7a6854',
   },
   navIcon: {
     width: 37,
