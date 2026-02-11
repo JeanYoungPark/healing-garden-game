@@ -23,6 +23,7 @@ interface GardenStore extends GardenState {
   toggleSound: () => void;
   toggleNotification: () => void;
   markCollectionSeen: () => void;
+  markCollectionAsSeen: (plantType: PlantType) => void;
   // Mail actions
   initFirstVisitMail: () => void;
   readMail: (mailId: string) => void;
@@ -210,6 +211,15 @@ export const useGardenStore = create<GardenStore>()(
 
       markCollectionSeen: () => {
         set((state) => ({ seenCollection: [...state.collection] }));
+      },
+
+      markCollectionAsSeen: (plantType: PlantType) => {
+        set((state) => {
+          if (!state.seenCollection.includes(plantType)) {
+            return { seenCollection: [...state.seenCollection, plantType] };
+          }
+          return state;
+        });
       },
 
       // 첫 방문 메일 생성

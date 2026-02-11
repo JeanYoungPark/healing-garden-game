@@ -62,8 +62,9 @@ interface CollectionModalProps {
 }
 
 export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClose }) => {
-  const { collection, seenCollection } = useGardenStore();
+  const { collection, seenCollection, markCollectionAsSeen } = useGardenStore();
   const [selectedTab, setSelectedTab] = React.useState<'animal' | 'gift'>('animal');
+  const [selectedPlant, setSelectedPlant] = React.useState<PlantType | null>(null);
 
   return (
     <Modal
@@ -179,7 +180,20 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                         const isNew = collected && !seenCollection.includes(type);
                         const config = PLANT_CONFIGS[type];
                         return (
-                          <View key={type} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
+                          <TouchableOpacity
+                            key={type}
+                            style={[styles.giftItemWrapper, { width: itemBoxWidth }]}
+                            disabled={!collected}
+                            activeOpacity={0.7}
+                            onPress={() => {
+                              if (collected) {
+                                setSelectedPlant(type);
+                                if (isNew) {
+                                  markCollectionAsSeen(type);
+                                }
+                              }
+                            }}
+                          >
                             <Image
                               source={require('../assets/ui/common/gift-item-box.png')}
                               style={{ width: itemBoxWidth, height: itemBoxHeight }}
@@ -204,7 +218,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                             <Text style={[styles.giftItemText, { bottom: itemTextBottom, fontSize: itemFontSize }]}>
                               {collected ? config.name : '???'}
                             </Text>
-                          </View>
+                          </TouchableOpacity>
                         );
                       })}
                     </>
@@ -219,21 +233,89 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                 pointerEvents="none"
               />
             </View>
+
+            {/* 닫기 버튼 - 모달 이미지 기준 */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
           </ImageBackground>
         </View>
 
-        {/* 닫기 버튼 - 화면 기준 절대 위치 */}
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/ui/common/back-btn.png')}
-            style={styles.closeIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
+        {/* 작물 상세 정보 모달 */}
+        {selectedPlant && (
+          <View style={styles.detailModalOverlay} pointerEvents="box-none">
+            <TouchableOpacity
+              style={StyleSheet.absoluteFill}
+              activeOpacity={1}
+              onPress={() => setSelectedPlant(null)}
+            />
+            <View style={styles.detailCard}>
+              <View style={styles.detailContent}>
+                {/* 작물 이미지 */}
+                <Image
+                  source={COLLECTION_IMAGES[selectedPlant] || PLANT_STAGE_IMAGES[selectedPlant]?.[3]}
+                  style={styles.detailImage}
+                  resizeMode="contain"
+                />
+
+                {/* 작물 이름 */}
+                <Text style={styles.detailName}>{PLANT_CONFIGS[selectedPlant].name}</Text>
+
+                {/* 등급 */}
+                <Text style={styles.detailRarity}>
+                  {PLANT_CONFIGS[selectedPlant].rarity === 'common' ? '일반' :
+                   PLANT_CONFIGS[selectedPlant].rarity === 'rare' ? '희귀' : '전설'}
+                </Text>
+
+                {/* 구분선 */}
+                <View style={styles.divider} />
+
+                {/* 기본 정보 */}
+                <View style={styles.detailInfoRow}>
+                  <Text style={styles.detailLabel}>성장시간</Text>
+                  <Text style={styles.detailValue}>
+                    {PLANT_CONFIGS[selectedPlant].growthTime >= 60
+                      ? `${Math.floor(PLANT_CONFIGS[selectedPlant].growthTime / 60)}시간`
+                      : `${PLANT_CONFIGS[selectedPlant].growthTime}분`}
+                  </Text>
+                </View>
+
+                <View style={styles.detailInfoRow}>
+                  <Text style={styles.detailLabel}>수확 골드</Text>
+                  <Text style={styles.detailValue}>{PLANT_CONFIGS[selectedPlant].harvestGold}</Text>
+                </View>
+
+                {/* 구분선 */}
+                <View style={styles.divider} />
+
+                {/* 설명 */}
+                <Text style={styles.detailDescription}>
+                  {PLANT_CONFIGS[selectedPlant].description}
+                </Text>
+
+                {/* 특별한 이야기 */}
+                {PLANT_CONFIGS[selectedPlant].story && (
+                  <Text style={styles.detailStory}>
+                    {PLANT_CONFIGS[selectedPlant].story}
+                  </Text>
+                )}
+              </View>
+
+              {/* 닫기 버튼 */}
+              <TouchableOpacity
+                style={styles.detailCloseButton}
+                onPress={() => setSelectedPlant(null)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.detailCloseText}>X</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
     </Modal>
   );
@@ -245,6 +327,13 @@ const styles = StyleSheet.create({
     ...modalStyles.container,
     marginTop: bgHeight * 0.07,
   },
+  closeButton: {
+    ...modalStyles.closeButton,
+    position: 'absolute',
+    top: bgHeight * 0.02,
+    right: bgWidth * 0.05,
+  },
+  closeButtonText: modalStyles.closeButtonText,
   collectionBackground: {
     width: bgWidth,
     height: bgHeight,
@@ -338,5 +427,109 @@ const styles = StyleSheet.create({
     fontFamily: 'Gaegu-Bold',
     color: '#C8B99A',
     lineHeight: undefined,
+  },
+  detailModalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  detailCard: {
+    width: '75%',
+    backgroundColor: '#FCEFD7',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+    borderWidth: 3,
+    borderColor: '#D4C4A8',
+  },
+  detailContent: {
+    alignItems: 'center',
+  },
+  detailImage: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
+  },
+  detailName: {
+    fontSize: 28,
+    fontFamily: 'Gaegu-Bold',
+    color: '#5D4037',
+    marginBottom: 4,
+  },
+  detailRarity: {
+    fontSize: 16,
+    fontFamily: 'Gaegu-Regular',
+    color: '#8B6F47',
+    marginBottom: 16,
+  },
+  divider: {
+    width: '100%',
+    height: 2,
+    backgroundColor: '#D4C4A8',
+    marginVertical: 12,
+  },
+  detailInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 8,
+    marginVertical: 4,
+  },
+  detailLabel: {
+    fontSize: 18,
+    fontFamily: 'Gaegu-Regular',
+    color: '#8B6F47',
+  },
+  detailValue: {
+    fontSize: 18,
+    fontFamily: 'Gaegu-Bold',
+    color: '#5D4037',
+  },
+  detailDescription: {
+    fontSize: 18,
+    fontFamily: 'Gaegu-Regular',
+    color: '#5D4037',
+    textAlign: 'center',
+    lineHeight: 26,
+    marginTop: 8,
+  },
+  detailStory: {
+    fontSize: 16,
+    fontFamily: 'Gaegu-Regular',
+    color: '#8B6F47',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginTop: 12,
+    fontStyle: 'italic',
+  },
+  detailCloseButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5EDD6',
+    borderWidth: 2,
+    borderColor: '#8B6F47',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  detailCloseText: {
+    fontSize: 22,
+    fontFamily: 'Gaegu-Bold',
+    color: '#5D4037',
+    marginTop: -2,
   },
 });

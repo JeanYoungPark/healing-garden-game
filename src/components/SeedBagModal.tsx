@@ -120,21 +120,17 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose, on
                 pointerEvents="none"
               />
             </View>
+
+            {/* 닫기 버튼 - 모달 이미지 기준 */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
           </ImageBackground>
         </View>
-
-        {/* 닫기 버튼 - 화면 기준 절대 위치 */}
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/ui/common/back-btn.png')}
-            style={styles.closeIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
       </View>
     </Modal>
   );
@@ -142,6 +138,13 @@ export const SeedBagModal: React.FC<SeedBagModalProps> = ({ visible, onClose, on
 
 const styles = StyleSheet.create({
   ...modalStyles,
+  closeButton: {
+    ...modalStyles.closeButton,
+    position: 'absolute',
+    top: bgHeight * 0.01,
+    right: bgWidth * 0.05,
+  },
+  closeButtonText: modalStyles.closeButtonText,
   seedBagBackground: {
     width: bgWidth,
     height: bgHeight,

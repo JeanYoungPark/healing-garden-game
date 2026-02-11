@@ -156,21 +156,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
               </TouchableOpacity>
 
             </View>
+
+            {/* 닫기 버튼 - 모달 이미지 기준 */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
           </ImageBackground>
         </View>
-
-        {/* 닫기 버튼 - 화면 기준 절대 위치 */}
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/ui/common/back-btn.png')}
-            style={styles.closeIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
       </View>
     </Modal>
   );
@@ -178,6 +174,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }
 
 const styles = StyleSheet.create({
   ...modalStyles,
+  closeButton: {
+    ...modalStyles.closeButton,
+    position: 'absolute',
+    top: bgHeight * 0.04,
+    right: bgWidth * 0.05,
+  },
+  closeButtonText: modalStyles.closeButtonText,
   settingsBackground: {
     width: bgWidth,
     height: bgHeight,

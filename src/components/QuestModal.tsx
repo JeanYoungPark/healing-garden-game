@@ -43,21 +43,17 @@ export const QuestModal: React.FC<QuestModalProps> = ({ visible, onClose }) => {
             <Text style={[styles.modalTitle, { fontSize: modalTitleFontSize }]}>일일 퀘스트</Text>
 
             {/* TODO: 퀘스트 내용 추가 */}
+
+            {/* 닫기 버튼 - 모달 이미지 기준 */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
           </ImageBackground>
         </View>
-
-        {/* 닫기 버튼 - 화면 기준 절대 위치 */}
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/ui/common/back-btn.png')}
-            style={styles.closeIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
       </View>
     </Modal>
   );
@@ -65,6 +61,13 @@ export const QuestModal: React.FC<QuestModalProps> = ({ visible, onClose }) => {
 
 const styles = StyleSheet.create({
   ...modalStyles,
+  closeButton: {
+    ...modalStyles.closeButton,
+    position: 'absolute',
+    top: bgHeight * 0.1,
+    right: bgWidth * 0.07,
+  },
+  closeButtonText: modalStyles.closeButtonText,
   questBackground: {
     width: bgWidth,
     height: bgHeight,

@@ -12,6 +12,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 3, // 물 1회당 3분 단축
     emoji: '🥕',
     rarity: 'common',
+    description: '밝은 주황빛의 건강한 채소예요.',
+    story: '첫 번째 당근을 수확했을 때 토끼가 찾아왔어요.',
   },
   turnip: {
     type: 'turnip',
@@ -22,6 +24,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 6, // 물 1회당 6분 단축
     emoji: '🥬',
     rarity: 'common',
+    description: '하얀 속살이 아삭한 채소예요.',
+    story: '토끼가 선물해준 소중한 씨앗이에요.',
   },
   strawberry: {
     type: 'strawberry',
@@ -32,6 +36,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 18, // 물 1회당 18분 단축
     emoji: '🍓',
     rarity: 'common',
+    description: '작고 빨간 봄의 선물이에요.',
+    story: '달콤한 향기가 정원을 가득 채워요.',
   },
   watermelon: {
     type: 'watermelon',
@@ -42,6 +48,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 18,
     emoji: '🍉',
     rarity: 'common',
+    description: '시원하고 달콤한 여름 과일이에요.',
+    story: '더운 날 먹으면 기분이 좋아져요.',
   },
   peach: {
     type: 'peach',
@@ -52,6 +60,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 20,
     emoji: '🍑',
     rarity: 'rare',
+    description: '부드러운 솜털과 달콤한 과즙이 일품이에요.',
+    story: '복숭아향이 정원에 은은하게 퍼져요.',
   },
   grape: {
     type: 'grape',
@@ -62,6 +72,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 25,
     emoji: '🍇',
     rarity: 'rare',
+    description: '알알이 모여 영롱한 보랏빛을 띠어요.',
+    story: '한 알 한 알이 정성으로 자랐어요.',
   },
   apple: {
     type: 'apple',
@@ -72,5 +84,7 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 30,
     emoji: '🍎',
     rarity: 'epic',
+    description: '빛나는 붉은 빛의 특별한 과일이에요.',
+    story: '정원에서 가장 귀한 보석 같은 존재예요.',
   },
 };

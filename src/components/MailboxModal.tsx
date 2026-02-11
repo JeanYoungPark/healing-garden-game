@@ -140,21 +140,17 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose, on
                 pointerEvents="none"
               />
             </View>
+
+            {/* 닫기 버튼 - 모달 이미지 기준 */}
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.closeButtonText}>X</Text>
+            </TouchableOpacity>
           </ImageBackground>
         </View>
-
-        {/* 닫기 버튼 - 화면 기준 절대 위치 */}
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={require('../assets/ui/common/back-btn.png')}
-            style={styles.closeIcon}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
       </View>
 
       {/* 편지 상세 모달 */}
@@ -215,21 +211,17 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose, on
                     <Text style={styles.rewardClaimed}>수령 완료!</Text>
                   )}
                 </View>
+
+                {/* 닫기 버튼 - 편지 상세 모달 */}
+                <TouchableOpacity
+                  style={styles.detailCloseButton}
+                  onPress={() => setSelectedMail(null)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.closeButtonText}>X</Text>
+                </TouchableOpacity>
               </ImageBackground>
             </View>
-
-            {/* 닫기 버튼 */}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setSelectedMail(null)}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../assets/ui/common/back-btn.png')}
-                style={styles.closeIcon}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
           </View>
         </Modal>
       )}
@@ -247,6 +239,19 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose, on
 
 const styles = StyleSheet.create({
   ...modalStyles,
+  closeButton: {
+    ...modalStyles.closeButton,
+    position: 'absolute',
+    top: bgHeight * 0.07,
+    right: bgWidth * 0.05,
+  },
+  closeButtonText: modalStyles.closeButtonText,
+  detailCloseButton: {
+    ...modalStyles.closeButton,
+    position: 'absolute',
+    top: detailBgHeight * 0.08,
+    right: detailBgWidth * 0.06,
+  },
   mailboxBackground: {
     width: bgWidth,
     height: bgHeight,

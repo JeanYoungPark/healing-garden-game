@@ -32,6 +32,8 @@ export interface PlantConfig {
   waterBonus: number; // 물 1회당 단축 시간 (분)
   emoji: string; // 임시 비주얼
   rarity: Rarity;
+  description: string; // 작물 설명
+  story?: string; // 특별한 이야기 (선택)
 }
 
 export interface AnimalVisitor {
