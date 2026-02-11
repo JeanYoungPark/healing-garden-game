@@ -37,6 +37,8 @@ export interface PlantConfig {
 export interface AnimalVisitor {
   type: AnimalType;
   appearedAt: Date;
+  scheduledTime?: Date; // 예약된 등장 시간 (대기열용)
+  isRandom?: boolean; // 랜덤 재등장 여부
 }
 
 export interface MailItem {
@@ -61,9 +63,12 @@ export interface GardenState {
   seenCollection: PlantType[]; // 도감에서 확인한 수집 목록
   mails: MailItem[]; // 우편함
   visitors: AnimalVisitor[]; // 정원에 방문한 동물들
-  claimedAnimals: AnimalType[]; // 선물을 받은 동물들
+  claimedAnimals: AnimalType[]; // 선물을 받은 동물들 (조건 첫 만족 시에만, 랜덤 재등장 시 포함 안됨)
   soundEnabled: boolean; // 소리/진동 설정
   notificationEnabled: boolean; // 알림 설정
+  firstHarvestTime: Date | null; // 첫 수확 시간
+  dailyRandomVisitCount: number; // 오늘 랜덤 방문 횟수 (최대 2회)
+  lastRandomVisitDate: string; // 마지막 랜덤 방문 날짜 (YYYY-MM-DD, 자정 리셋용)
   lastSaveTime: Date;
 }
 

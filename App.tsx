@@ -18,15 +18,21 @@ const Stack = createNativeStackNavigator();
 function App() {
   const appState = useRef(AppState.currentState);
   const rechargeWater = useGardenStore((state) => state.rechargeWater);
+  const checkForOwlMail = useGardenStore((state) => state.checkForOwlMail);
+  const checkForRandomVisitors = useGardenStore((state) => state.checkForRandomVisitors);
 
   useEffect(() => {
-    // 앱 시작 시 물방울 충전 체크
+    // 앱 시작 시 물방울 충전 & 올빼미 편지 & 랜덤 동물 체크
     rechargeWater();
+    checkForOwlMail();
+    checkForRandomVisitors();
 
-    // 앱이 포그라운드로 돌아올 때 물방울 충전
+    // 앱이 포그라운드로 돌아올 때 물방울 충전 & 올빼미 편지 & 랜덤 동물 체크
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         rechargeWater();
+        checkForOwlMail();
+        checkForRandomVisitors();
       }
       appState.current = nextAppState;
     });
@@ -34,7 +40,7 @@ function App() {
     return () => {
       subscription.remove();
     };
-  }, [rechargeWater]);
+  }, [rechargeWater, checkForOwlMail, checkForRandomVisitors]);
 
   return (
     <SafeAreaProvider>

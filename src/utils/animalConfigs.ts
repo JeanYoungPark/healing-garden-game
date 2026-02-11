@@ -15,7 +15,15 @@ export interface AnimalConfig {
     type: 'harvest';         // 특정 작물 수확 후 등장
     requiredPlant: PlantType;
   } | {
-    type: 'random';          // 랜덤 등장 (추후 구현)
+    type: 'disabled';        // 비활성화 (미구현)
+  };
+  // 랜덤 재등장 설정
+  randomReappear?: {
+    enabled: boolean;        // 랜덤 재등장 가능 여부
+    probability: number;     // 등장 확률 (0.0 ~ 1.0)
+    alwaysGift: boolean;     // 항상 선물 줌
+    neverGift: boolean;      // 절대 선물 안 줌
+    // alwaysGift, neverGift 둘 다 false면 확률적으로 선물
   };
 }
 
@@ -29,6 +37,12 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftSeedCount: 3,
     giftMessage: '새로운 친구 토깽이가\n무 씨앗을 선물로 줬어요!',
     trigger: { type: 'harvest', requiredPlant: 'carrot' },
+    randomReappear: {
+      enabled: true,
+      probability: 0.3,      // 30% 확률로 등장
+      alwaysGift: true,      // 항상 선물 줌
+      neverGift: false,
+    },
   },
   turtle: {
     type: 'turtle',
@@ -38,7 +52,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftSeedType: 'strawberry',
     giftSeedCount: 2,
     giftMessage: '새로운 친구 거붕이가\n딸기 씨앗을 선물로 줬어요!',
-    trigger: { type: 'random' },
+    trigger: { type: 'disabled' }, // TODO: 게임 시작 7일 후 구현
   },
   hedgehog: {
     type: 'hedgehog',
@@ -48,7 +62,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftSeedType: 'watermelon',
     giftSeedCount: 2,
     giftMessage: '새로운 친구 도치가\n수박 씨앗을 선물로 줬어요!',
-    trigger: { type: 'random' },
+    trigger: { type: 'disabled' }, // TODO: 감자/무 수확 후 구현
   },
   raccoon: {
     type: 'raccoon',
@@ -58,7 +72,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftSeedType: 'peach',
     giftSeedCount: 1,
     giftMessage: '새로운 친구 너굴이가\n복숭아 씨앗을 선물로 줬어요!',
-    trigger: { type: 'random' },
+    trigger: { type: 'disabled' }, // TODO: 누적 수확 500회 구현
   },
   frog: {
     type: 'frog',
@@ -68,6 +82,6 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftSeedType: 'grape',
     giftSeedCount: 1,
     giftMessage: '새로운 친구 개굴이가\n포도 씨앗을 선물로 줬어요!',
-    trigger: { type: 'random' },
+    trigger: { type: 'disabled' }, // TODO: 물 사용 10회 이상 구현
   },
 };

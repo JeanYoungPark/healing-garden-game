@@ -27,9 +27,12 @@ interface GardenStore extends GardenState {
   initFirstVisitMail: () => void;
   readMail: (mailId: string) => void;
   claimMailReward: (mailId: string) => void;
+  checkForOwlMail: () => void; // 올빼미 편지 체크
   // Animal actions
   checkForNewVisitors: () => void;
+  checkForRandomVisitors: () => void; // 랜덤 재등장 체크
   claimVisitor: (animalType: AnimalType) => string | null; // returns gift message
+  resetDailyRandomVisits: () => void; // 자정 리셋
   // Dev
   resetGame: () => void;
 }
@@ -69,6 +72,9 @@ export const useGardenStore = create<GardenStore>()(
       claimedAnimals: [],
       soundEnabled: true,
       notificationEnabled: true,
+      firstHarvestTime: null, // 첫 수확 시간
+      dailyRandomVisitCount: 0, // 오늘 랜덤 방문 횟수
+      lastRandomVisitDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
       lastSaveTime: new Date(),
 
       // Actions
@@ -128,9 +134,13 @@ export const useGardenStore = create<GardenStore>()(
             ? state.collection
             : [...state.collection, plant.type];
 
+          // 첫 수확 시간 기록
+          const firstHarvestTime = state.firstHarvestTime ?? new Date();
+
           return {
             plants: state.plants.filter((p) => p.id !== plantId),
             collection: newCollection,
+            firstHarvestTime,
             lastSaveTime: new Date(),
           };
         });
@@ -255,13 +265,15 @@ export const useGardenStore = create<GardenStore>()(
         }
       },
 
-      // 새 동물 방문자 체크
+      // 새 동물 방문자 체크 (조건 기반)
       checkForNewVisitors: () => {
         const state = get();
         const newVisitors: AnimalVisitor[] = [];
 
         for (const [, config] of Object.entries(ANIMAL_CONFIGS)) {
-          // 이미 선물 받은 동물은 스킵
+          // disabled 동물은 스킵
+          if (config.trigger.type === 'disabled') continue;
+          // 이미 선물 받은 동물은 스킵 (조건 첫 만족 시에만 체크)
           if (state.claimedAnimals.includes(config.type)) continue;
           // 이미 방문 중인 동물은 스킵
           if (state.visitors.some((v) => v.type === config.type)) continue;
@@ -269,10 +281,13 @@ export const useGardenStore = create<GardenStore>()(
           if (config.trigger.type === 'harvest') {
             // 특정 작물 수확 후 등장하는 동물
             if (state.collection.includes(config.trigger.requiredPlant)) {
-              newVisitors.push({ type: config.type, appearedAt: new Date() });
+              newVisitors.push({
+                type: config.type,
+                appearedAt: new Date(),
+                isRandom: false,
+              });
             }
           }
-          // type === 'random' → 추후 구현
         }
 
         if (newVisitors.length > 0) {
@@ -290,23 +305,144 @@ export const useGardenStore = create<GardenStore>()(
         if (!visitor) return null;
 
         const config = ANIMAL_CONFIGS[animalType];
+        const isFirstVisit = !visitor.isRandom;
+
+        // 선물 유무 판단
+        let hasGift = true;
+        if (visitor.isRandom && config.randomReappear) {
+          if (config.randomReappear.neverGift) {
+            hasGift = false;
+          } else if (!config.randomReappear.alwaysGift) {
+            // 50% 확률
+            hasGift = Math.random() < 0.5;
+          }
+        }
 
         // 씨앗 선물 추가
-        const existingSeed = state.seeds.find((s) => s.type === config.giftSeedType);
-        const updatedSeeds = existingSeed
-          ? state.seeds.map((s) =>
-              s.type === config.giftSeedType ? { ...s, count: s.count + config.giftSeedCount } : s
-            )
-          : [...state.seeds, { type: config.giftSeedType, count: config.giftSeedCount }];
+        let updatedSeeds = state.seeds;
+        let giftMessage = null;
+
+        if (hasGift) {
+          const existingSeed = state.seeds.find((s) => s.type === config.giftSeedType);
+          updatedSeeds = existingSeed
+            ? state.seeds.map((s) =>
+                s.type === config.giftSeedType ? { ...s, count: s.count + config.giftSeedCount } : s
+              )
+            : [...state.seeds, { type: config.giftSeedType, count: config.giftSeedCount }];
+          giftMessage = config.giftMessage;
+        }
+
+        // 첫 방문일 때만 claimedAnimals에 추가
+        const updatedClaimedAnimals = isFirstVisit
+          ? [...state.claimedAnimals, animalType]
+          : state.claimedAnimals;
 
         set({
           visitors: state.visitors.filter((v) => v.type !== animalType),
-          claimedAnimals: [...state.claimedAnimals, animalType],
+          claimedAnimals: updatedClaimedAnimals,
           seeds: updatedSeeds,
           lastSaveTime: new Date(),
         });
 
-        return config.giftMessage;
+        // 동물 클릭 후 랜덤 동물 체크
+        setTimeout(() => get().checkForRandomVisitors(), 100);
+
+        return giftMessage;
+      },
+
+      // 랜덤 재등장 체크
+      checkForRandomVisitors: () => {
+        const state = get();
+
+        // 자정 리셋
+        get().resetDailyRandomVisits();
+
+        // 하루 2회 제한 체크
+        if (state.dailyRandomVisitCount >= 2) return;
+
+        // 조건 동물이 대기열에 있으면 패스
+        const hasConditionAnimal = state.visitors.some((v) => !v.isRandom);
+        if (hasConditionAnimal) return;
+
+        // 이미 방문한 동물 중 랜덤 재등장 가능한 동물들
+        const eligibleAnimals = state.claimedAnimals
+          .map((type) => ANIMAL_CONFIGS[type])
+          .filter((config) => config.randomReappear?.enabled);
+
+        if (eligibleAnimals.length === 0) return;
+
+        // 확률에 따라 동물 선택
+        for (const config of eligibleAnimals) {
+          const chance = Math.random();
+          if (chance < (config.randomReappear?.probability ?? 0)) {
+            // 이미 방문 중인지 체크
+            if (state.visitors.some((v) => v.type === config.type)) continue;
+
+            // 랜덤 방문자 추가
+            const newVisitor: AnimalVisitor = {
+              type: config.type,
+              appearedAt: new Date(),
+              isRandom: true,
+            };
+
+            set({
+              visitors: [...state.visitors, newVisitor],
+              dailyRandomVisitCount: state.dailyRandomVisitCount + 1,
+              lastSaveTime: new Date(),
+            });
+
+            // 하루 2회 제한
+            if (state.dailyRandomVisitCount + 1 >= 2) break;
+          }
+        }
+      },
+
+      // 자정 리셋
+      resetDailyRandomVisits: () => {
+        const state = get();
+        const today = new Date().toISOString().split('T')[0];
+
+        if (state.lastRandomVisitDate !== today) {
+          set({
+            dailyRandomVisitCount: 0,
+            lastRandomVisitDate: today,
+          });
+        }
+      },
+
+      // 올빼미 편지 체크 (첫 수확 후 3일)
+      checkForOwlMail: () => {
+        const state = get();
+
+        // 첫 수확 시간이 없으면 스킵
+        if (!state.firstHarvestTime) return;
+
+        // 이미 올빼미 편지가 있으면 스킵
+        if (state.mails.some((m) => m.id === 'owl-visit')) return;
+
+        // 3일(72시간) 경과 체크
+        const now = new Date();
+        const elapsed = now.getTime() - new Date(state.firstHarvestTime).getTime();
+        const hoursElapsed = elapsed / (1000 * 60 * 60);
+
+        if (hoursElapsed >= 72) {
+          // 3일 경과 → 올빼미 편지 발송
+          const owlMail: MailItem = {
+            id: 'owl-visit',
+            title: '밤하늘의 친구',
+            from: '올빼미',
+            content: '안녕 난 올빼미야. 밤마다 이 근처를 날아다니다가 네 밭을 보게 됐어. 작물을 정성껏 키우고 있더라. 조만간 직접 인사하러 갈게',
+            reward: undefined, // 선물 없음
+            isRead: false,
+            isClaimed: false, // 선물이 없어도 필드는 유지
+            createdAt: new Date(),
+          };
+
+          set({
+            mails: [...state.mails, owlMail],
+            lastSaveTime: new Date(),
+          });
+        }
       },
 
       resetGame: () => {
@@ -325,13 +461,16 @@ export const useGardenStore = create<GardenStore>()(
           claimedAnimals: [],
           soundEnabled: true,
           notificationEnabled: true,
+          firstHarvestTime: null,
+          dailyRandomVisitCount: 0,
+          lastRandomVisitDate: new Date().toISOString().split('T')[0],
           lastSaveTime: new Date(),
         });
       },
     }),
     {
       name: 'healing-garden-storage',
-      version: 3,
+      version: 5,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: (persistedState: any, version: number) => {
         if (version === 0) {
@@ -344,6 +483,13 @@ export const useGardenStore = create<GardenStore>()(
         }
         if (version < 3) {
           persistedState.mails = [];
+        }
+        if (version < 4) {
+          persistedState.firstHarvestTime = null;
+        }
+        if (version < 5) {
+          persistedState.dailyRandomVisitCount = 0;
+          persistedState.lastRandomVisitDate = new Date().toISOString().split('T')[0];
         }
         return persistedState;
       },
@@ -361,6 +507,9 @@ export const useGardenStore = create<GardenStore>()(
         claimedAnimals: state.claimedAnimals,
         soundEnabled: state.soundEnabled,
         notificationEnabled: state.notificationEnabled,
+        firstHarvestTime: state.firstHarvestTime,
+        dailyRandomVisitCount: state.dailyRandomVisitCount,
+        lastRandomVisitDate: state.lastRandomVisitDate,
         lastSaveTime: state.lastSaveTime,
       }),
     }
