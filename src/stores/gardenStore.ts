@@ -360,12 +360,23 @@ export const useGardenStore = create<GardenStore>()(
               const visitorMet = !config.trigger.requiredVisitor ||
                                  state.claimedAnimals.includes(config.trigger.requiredVisitor);
 
+              console.log(`=== Checking ${config.type} ===`);
+              console.log('visitCountWithoutHarvest:', state.visitCountWithoutHarvest);
+              console.log('requiredCount:', config.trigger.requiredCount);
+              console.log('countMet:', countMet);
+              console.log('requiredVisitor:', config.trigger.requiredVisitor);
+              console.log('claimedAnimals:', state.claimedAnimals);
+              console.log('visitorMet:', visitorMet);
+
               if (countMet && visitorMet) {
+                console.log(`${config.type} conditions met! Adding visitor.`);
                 newVisitors.push({
                   type: config.type,
                   appearedAt: new Date(),
                   isRandom: false,
                 });
+              } else {
+                console.log(`${config.type} conditions NOT met.`);
               }
             }
           }
@@ -494,10 +505,17 @@ export const useGardenStore = create<GardenStore>()(
       incrementVisitCountIfNoHarvest: () => {
         const state = get();
 
+        console.log('=== incrementVisitCountIfNoHarvest ===');
+        console.log('hasHarvestedThisSession:', state.hasHarvestedThisSession);
+        console.log('visitCountWithoutHarvest (before):', state.visitCountWithoutHarvest);
+
         // 이번 세션에 수확하지 않았으면 카운터 증가
         if (!state.hasHarvestedThisSession) {
+          const newCount = state.visitCountWithoutHarvest + 1;
+          console.log('visitCountWithoutHarvest (after):', newCount);
+
           set({
-            visitCountWithoutHarvest: state.visitCountWithoutHarvest + 1,
+            visitCountWithoutHarvest: newCount,
             hasHarvestedThisSession: false, // 새 세션 시작
             lastSaveTime: new Date(),
           });
@@ -506,6 +524,7 @@ export const useGardenStore = create<GardenStore>()(
           setTimeout(() => get().checkForNewVisitors(), 100);
         } else {
           // 수확했던 세션이면 플래그만 리셋
+          console.log('Session had harvest, resetting flag');
           set({
             hasHarvestedThisSession: false,
           });

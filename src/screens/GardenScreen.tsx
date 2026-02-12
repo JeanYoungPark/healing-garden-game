@@ -20,7 +20,23 @@ interface GardenScreenProps {
 }
 
 export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
-  const { plants, water, seeds, visitors, mails, plantSeedInSlot, useSeed, harvestPlant, addGold, waterPlant, markCollectionSeen, checkForNewVisitors, claimVisitor, initFirstVisitMail } = useGardenStore();
+  // Zustand selector로 상태 구독
+  const plants = useGardenStore((state) => state.plants);
+  const water = useGardenStore((state) => state.water);
+  const seeds = useGardenStore((state) => state.seeds);
+  const visitors = useGardenStore((state) => state.visitors);
+  const mails = useGardenStore((state) => state.mails);
+
+  // 액션들
+  const plantSeedInSlot = useGardenStore((state) => state.plantSeedInSlot);
+  const useSeed = useGardenStore((state) => state.useSeed);
+  const harvestPlant = useGardenStore((state) => state.harvestPlant);
+  const addGold = useGardenStore((state) => state.addGold);
+  const waterPlant = useGardenStore((state) => state.waterPlant);
+  const markCollectionSeen = useGardenStore((state) => state.markCollectionSeen);
+  const checkForNewVisitors = useGardenStore((state) => state.checkForNewVisitors);
+  const claimVisitor = useGardenStore((state) => state.claimVisitor);
+  const initFirstVisitMail = useGardenStore((state) => state.initFirstVisitMail);
   const [seedBagVisible, setSeedBagVisible] = useState(false);
   const [seedBagChecked, setSeedBagChecked] = useState(false); // 씨앗가방 확인 여부
   const [shopVisible, setShopVisible] = useState(false);
