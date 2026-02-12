@@ -34,6 +34,7 @@ interface GardenStore extends GardenState {
   checkForRandomVisitors: () => void; // 랜덤 재등장 체크
   claimVisitor: (animalType: AnimalType) => string | null; // returns gift message
   resetDailyRandomVisits: () => void; // 자정 리셋
+  incrementVisitCountIfNoHarvest: () => void; // 수확 없이 접속 시 카운터 증가
   // Dev
   resetGame: () => void;
 }
@@ -56,6 +57,55 @@ const calculateWaterRecharge = (lastRechargeTime: Date, currentWater: number): {
   return { water: currentWater, lastRechargeTime: new Date(lastRechargeTime) };
 };
 
+// Date 변환 함수
+const convertDatesToObjects = (state: any) => {
+  if (!state) return state;
+
+  // 최상위 Date 필드
+  if (state.lastWaterRechargeTime && typeof state.lastWaterRechargeTime === 'string') {
+    state.lastWaterRechargeTime = new Date(state.lastWaterRechargeTime);
+  }
+  if (state.firstHarvestTime && typeof state.firstHarvestTime === 'string') {
+    state.firstHarvestTime = new Date(state.firstHarvestTime);
+  }
+  if (state.lastSaveTime && typeof state.lastSaveTime === 'string') {
+    state.lastSaveTime = new Date(state.lastSaveTime);
+  }
+
+  // plants 배열
+  if (state.plants && Array.isArray(state.plants)) {
+    state.plants.forEach((plant: any) => {
+      if (plant.plantedAt && typeof plant.plantedAt === 'string') {
+        plant.plantedAt = new Date(plant.plantedAt);
+      }
+      if (plant.lastWatered && typeof plant.lastWatered === 'string') {
+        plant.lastWatered = new Date(plant.lastWatered);
+      }
+    });
+  }
+
+  // visitors 배열
+  if (state.visitors && Array.isArray(state.visitors)) {
+    state.visitors.forEach((visitor: any) => {
+      if (visitor.appearedAt && typeof visitor.appearedAt === 'string') {
+        visitor.appearedAt = new Date(visitor.appearedAt);
+      }
+    });
+  }
+
+  // mails 배열
+  if (state.mails && Array.isArray(state.mails)) {
+    state.mails.forEach((mail: any) => {
+      if (mail.createdAt && typeof mail.createdAt === 'string') {
+        mail.createdAt = new Date(mail.createdAt);
+      }
+    });
+  }
+
+  return state;
+};
+
+
 export const useGardenStore = create<GardenStore>()(
   persist(
     (set, get) => ({
@@ -76,6 +126,8 @@ export const useGardenStore = create<GardenStore>()(
       firstHarvestTime: null, // 첫 수확 시간
       dailyRandomVisitCount: 0, // 오늘 랜덤 방문 횟수
       lastRandomVisitDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      visitCountWithoutHarvest: 0, // 수확 없이 앱 접속한 횟수 (고양이 트리거용)
+      hasHarvestedThisSession: false, // 이번 세션에 수확했는지 여부
       lastSaveTime: new Date(),
 
       // Actions
@@ -142,6 +194,8 @@ export const useGardenStore = create<GardenStore>()(
             plants: state.plants.filter((p) => p.id !== plantId),
             collection: newCollection,
             firstHarvestTime,
+            hasHarvestedThisSession: true, // 수확 완료
+            visitCountWithoutHarvest: 0, // 카운터 리셋
             lastSaveTime: new Date(),
           };
         });
@@ -297,6 +351,23 @@ export const useGardenStore = create<GardenStore>()(
                 isRandom: false,
               });
             }
+          } else if (config.trigger.type === 'condition') {
+            // 특수 조건 기반 동물
+            if (config.trigger.condition === 'visitWithoutHarvest') {
+              // 방문 횟수 조건 체크
+              const countMet = state.visitCountWithoutHarvest >= config.trigger.requiredCount;
+              // 선행 방문자 조건 체크 (있으면)
+              const visitorMet = !config.trigger.requiredVisitor ||
+                                 state.claimedAnimals.includes(config.trigger.requiredVisitor);
+
+              if (countMet && visitorMet) {
+                newVisitors.push({
+                  type: config.type,
+                  appearedAt: new Date(),
+                  isRandom: false,
+                });
+              }
+            }
           }
         }
 
@@ -328,18 +399,29 @@ export const useGardenStore = create<GardenStore>()(
           }
         }
 
-        // 씨앗 선물 추가
+        // 선물 추가
         let updatedSeeds = state.seeds;
+        let updatedWater = state.water;
         let giftMessage = null;
 
         if (hasGift) {
-          const existingSeed = state.seeds.find((s) => s.type === config.giftSeedType);
-          updatedSeeds = existingSeed
-            ? state.seeds.map((s) =>
-                s.type === config.giftSeedType ? { ...s, count: s.count + config.giftSeedCount } : s
-              )
-            : [...state.seeds, { type: config.giftSeedType, count: config.giftSeedCount }];
-          giftMessage = config.giftMessage;
+          // 랜덤 재등장 시 별도 메시지가 있으면 사용
+          giftMessage = visitor.isRandom && config.randomReappear?.giftMessage
+            ? config.randomReappear.giftMessage
+            : config.giftMessage;
+
+          if (config.giftType === 'seed') {
+            // 씨앗 선물
+            const existingSeed = state.seeds.find((s) => s.type === config.giftSeedType);
+            updatedSeeds = existingSeed
+              ? state.seeds.map((s) =>
+                  s.type === config.giftSeedType ? { ...s, count: s.count + (config.giftSeedCount || 0) } : s
+                )
+              : [...state.seeds, { type: config.giftSeedType!, count: config.giftSeedCount || 0 }];
+          } else if (config.giftType === 'water') {
+            // 물 선물 (5개 제한 없음)
+            updatedWater = state.water + (config.giftWaterCount || 0);
+          }
         }
 
         // 첫 방문일 때만 claimedAnimals에 추가
@@ -351,6 +433,7 @@ export const useGardenStore = create<GardenStore>()(
           visitors: state.visitors.filter((v) => v.type !== animalType),
           claimedAnimals: updatedClaimedAnimals,
           seeds: updatedSeeds,
+          water: updatedWater,
           lastSaveTime: new Date(),
         });
 
@@ -404,6 +487,28 @@ export const useGardenStore = create<GardenStore>()(
             // 하루 2회 제한
             if (state.dailyRandomVisitCount + 1 >= 2) break;
           }
+        }
+      },
+
+      // 수확 없이 접속 시 카운터 증가 (고양이 트리거용)
+      incrementVisitCountIfNoHarvest: () => {
+        const state = get();
+
+        // 이번 세션에 수확하지 않았으면 카운터 증가
+        if (!state.hasHarvestedThisSession) {
+          set({
+            visitCountWithoutHarvest: state.visitCountWithoutHarvest + 1,
+            hasHarvestedThisSession: false, // 새 세션 시작
+            lastSaveTime: new Date(),
+          });
+
+          // 카운터 증가 후 조건 동물 체크 (고양이)
+          setTimeout(() => get().checkForNewVisitors(), 100);
+        } else {
+          // 수확했던 세션이면 플래그만 리셋
+          set({
+            hasHarvestedThisSession: false,
+          });
         }
       },
 
@@ -474,33 +579,53 @@ export const useGardenStore = create<GardenStore>()(
           firstHarvestTime: null,
           dailyRandomVisitCount: 0,
           lastRandomVisitDate: new Date().toISOString().split('T')[0],
+          visitCountWithoutHarvest: 0,
+          hasHarvestedThisSession: false,
           lastSaveTime: new Date(),
         });
       },
     }),
     {
       name: 'healing-garden-storage',
-      version: 5,
+      version: 7, // Date 변환 처리를 위해 버전 증가
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Hydration error:', error);
+          return;
+        }
+        if (state) {
+          // Date 변환 수행
+          convertDatesToObjects(state);
+        }
+      },
       migrate: (persistedState: any, version: number) => {
         if (version === 0) {
-          persistedState.seeds = [];
-          persistedState.plants = [];
+          persistedState.seeds = persistedState.seeds || [];
+          persistedState.plants = persistedState.plants || [];
         }
         if (version < 2) {
-          persistedState.visitors = [];
-          persistedState.claimedAnimals = [];
+          persistedState.visitors = persistedState.visitors || [];
+          persistedState.claimedAnimals = persistedState.claimedAnimals || [];
         }
         if (version < 3) {
-          persistedState.mails = [];
+          persistedState.mails = persistedState.mails || [];
         }
         if (version < 4) {
-          persistedState.firstHarvestTime = null;
+          persistedState.firstHarvestTime = persistedState.firstHarvestTime ?? null;
         }
         if (version < 5) {
-          persistedState.dailyRandomVisitCount = 0;
-          persistedState.lastRandomVisitDate = new Date().toISOString().split('T')[0];
+          persistedState.dailyRandomVisitCount = persistedState.dailyRandomVisitCount ?? 0;
+          persistedState.lastRandomVisitDate = persistedState.lastRandomVisitDate ?? new Date().toISOString().split('T')[0];
         }
+        if (version < 6) {
+          persistedState.visitCountWithoutHarvest = persistedState.visitCountWithoutHarvest ?? 0;
+          persistedState.hasHarvestedThisSession = persistedState.hasHarvestedThisSession ?? false;
+        }
+        if (version < 7) {
+          convertDatesToObjects(persistedState);
+        }
+
         return persistedState;
       },
       partialize: (state) => ({
@@ -520,6 +645,8 @@ export const useGardenStore = create<GardenStore>()(
         firstHarvestTime: state.firstHarvestTime,
         dailyRandomVisitCount: state.dailyRandomVisitCount,
         lastRandomVisitDate: state.lastRandomVisitDate,
+        visitCountWithoutHarvest: state.visitCountWithoutHarvest,
+        hasHarvestedThisSession: state.hasHarvestedThisSession,
         lastSaveTime: state.lastSaveTime,
       }),
     }

@@ -2,7 +2,7 @@
 
 export type PlantType = 'carrot' | 'turnip' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
 
-export type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog';
+export type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog' | 'cat';
 
 export type PlantStage = 0 | 1 | 2 | 3; // 씨앗, 새싹, 꽃, 과일
 
@@ -71,6 +71,8 @@ export interface GardenState {
   firstHarvestTime: Date | null; // 첫 수확 시간
   dailyRandomVisitCount: number; // 오늘 랜덤 방문 횟수 (최대 2회)
   lastRandomVisitDate: string; // 마지막 랜덤 방문 날짜 (YYYY-MM-DD, 자정 리셋용)
+  visitCountWithoutHarvest: number; // 수확 없이 앱 접속한 횟수 (고양이 트리거용)
+  hasHarvestedThisSession: boolean; // 이번 세션에 수확했는지 여부
   lastSaveTime: Date;
 }
 

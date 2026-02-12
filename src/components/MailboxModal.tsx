@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 20,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: '#7a6854',
   },
   seedBagWrapper: {

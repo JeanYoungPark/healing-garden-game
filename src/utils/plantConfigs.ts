@@ -8,8 +8,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     name: '당근',
     seedPrice: 0,
     harvestGold: 50,
-    growthTime: 30, // 30분
-    waterBonus: 3, // 물 1회당 3분 단축
+    growthTime: 15, // 15분
+    waterBonus: 1.5, // 물 1회당 1.5분 단축
     emoji: '🥕',
     rarity: 'common',
     description: '밝은 주황빛의 건강한 채소예요.',
@@ -20,8 +20,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     name: '무',
     seedPrice: 0, // 동물 선물로만 획득
     harvestGold: 80,
-    growthTime: 60, // 1시간
-    waterBonus: 6, // 물 1회당 6분 단축
+    growthTime: 30, // 30분
+    waterBonus: 3, // 물 1회당 3분 단축
     emoji: '🥬',
     rarity: 'common',
     description: '하얀 속살이 아삭한 채소예요.',
@@ -32,8 +32,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     name: '딸기',
     seedPrice: 10,
     harvestGold: 30,
-    growthTime: 180, // 3시간
-    waterBonus: 18, // 물 1회당 18분 단축
+    growthTime: 45, // 45분
+    waterBonus: 4.5, // 물 1회당 4.5분 단축
     emoji: '🍓',
     rarity: 'common',
     description: '작고 빨간 봄의 선물이에요.',

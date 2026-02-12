@@ -22,6 +22,7 @@ interface GardenScreenProps {
 export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const { plants, water, seeds, visitors, mails, plantSeedInSlot, useSeed, harvestPlant, addGold, waterPlant, markCollectionSeen, checkForNewVisitors, claimVisitor, initFirstVisitMail } = useGardenStore();
   const [seedBagVisible, setSeedBagVisible] = useState(false);
+  const [seedBagChecked, setSeedBagChecked] = useState(false); // 씨앗가방 확인 여부
   const [shopVisible, setShopVisible] = useState(false);
   const [questVisible, setQuestVisible] = useState(false);
   const [collectionVisible, setCollectionVisible] = useState(false);
@@ -32,13 +33,33 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
 
   // 첫 방문 메일 초기화
   useEffect(() => {
-    initFirstVisitMail();
+    // 이미 hydration이 완료된 경우 즉시 실행
+    if (useGardenStore.persist.hasHydrated()) {
+      initFirstVisitMail();
+      return; // cleanup 불필요
+    }
+
+    // hydration 대기
+    const unsub = useGardenStore.persist.onFinishHydration(() => {
+      initFirstVisitMail();
+    });
+    return () => unsub();
   }, [initFirstVisitMail]);
 
   // 앱 시작 및 포그라운드 복귀 시 동물 방문자 체크
   const appState = useRef(AppState.currentState);
   useEffect(() => {
-    checkForNewVisitors();
+    let unsubHydration: (() => void) | undefined;
+
+    // 이미 hydration이 완료된 경우 즉시 실행
+    if (useGardenStore.persist.hasHydrated()) {
+      checkForNewVisitors();
+    } else {
+      // hydration 대기
+      unsubHydration = useGardenStore.persist.onFinishHydration(() => {
+        checkForNewVisitors();
+      });
+    }
 
     const sub = AppState.addEventListener('change', (nextState) => {
       if (appState.current.match(/inactive|background/) && nextState === 'active') {
@@ -46,7 +67,11 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
       }
       appState.current = nextState;
     });
-    return () => sub.remove();
+
+    return () => {
+      sub.remove();
+      if (unsubHydration) unsubHydration();
+    };
   }, [checkForNewVisitors]);
 
   // 심기 모드 상태: null이면 기본(당근), 설정되면 선택된 씨앗
@@ -138,14 +163,17 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.seedBagButton}
             activeOpacity={0.7}
-            onPress={() => setSeedBagVisible(true)}
+            onPress={() => {
+              setSeedBagVisible(true);
+              setSeedBagChecked(true); // 씨앗가방 확인함
+            }}
           >
             <Image
               source={require('../assets/garden/icons/seed-bag-icon.png')}
               style={styles.navIcon}
               resizeMode="contain"
             />
-            {seeds.length > 0 && <View style={styles.seedBadge} />}
+            {seeds.length > 0 && !seedBagChecked && <View style={styles.seedBadge} />}
           </TouchableOpacity>
         </View>
 

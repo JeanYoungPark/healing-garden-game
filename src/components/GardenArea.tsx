@@ -9,6 +9,7 @@ import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PLANT_STAGE_IMAGES, PLANT_STAGE_SIZES } from '../utils/plantStageConfigs';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 import { RabbitCharacter } from './RabbitCharacter';
+import { CatCharacter } from './CatCharacter';
 
 const { width, height } = Dimensions.get('window');
 
@@ -177,8 +178,8 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
           <CapybaraCharacter size={120} />
         </View>
 
-        {/* 동물 방문자 - 카피바라 오른쪽 */}
-        {visitors.map((visitor, index) => (
+        {/* 동물 방문자 - 카피바라 오른쪽 (고양이 제외) */}
+        {visitors.filter(v => v.type !== 'cat').map((visitor, index) => (
           <TouchableOpacity
             key={visitor.type}
             style={[styles.visitorContainer, { left: 150 + index * 70 }]}
@@ -192,6 +193,18 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                 {ANIMAL_CONFIGS[visitor.type].emoji}
               </Text>
             )}
+          </TouchableOpacity>
+        ))}
+
+        {/* 고양이 - 울타리 아래쪽 */}
+        {visitors.filter(v => v.type === 'cat').map((visitor) => (
+          <TouchableOpacity
+            key={visitor.type}
+            style={styles.catContainer}
+            activeOpacity={0.7}
+            onPress={() => onVisitorPress?.(visitor.type)}
+          >
+            <CatCharacter />
           </TouchableOpacity>
         ))}
 
@@ -277,7 +290,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                                 <FloatingTooltip
                                   key={t.id}
                                   text={getRemainingTime(plant)}
-                                  topOffset={-plotSize * sz.h}
+                                  topOffset={-plotSize * sz.h - (sz.tooltipOffset || 0)}
                                   onDone={() => handleTooltipDone(t.id)}
                                 />
                               );
@@ -354,7 +367,7 @@ const styles = StyleSheet.create({
   },
   visitorContainer: {
     position: 'absolute',
-    top: '16.8%',
+    top: '17%',
     width: 80,
     height: 80,
     justifyContent: 'center',
@@ -363,6 +376,17 @@ const styles = StyleSheet.create({
   },
   visitorEmoji: {
     fontSize: 40,
+  },
+  catContainer: {
+    position: 'absolute',
+    bottom: '15%',
+    right: '5%',
+    width: 140,
+    height: 140,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 15,
+    marginLeft: -70, // width의 절반만큼 왼쪽으로 이동 (중앙 정렬)
   },
   postBoxIcon: {
     position: 'absolute',

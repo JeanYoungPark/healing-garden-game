@@ -20,18 +20,34 @@ function App() {
   const rechargeWater = useGardenStore((state) => state.rechargeWater);
   const checkForOwlMail = useGardenStore((state) => state.checkForOwlMail);
   const checkForRandomVisitors = useGardenStore((state) => state.checkForRandomVisitors);
+  const incrementVisitCountIfNoHarvest = useGardenStore((state) => state.incrementVisitCountIfNoHarvest);
 
   useEffect(() => {
-    // 앱 시작 시 물방울 충전 & 올빼미 편지 & 랜덤 동물 체크
-    rechargeWater();
-    checkForOwlMail();
-    checkForRandomVisitors();
+    // Hydration 완료 대기 또는 즉시 실행
+    let unsubFinishHydration: (() => void) | undefined;
 
-    // 앱이 포그라운드로 돌아올 때 물방울 충전 & 올빼미 편지 & 랜덤 동물 체크
+    const initializeApp = () => {
+      // 앱 시작 시 물방울 충전 & 올빼미 편지 & 랜덤 동물 체크 & 방문 카운터 증가
+      rechargeWater();
+      checkForOwlMail();
+      incrementVisitCountIfNoHarvest(); // 수확 없이 접속 체크 (고양이 트리거)
+      checkForRandomVisitors();
+    };
+
+    if (useGardenStore.persist.hasHydrated()) {
+      initializeApp();
+    } else {
+      unsubFinishHydration = useGardenStore.persist.onFinishHydration(() => {
+        initializeApp();
+      });
+    }
+
+    // 앱이 포그라운드로 돌아올 때 물방울 충전 & 올빼미 편지 & 랜덤 동물 체크 & 방문 카운터 증가
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         rechargeWater();
         checkForOwlMail();
+        incrementVisitCountIfNoHarvest(); // 수확 없이 접속 체크 (고양이 트리거)
         checkForRandomVisitors();
       }
       appState.current = nextAppState;
@@ -39,8 +55,9 @@ function App() {
 
     return () => {
       subscription.remove();
+      if (unsubFinishHydration) unsubFinishHydration();
     };
-  }, [rechargeWater, checkForOwlMail, checkForRandomVisitors]);
+  }, [rechargeWater, checkForOwlMail, checkForRandomVisitors, incrementVisitCountIfNoHarvest]);
 
   return (
     <SafeAreaProvider>

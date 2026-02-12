@@ -12,9 +12,11 @@ import { PlantType } from '../types';
 
 const ALL_PLANTS: PlantType[] = ['carrot', 'turnip', 'strawberry', 'watermelon', 'peach', 'grape', 'apple'];
 
-// 도감용 이미지 (씨앗/대표 이미지)
+// 도감용 이미지 (수확 작물 이미지)
 const COLLECTION_IMAGES: Partial<Record<PlantType, any>> = {
-  carrot: require('../assets/seeds/carrot-seed.png'),
+  carrot: require('../assets/seeds/carrot-harvest.png'),
+  turnip: require('../assets/seeds/turnip.png'),
+  strawberry: require('../assets/seeds/strawberry.png'),
 };
 
 // 미수집 작물 이미지
