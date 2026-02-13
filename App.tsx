@@ -21,6 +21,7 @@ function App() {
   const checkForOwlMail = useGardenStore((state) => state.checkForOwlMail);
   const checkForRandomVisitors = useGardenStore((state) => state.checkForRandomVisitors);
   const incrementVisitCountIfNoHarvest = useGardenStore((state) => state.incrementVisitCountIfNoHarvest);
+  const removeOwlIfDaytime = useGardenStore((state) => state.removeOwlIfDaytime);
 
   useEffect(() => {
     // Hydration 완료 대기 또는 즉시 실행
@@ -31,6 +32,7 @@ function App() {
       rechargeWater();
       checkForOwlMail();
       incrementVisitCountIfNoHarvest(); // 수확 없이 접속 체크 (고양이 트리거)
+      removeOwlIfDaytime(); // 낮이면 올빼미 제거
       checkForRandomVisitors();
     };
 
@@ -48,6 +50,7 @@ function App() {
         rechargeWater();
         checkForOwlMail();
         incrementVisitCountIfNoHarvest(); // 수확 없이 접속 체크 (고양이 트리거)
+        removeOwlIfDaytime(); // 낮이면 올빼미 제거
         checkForRandomVisitors();
       }
       appState.current = nextAppState;
@@ -57,7 +60,7 @@ function App() {
       subscription.remove();
       if (unsubFinishHydration) unsubFinishHydration();
     };
-  }, [rechargeWater, checkForOwlMail, checkForRandomVisitors, incrementVisitCountIfNoHarvest]);
+  }, [rechargeWater, checkForOwlMail, checkForRandomVisitors, incrementVisitCountIfNoHarvest, removeOwlIfDaytime]);
 
   return (
     <SafeAreaProvider>

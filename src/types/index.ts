@@ -2,7 +2,7 @@
 
 export type PlantType = 'carrot' | 'turnip' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
 
-export type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog' | 'cat';
+export type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog' | 'cat' | 'owl';
 
 export type PlantStage = 0 | 1 | 2 | 3; // 씨앗, 새싹, 꽃, 과일
 
@@ -52,6 +52,13 @@ export interface MailItem {
   isRead: boolean;
   isClaimed: boolean; // 보상 수령 여부
   createdAt: Date;
+  readAt?: Date; // 편지를 읽은 시각
+}
+
+export interface DecorationItem {
+  id: string;
+  name: string;
+  receivedAt: Date;
 }
 
 export interface GardenState {
@@ -66,6 +73,7 @@ export interface GardenState {
   mails: MailItem[]; // 우편함
   visitors: AnimalVisitor[]; // 정원에 방문한 동물들
   claimedAnimals: AnimalType[]; // 선물을 받은 동물들 (조건 첫 만족 시에만, 랜덤 재등장 시 포함 안됨)
+  decorations: DecorationItem[]; // 꾸미기 아이템 인벤토리
   soundEnabled: boolean; // 소리/진동 설정
   notificationEnabled: boolean; // 알림 설정
   firstHarvestTime: Date | null; // 첫 수확 시간

@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, GardenState } from '../types';
+import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, DecorationItem, GardenState } from '../types';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 
 // 상수
@@ -35,9 +35,17 @@ interface GardenStore extends GardenState {
   claimVisitor: (animalType: AnimalType) => string | null; // returns gift message
   resetDailyRandomVisits: () => void; // 자정 리셋
   incrementVisitCountIfNoHarvest: () => void; // 수확 없이 접속 시 카운터 증가
+  removeOwlIfDaytime: () => void; // 낮이면 올빼미 제거
   // Dev
   resetGame: () => void;
 }
+
+// 밤 시간대 체크 함수 (18:00 ~ 03:00)
+const isNightTime = (): boolean => {
+  const now = new Date();
+  const hour = now.getHours();
+  return hour >= 18 || hour < 3;
+};
 
 // 물 충전량 계산 함수
 const calculateWaterRecharge = (lastRechargeTime: Date, currentWater: number): { water: number; lastRechargeTime: Date } => {
@@ -99,6 +107,18 @@ const convertDatesToObjects = (state: any) => {
       if (mail.createdAt && typeof mail.createdAt === 'string') {
         mail.createdAt = new Date(mail.createdAt);
       }
+      if (mail.readAt && typeof mail.readAt === 'string') {
+        mail.readAt = new Date(mail.readAt);
+      }
+    });
+  }
+
+  // decorations 배열
+  if (state.decorations && Array.isArray(state.decorations)) {
+    state.decorations.forEach((decoration: any) => {
+      if (decoration.receivedAt && typeof decoration.receivedAt === 'string') {
+        decoration.receivedAt = new Date(decoration.receivedAt);
+      }
     });
   }
 
@@ -121,6 +141,7 @@ export const useGardenStore = create<GardenStore>()(
       mails: [],
       visitors: [],
       claimedAnimals: [],
+      decorations: [],
       soundEnabled: true,
       notificationEnabled: true,
       firstHarvestTime: null, // 첫 수확 시간
@@ -300,7 +321,7 @@ export const useGardenStore = create<GardenStore>()(
       readMail: (mailId: string) => {
         set((state) => ({
           mails: state.mails.map((m) =>
-            m.id === mailId ? { ...m, isRead: true } : m
+            m.id === mailId ? { ...m, isRead: true, readAt: new Date() } : m
           ),
         }));
       },
@@ -379,6 +400,31 @@ export const useGardenStore = create<GardenStore>()(
                 console.log(`${config.type} conditions NOT met.`);
               }
             }
+          } else if (config.trigger.type === 'mailRead') {
+            // 편지 읽은 후 등장하는 동물 (올빼미)
+            const mail = state.mails.find((m) => m.id === config.trigger.requiredMailId);
+
+            // 편지가 읽혀있는지 확인
+            if (mail && mail.isRead && mail.readAt) {
+              const now = new Date();
+              const readTime = new Date(mail.readAt);
+
+              // 자정이 지났는지 확인 (다음날 조건)
+              const readDate = readTime.toISOString().split('T')[0];
+              const today = now.toISOString().split('T')[0];
+              const isNextDay = readDate !== today;
+
+              // 밤 시간대인지 확인 (18:00~03:00)
+              const isNight = isNightTime();
+
+              if (isNextDay && isNight) {
+                newVisitors.push({
+                  type: config.type,
+                  appearedAt: now,
+                  isRandom: false,
+                });
+              }
+            }
           }
         }
 
@@ -395,6 +441,15 @@ export const useGardenStore = create<GardenStore>()(
         const state = get();
         const visitor = state.visitors.find((v) => v.type === animalType);
         if (!visitor) return null;
+
+        // 올빼미인데 낮 시간이면 메시지 반환하고 제거
+        if (animalType === 'owl' && !isNightTime()) {
+          set({
+            visitors: state.visitors.filter((v) => v.type !== 'owl'),
+            lastSaveTime: new Date(),
+          });
+          return '밤이 끝나서 올뺌희가 떠났어요';
+        }
 
         const config = ANIMAL_CONFIGS[animalType];
         const isFirstVisit = !visitor.isRandom;
@@ -413,25 +468,48 @@ export const useGardenStore = create<GardenStore>()(
         // 선물 추가
         let updatedSeeds = state.seeds;
         let updatedWater = state.water;
+        let updatedDecorations = state.decorations;
         let giftMessage = null;
 
         if (hasGift) {
-          // 랜덤 재등장 시 별도 메시지가 있으면 사용
-          giftMessage = visitor.isRandom && config.randomReappear?.giftMessage
-            ? config.randomReappear.giftMessage
-            : config.giftMessage;
+          // 올빼미 랜덤 재등장 시 특별 처리 (안경 또는 물 랜덤)
+          if (visitor.isRandom && animalType === 'owl' && config.randomReappear?.randomGiftOptions) {
+            const isDecorationGift = Math.random() < 0.5; // 50% 확률
 
-          if (config.giftType === 'seed') {
-            // 씨앗 선물
-            const existingSeed = state.seeds.find((s) => s.type === config.giftSeedType);
-            updatedSeeds = existingSeed
-              ? state.seeds.map((s) =>
-                  s.type === config.giftSeedType ? { ...s, count: s.count + (config.giftSeedCount || 0) } : s
-                )
-              : [...state.seeds, { type: config.giftSeedType!, count: config.giftSeedCount || 0 }];
-          } else if (config.giftType === 'water') {
-            // 물 선물 (5개 제한 없음)
-            updatedWater = state.water + (config.giftWaterCount || 0);
+            if (isDecorationGift && config.randomReappear.randomGiftOptions.decoration) {
+              // 안경 선물
+              const { id, message } = config.randomReappear.randomGiftOptions.decoration;
+              updatedDecorations = [...state.decorations, { id, name: '안경', receivedAt: new Date() }];
+              giftMessage = message;
+            } else if (config.randomReappear.randomGiftOptions.water) {
+              // 물 선물
+              const { count, message } = config.randomReappear.randomGiftOptions.water;
+              updatedWater = state.water + count;
+              giftMessage = message;
+            }
+          } else {
+            // 일반 선물 처리
+            // 랜덤 재등장 시 별도 메시지가 있으면 사용
+            giftMessage = visitor.isRandom && config.randomReappear?.giftMessage
+              ? config.randomReappear.giftMessage
+              : config.giftMessage;
+
+            if (config.giftType === 'seed') {
+              // 씨앗 선물
+              const existingSeed = state.seeds.find((s) => s.type === config.giftSeedType);
+              updatedSeeds = existingSeed
+                ? state.seeds.map((s) =>
+                    s.type === config.giftSeedType ? { ...s, count: s.count + (config.giftSeedCount || 0) } : s
+                  )
+                : [...state.seeds, { type: config.giftSeedType!, count: config.giftSeedCount || 0 }];
+            } else if (config.giftType === 'water') {
+              // 물 선물 (5개 제한 없음)
+              updatedWater = state.water + (config.giftWaterCount || 0);
+            } else if (config.giftType === 'decoration') {
+              // 꾸미기 아이템 선물
+              const decorationId = config.giftDecorationId || 'unknown';
+              updatedDecorations = [...state.decorations, { id: decorationId, name: '안경', receivedAt: new Date() }];
+            }
           }
         }
 
@@ -445,6 +523,7 @@ export const useGardenStore = create<GardenStore>()(
           claimedAnimals: updatedClaimedAnimals,
           seeds: updatedSeeds,
           water: updatedWater,
+          decorations: updatedDecorations,
           lastSaveTime: new Date(),
         });
 
@@ -531,6 +610,20 @@ export const useGardenStore = create<GardenStore>()(
         }
       },
 
+      // 낮이면 올빼미 제거
+      removeOwlIfDaytime: () => {
+        const state = get();
+        const hasOwl = state.visitors.some((v) => v.type === 'owl');
+
+        if (hasOwl && !isNightTime()) {
+          // 낮이고 올빼미가 있으면 제거
+          set({
+            visitors: state.visitors.filter((v) => v.type !== 'owl'),
+            lastSaveTime: new Date(),
+          });
+        }
+      },
+
       // 자정 리셋
       resetDailyRandomVisits: () => {
         const state = get();
@@ -550,6 +643,9 @@ export const useGardenStore = create<GardenStore>()(
 
         // 첫 수확 시간이 없으면 스킵
         if (!state.firstHarvestTime) return;
+
+        // 토끼를 만난 적이 없으면 스킵
+        if (!state.claimedAnimals.includes('rabbit')) return;
 
         // 이미 올빼미 편지가 있으면 스킵
         if (state.mails.some((m) => m.id === 'owl-visit')) return;
@@ -606,7 +702,7 @@ export const useGardenStore = create<GardenStore>()(
     }),
     {
       name: 'healing-garden-storage',
-      version: 7, // Date 변환 처리를 위해 버전 증가
+      version: 8, // 올빼미 및 꾸미기 아이템 추가
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -644,6 +740,10 @@ export const useGardenStore = create<GardenStore>()(
         if (version < 7) {
           convertDatesToObjects(persistedState);
         }
+        if (version < 8) {
+          persistedState.decorations = persistedState.decorations || [];
+          convertDatesToObjects(persistedState); // readAt, receivedAt 변환
+        }
 
         return persistedState;
       },
@@ -659,6 +759,7 @@ export const useGardenStore = create<GardenStore>()(
         mails: state.mails,
         visitors: state.visitors,
         claimedAnimals: state.claimedAnimals,
+        decorations: state.decorations,
         soundEnabled: state.soundEnabled,
         notificationEnabled: state.notificationEnabled,
         firstHarvestTime: state.firstHarvestTime,

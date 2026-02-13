@@ -10,6 +10,7 @@ import { PLANT_STAGE_IMAGES, PLANT_STAGE_SIZES } from '../utils/plantStageConfig
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 import { RabbitCharacter } from './RabbitCharacter';
 import { CatCharacter } from './CatCharacter';
+import { OwlCharacter } from './OwlCharacter';
 
 const { width, height } = Dimensions.get('window');
 
@@ -208,6 +209,18 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
           </TouchableOpacity>
         ))}
 
+        {/* 올빼미 - 우체통 왼쪽 (방문자일 때만) */}
+        {visitors.filter(v => v.type === 'owl').map((visitor) => (
+          <TouchableOpacity
+            key={visitor.type}
+            style={styles.owlContainer}
+            activeOpacity={0.7}
+            onPress={() => onVisitorPress?.('owl')}
+          >
+            <OwlCharacter size={100} />
+          </TouchableOpacity>
+        ))}
+
         {/* 우체통 아이콘 - 카피바라 오른쪽 */}
         <TouchableOpacity
           style={styles.postBoxIcon}
@@ -388,10 +401,18 @@ const styles = StyleSheet.create({
     zIndex: 15,
     marginLeft: -70, // width의 절반만큼 왼쪽으로 이동 (중앙 정렬)
   },
+  owlContainer: {
+    position: 'absolute',
+    top: '20%',
+    right: '26%', // 우체통 왼쪽
+    width: 100,
+    height: 100,
+    zIndex: 6,
+  },
   postBoxIcon: {
     position: 'absolute',
     top: '15%',
-    right: 15,
+    right: '4%',
     width: 120,
     height: 120,
     zIndex: 5,

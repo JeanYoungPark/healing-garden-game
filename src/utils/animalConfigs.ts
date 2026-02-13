@@ -7,11 +7,12 @@ export interface AnimalConfig {
   name: string;        // 표시 이름
   nickname: string;    // 별명 (알럿용)
   emoji: string;
-  giftType?: 'seed' | 'water' | 'gold';  // 선물 종류
+  giftType?: 'seed' | 'water' | 'gold' | 'decoration';  // 선물 종류
   giftSeedType?: PlantType;  // 선물로 주는 씨앗 (giftType이 'seed'일 때)
   giftSeedCount?: number;
   giftWaterCount?: number;   // 선물로 주는 물 개수 (giftType이 'water'일 때)
   giftGoldAmount?: number;   // 선물로 주는 골드 (giftType이 'gold'일 때)
+  giftDecorationId?: string; // 선물로 주는 꾸미기 아이템 ID (giftType이 'decoration'일 때)
   giftMessage: string;      // 선물 알럿 메시지
   // 등장 조건
   trigger: {
@@ -23,6 +24,10 @@ export interface AnimalConfig {
     requiredCount: number;
     requiredVisitor?: AnimalType;  // 이 동물을 먼저 만나야 함 (선택)
   } | {
+    type: 'mailRead';        // 특정 편지를 읽은 후 등장
+    requiredMailId: string;  // 읽어야 하는 편지 ID
+    delayHours: number;      // 편지를 읽은 후 몇 시간 뒤 등장
+  } | {
     type: 'disabled';        // 비활성화 (미구현)
   };
   // 랜덤 재등장 설정
@@ -32,6 +37,10 @@ export interface AnimalConfig {
     alwaysGift: boolean;     // 항상 선물 줌
     neverGift: boolean;      // 절대 선물 안 줌
     giftMessage?: string;    // 랜덤 재등장 시 선물 메시지 (다를 경우)
+    randomGiftOptions?: {    // 랜덤 선물 옵션 (올빼미 전용)
+      decoration?: { id: string; message: string };
+      water?: { count: number; message: string };
+    };
     // alwaysGift, neverGift 둘 다 false면 확률적으로 선물
   };
 }
@@ -114,6 +123,26 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
       alwaysGift: false,     // 확률적으로 선물 줌
       neverGift: false,      // 50% 확률
       giftMessage: '고영희가\n물 1개를 선물로 줬어요!',
+    },
+  },
+  owl: {
+    type: 'owl',
+    name: '올빼미',
+    nickname: '올뺌희',
+    emoji: '🦉',
+    giftType: 'decoration',
+    giftDecorationId: 'glasses',
+    giftMessage: '밤하늘의 친구 올뺌희가\n안경을 선물로 줬어요!',
+    trigger: { type: 'mailRead', requiredMailId: 'owl-visit', delayHours: 24 },
+    randomReappear: {
+      enabled: true,
+      probability: 0.02,     // 2% 확률로 등장
+      alwaysGift: true,      // 항상 선물 줌
+      neverGift: false,
+      randomGiftOptions: {
+        decoration: { id: 'glasses', message: '올뺌희가\n안경을 선물로 줬어요!' },
+        water: { count: 3, message: '올뺌희가\n물 3개를 선물로 줬어요!' },
+      },
     },
   },
 };
