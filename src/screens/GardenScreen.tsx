@@ -10,6 +10,7 @@ import { QuestModal } from '../components/QuestModal';
 import { CollectionModal } from '../components/CollectionModal';
 import { SettingsModal } from '../components/SettingsModal';
 import { MailboxModal } from '../components/MailboxModal';
+import { DressUpModal } from '../components/DressUpModal';
 import { GameAlert } from '../components/GameAlert';
 import { useGardenStore } from '../stores/gardenStore';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
@@ -44,6 +45,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const [collectionVisible, setCollectionVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [mailboxVisible, setMailboxVisible] = useState(false);
+  const [dressUpVisible, setDressUpVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertVisible, setAlertVisible] = useState(false);
 
@@ -222,6 +224,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
             onWaterPlant={handleWaterPlant}
             onMailboxPress={() => setMailboxVisible(true)}
             onVisitorPress={handleVisitorPress}
+            onCapybaraPress={() => setDressUpVisible(true)}
           />
         </View>
 
@@ -256,6 +259,12 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
       <SettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
+      />
+
+      {/* Dress Up Modal */}
+      <DressUpModal
+        visible={dressUpVisible}
+        onClose={() => setDressUpVisible(false)}
       />
 
       {/* Mailbox Modal */}

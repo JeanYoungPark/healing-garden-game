@@ -36,6 +36,10 @@ interface GardenStore extends GardenState {
   resetDailyRandomVisits: () => void; // 자정 리셋
   incrementVisitCountIfNoHarvest: () => void; // 수확 없이 접속 시 카운터 증가
   removeOwlIfDaytime: () => void; // 낮이면 올빼미 제거
+  // Decoration actions
+  equipDecoration: (decorationId: string) => void;
+  unequipDecoration: (decorationId: string) => void;
+  toggleEquipDecoration: (decorationId: string) => void;
   // Dev
   resetGame: () => void;
 }
@@ -142,6 +146,7 @@ export const useGardenStore = create<GardenStore>()(
       visitors: [],
       claimedAnimals: [],
       decorations: [],
+      equippedDecorations: [],
       soundEnabled: true,
       notificationEnabled: true,
       firstHarvestTime: null, // 첫 수확 시간
@@ -442,7 +447,6 @@ export const useGardenStore = create<GardenStore>()(
         const visitor = state.visitors.find((v) => v.type === animalType);
         if (!visitor) return null;
 
-        // 올빼미인데 낮 시간이면 메시지 반환하고 제거
         if (animalType === 'owl' && !isNightTime()) {
           set({
             visitors: state.visitors.filter((v) => v.type !== 'owl'),
@@ -675,6 +679,29 @@ export const useGardenStore = create<GardenStore>()(
         }
       },
 
+      // 꾸미기 아이템 장착/해제
+      equipDecoration: (decorationId: string) => {
+        const state = get();
+        if (!state.equippedDecorations.includes(decorationId)) {
+          set({ equippedDecorations: [...state.equippedDecorations, decorationId] });
+        }
+      },
+
+      unequipDecoration: (decorationId: string) => {
+        set((state) => ({
+          equippedDecorations: state.equippedDecorations.filter((id) => id !== decorationId),
+        }));
+      },
+
+      toggleEquipDecoration: (decorationId: string) => {
+        const state = get();
+        if (state.equippedDecorations.includes(decorationId)) {
+          set({ equippedDecorations: state.equippedDecorations.filter((id) => id !== decorationId) });
+        } else {
+          set({ equippedDecorations: [...state.equippedDecorations, decorationId] });
+        }
+      },
+
       resetGame: () => {
         AsyncStorage.removeItem('healing-garden-storage');
         set({
@@ -689,6 +716,8 @@ export const useGardenStore = create<GardenStore>()(
           mails: [],
           visitors: [],
           claimedAnimals: [],
+          decorations: [],
+          equippedDecorations: [],
           soundEnabled: true,
           notificationEnabled: true,
           firstHarvestTime: null,
@@ -702,7 +731,7 @@ export const useGardenStore = create<GardenStore>()(
     }),
     {
       name: 'healing-garden-storage',
-      version: 8, // 올빼미 및 꾸미기 아이템 추가
+      version: 9, // 꾸미기 아이템 장착 상태 추가
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -744,6 +773,9 @@ export const useGardenStore = create<GardenStore>()(
           persistedState.decorations = persistedState.decorations || [];
           convertDatesToObjects(persistedState); // readAt, receivedAt 변환
         }
+        if (version < 9) {
+          persistedState.equippedDecorations = persistedState.equippedDecorations || [];
+        }
 
         return persistedState;
       },
@@ -760,6 +792,7 @@ export const useGardenStore = create<GardenStore>()(
         visitors: state.visitors,
         claimedAnimals: state.claimedAnimals,
         decorations: state.decorations,
+        equippedDecorations: state.equippedDecorations,
         soundEnabled: state.soundEnabled,
         notificationEnabled: state.notificationEnabled,
         firstHarvestTime: state.firstHarvestTime,

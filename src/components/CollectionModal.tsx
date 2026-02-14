@@ -6,18 +6,9 @@ import LinearGradient from 'react-native-linear-gradient';
 import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 import { modalStyles } from '../styles/modalStyles';
 import { useGardenStore } from '../stores/gardenStore';
-import { PLANT_CONFIGS } from '../utils/plantConfigs';
+import { PLANT_CONFIGS, ALL_PLANT_TYPES } from '../utils/plantConfigs';
 import { PLANT_STAGE_IMAGES } from '../utils/plantStageConfigs';
 import { PlantType } from '../types';
-
-const ALL_PLANTS: PlantType[] = ['carrot', 'turnip', 'strawberry', 'watermelon', 'peach', 'grape', 'apple'];
-
-// 도감용 이미지 (수확 작물 이미지)
-const COLLECTION_IMAGES: Partial<Record<PlantType, any>> = {
-  carrot: require('../assets/seeds/carrot-harvest.png'),
-  turnip: require('../assets/seeds/turnip.png'),
-  strawberry: require('../assets/seeds/strawberry.png'),
-};
 
 // 미수집 작물 이미지
 const GIFT_ITEM_IMAGES = [
@@ -177,7 +168,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                   )}
                   {selectedTab === 'gift' && (
                     <>
-                      {ALL_PLANTS.map((type, index) => {
+                      {ALL_PLANT_TYPES.map((type, index) => {
                         const collected = collection.includes(type);
                         const isNew = collected && !seenCollection.includes(type);
                         const config = PLANT_CONFIGS[type];
@@ -206,7 +197,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                             )}
                             {collected ? (
                               <Image
-                                source={COLLECTION_IMAGES[type] || PLANT_STAGE_IMAGES[type]?.[3]}
+                                source={PLANT_CONFIGS[type].collectionImage || PLANT_STAGE_IMAGES[type]?.[3]}
                                 style={[styles.giftItem, { height: itemImageHeight, top: itemImageTop }]}
                                 resizeMode="contain"
                               />
@@ -259,7 +250,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
               <View style={styles.detailContent}>
                 {/* 작물 이미지 */}
                 <Image
-                  source={COLLECTION_IMAGES[selectedPlant] || PLANT_STAGE_IMAGES[selectedPlant]?.[3]}
+                  source={PLANT_CONFIGS[selectedPlant].collectionImage || PLANT_STAGE_IMAGES[selectedPlant]?.[3]}
                   style={styles.detailImage}
                   resizeMode="contain"
                 />

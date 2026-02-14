@@ -34,6 +34,7 @@ export interface PlantConfig {
   rarity: Rarity;
   description: string; // 작물 설명
   story?: string; // 특별한 이야기 (선택)
+  collectionImage?: any; // 도감 표시용 이미지 (없으면 stage 3 이미지 사용)
 }
 
 export interface AnimalVisitor {
@@ -74,6 +75,7 @@ export interface GardenState {
   visitors: AnimalVisitor[]; // 정원에 방문한 동물들
   claimedAnimals: AnimalType[]; // 선물을 받은 동물들 (조건 첫 만족 시에만, 랜덤 재등장 시 포함 안됨)
   decorations: DecorationItem[]; // 꾸미기 아이템 인벤토리
+  equippedDecorations: string[]; // 장착 중인 꾸미기 아이템 ID 목록
   soundEnabled: boolean; // 소리/진동 설정
   notificationEnabled: boolean; // 알림 설정
   firstHarvestTime: Date | null; // 첫 수확 시간

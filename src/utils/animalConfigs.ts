@@ -1,12 +1,37 @@
 // 🐰 Healing Garden - Animal Configurations
 
+import { Dimensions } from 'react-native';
 import { AnimalType, PlantType } from '../types';
+
+const { width: screenWidth } = Dimensions.get('window');
+
+// 정원 내 렌더링 위치
+// beside-capybara: 카피바라 옆에 나란히 (기본, index 기반 자동 배치)
+// custom: containerStyle로 직접 위치 지정
+export type AnimalRenderPosition = 'beside-capybara' | 'custom';
+
+export interface AnimalRenderConfig {
+  position: AnimalRenderPosition;
+  // custom 위치일 때 사용
+  containerStyle?: {
+    top?: number | string;
+    bottom?: number | string;
+    left?: number | string;
+    right?: number | string;
+    width: number;
+    height: number;
+    zIndex: number;
+    marginLeft?: number;
+  };
+}
 
 export interface AnimalConfig {
   type: AnimalType;
   name: string;        // 표시 이름
   nickname: string;    // 별명 (알럿용)
   emoji: string;
+  // 정원 내 렌더링 설정
+  render: AnimalRenderConfig;
   giftType?: 'seed' | 'water' | 'gold' | 'decoration';  // 선물 종류
   giftSeedType?: PlantType;  // 선물로 주는 씨앗 (giftType이 'seed'일 때)
   giftSeedCount?: number;
@@ -51,6 +76,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '토끼',
     nickname: '토깽이',
     emoji: '🐰',
+    render: { position: 'beside-capybara' },
     giftType: 'seed',
     giftSeedType: 'strawberry',
     giftSeedCount: 1,
@@ -69,6 +95,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '거북이',
     nickname: '거붕이',
     emoji: '🐢',
+    render: { position: 'beside-capybara' },
     giftType: 'seed',
     giftSeedType: 'strawberry',
     giftSeedCount: 2,
@@ -80,6 +107,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '고슴도치',
     nickname: '도치',
     emoji: '🦔',
+    render: { position: 'beside-capybara' },
     giftType: 'seed',
     giftSeedType: 'watermelon',
     giftSeedCount: 2,
@@ -91,6 +119,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '너구리',
     nickname: '너굴이',
     emoji: '🦝',
+    render: { position: 'beside-capybara' },
     giftType: 'seed',
     giftSeedType: 'peach',
     giftSeedCount: 1,
@@ -102,6 +131,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '개구리',
     nickname: '개굴이',
     emoji: '🐸',
+    render: { position: 'beside-capybara' },
     giftType: 'seed',
     giftSeedType: 'grape',
     giftSeedCount: 1,
@@ -113,6 +143,14 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '고양이',
     nickname: '고영희',
     emoji: '🐱',
+    render: {
+      position: 'custom',
+      containerStyle: {
+        bottom: '8%', right: '5%',
+        width: screenWidth * 0.36, height: screenWidth * 0.36, zIndex: 15,
+        marginLeft: screenWidth * -0.18,
+      },
+    },
     giftType: 'water',
     giftWaterCount: 1,
     giftMessage: '길을 지나다 들른 고영희가\n물 1개를 선물로 줬어요!',
@@ -130,6 +168,13 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '올빼미',
     nickname: '올뺌희',
     emoji: '🦉',
+    render: {
+      position: 'custom',
+      containerStyle: {
+        top: '20%', right: '26%',
+        width: screenWidth * 0.26, height: screenWidth * 0.26, zIndex: 6,
+      },
+    },
     giftType: 'decoration',
     giftDecorationId: 'glasses',
     giftMessage: '밤하늘의 친구 올뺌희가\n안경을 선물로 줬어요!',

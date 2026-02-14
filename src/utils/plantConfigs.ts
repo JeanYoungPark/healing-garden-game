@@ -14,6 +14,7 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     rarity: 'common',
     description: '밝은 주황빛의 건강한 채소예요.',
     story: '첫 번째 당근을 수확했을 때 토끼가 찾아왔어요.',
+    collectionImage: require('../assets/seeds/carrot-harvest.png'),
   },
   turnip: {
     type: 'turnip',
@@ -26,6 +27,7 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     rarity: 'common',
     description: '하얀 속살이 아삭한 채소예요.',
     story: '토끼가 선물해준 소중한 씨앗이에요.',
+    collectionImage: require('../assets/seeds/turnip.png'),
   },
   strawberry: {
     type: 'strawberry',
@@ -38,6 +40,7 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     rarity: 'common',
     description: '작고 빨간 봄의 선물이에요.',
     story: '달콤한 향기가 정원을 가득 채워요.',
+    collectionImage: require('../assets/seeds/strawberry.png'),
   },
   watermelon: {
     type: 'watermelon',
@@ -88,3 +91,6 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     story: '정원에서 가장 귀한 보석 같은 존재예요.',
   },
 };
+
+// config에서 자동 파생된 작물 목록 (도감 등에서 사용)
+export const ALL_PLANT_TYPES = Object.keys(PLANT_CONFIGS) as PlantType[];

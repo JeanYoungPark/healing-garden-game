@@ -12,6 +12,13 @@ import { RabbitCharacter } from './RabbitCharacter';
 import { CatCharacter } from './CatCharacter';
 import { OwlCharacter } from './OwlCharacter';
 
+// 동물별 전용 컴포넌트 레지스트리 (없으면 이모지로 표시)
+const ANIMAL_COMPONENTS: Partial<Record<AnimalType, React.FC<any>>> = {
+  rabbit: RabbitCharacter,
+  cat: CatCharacter,
+  owl: ({ size }: { size?: number }) => <OwlCharacter size={size ?? 100} />,
+};
+
 const { width, height } = Dimensions.get('window');
 
 interface GardenAreaProps {
@@ -25,6 +32,7 @@ interface GardenAreaProps {
   onWaterPlant?: (plantId: string) => void;
   onMailboxPress?: () => void;
   onVisitorPress?: (animalType: AnimalType) => void;
+  onCapybaraPress?: () => void;
 }
 
 // 물 효과 적용된 실제 성장시간 계산 (최소 30%)
@@ -101,6 +109,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
   onWaterPlant,
   onMailboxPress,
   onVisitorPress,
+  onCapybaraPress,
 }, ref) => {
   // 30초마다 리렌더 → 식물 성장 단계 자동 갱신
   const [, setTick] = useState(0);
@@ -174,52 +183,52 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         ref={ref}
         style={styles.gardenArea}
       >
-        {/* 카피바라 애니메이션 - 밭 위쪽 */}
-        <View style={styles.capybaraAnimation}>
-          <CapybaraCharacter size={120} />
-        </View>
+        {/* 카피바라 애니메이션 - 밭 위쪽 (터치 시 꾸미기 모달) */}
+        <TouchableOpacity
+          style={styles.capybaraAnimation}
+          activeOpacity={0.7}
+          onPress={onCapybaraPress}
+        >
+          <CapybaraCharacter />
+        </TouchableOpacity>
 
-        {/* 동물 방문자 - 카피바라 오른쪽 (고양이 제외) */}
-        {visitors.filter(v => v.type !== 'cat').map((visitor, index) => (
-          <TouchableOpacity
-            key={visitor.type}
-            style={[styles.visitorContainer, { left: 150 + index * 70 }]}
-            activeOpacity={0.7}
-            onPress={() => onVisitorPress?.(visitor.type)}
-          >
-            {visitor.type === 'rabbit' ? (
-              <RabbitCharacter />
-            ) : (
-              <Text style={styles.visitorEmoji}>
-                {ANIMAL_CONFIGS[visitor.type].emoji}
-              </Text>
-            )}
-          </TouchableOpacity>
-        ))}
+        {/* 동물 방문자 (config 기반 렌더링) */}
+        {(() => {
+          let besideIndex = 0;
+          return visitors.map((visitor) => {
+            const config = ANIMAL_CONFIGS[visitor.type];
+            const Component = ANIMAL_COMPONENTS[visitor.type];
+            const content = Component
+              ? <Component />
+              : <Text style={styles.visitorEmoji}>{config.emoji}</Text>;
 
-        {/* 고양이 - 울타리 아래쪽 */}
-        {visitors.filter(v => v.type === 'cat').map((visitor) => (
-          <TouchableOpacity
-            key={visitor.type}
-            style={styles.catContainer}
-            activeOpacity={0.7}
-            onPress={() => onVisitorPress?.(visitor.type)}
-          >
-            <CatCharacter />
-          </TouchableOpacity>
-        ))}
+            if (config.render.position === 'beside-capybara') {
+              const idx = besideIndex++;
+              return (
+                <TouchableOpacity
+                  key={visitor.type}
+                  style={[styles.visitorContainer, { left: 150 + idx * 70 }]}
+                  activeOpacity={0.7}
+                  onPress={() => onVisitorPress?.(visitor.type)}
+                >
+                  {content}
+                </TouchableOpacity>
+              );
+            }
 
-        {/* 올빼미 - 우체통 왼쪽 (방문자일 때만) */}
-        {visitors.filter(v => v.type === 'owl').map((visitor) => (
-          <TouchableOpacity
-            key={visitor.type}
-            style={styles.owlContainer}
-            activeOpacity={0.7}
-            onPress={() => onVisitorPress?.('owl')}
-          >
-            <OwlCharacter size={100} />
-          </TouchableOpacity>
-        ))}
+            // custom position
+            return (
+              <TouchableOpacity
+                key={visitor.type}
+                style={[styles.customVisitorContainer, config.render.containerStyle as any]}
+                activeOpacity={0.7}
+                onPress={() => onVisitorPress?.(visitor.type)}
+              >
+                {content}
+              </TouchableOpacity>
+            );
+          });
+        })()}
 
         {/* 우체통 아이콘 - 카피바라 오른쪽 */}
         <TouchableOpacity
@@ -372,8 +381,8 @@ const styles = StyleSheet.create({
   },
   capybaraAnimation: {
     position: 'absolute',
-    top: '15%',
-    left: 15,
+    top: '12%',
+    left: 0,
     width: 120,
     height: 120,
     zIndex: 5,
@@ -390,24 +399,10 @@ const styles = StyleSheet.create({
   visitorEmoji: {
     fontSize: 40,
   },
-  catContainer: {
+  customVisitorContainer: {
     position: 'absolute',
-    bottom: '15%',
-    right: '5%',
-    width: 140,
-    height: 140,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 15,
-    marginLeft: -70, // width의 절반만큼 왼쪽으로 이동 (중앙 정렬)
-  },
-  owlContainer: {
-    position: 'absolute',
-    top: '20%',
-    right: '26%', // 우체통 왼쪽
-    width: 100,
-    height: 100,
-    zIndex: 6,
   },
   postBoxIcon: {
     position: 'absolute',

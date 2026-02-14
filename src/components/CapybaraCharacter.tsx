@@ -1,11 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Image, Animated, Easing } from 'react-native';
+import { StyleSheet, View, Image, Animated, Easing, Dimensions } from 'react-native';
+import { useGardenStore } from '../stores/gardenStore';
+import { DECORATION_CONFIGS } from '../utils/decorationConfigs';
 
-interface CapybaraCharacterProps {
-  size?: number;
-}
+const { width: screenWidth } = Dimensions.get('window');
 
-export const CapybaraCharacter: React.FC<CapybaraCharacterProps> = ({ size = 120 }) => {
+// 화면 너비 기준 비율 (기준: 390px 화면에서 120px = 약 0.31)
+const size = screenWidth * 0.35;
+const scale = size / 120;
+
+export const CapybaraCharacter: React.FC = () => {
+  const equippedDecorations = useGardenStore((state) => state.equippedDecorations);
   const [isEyeClosed, setIsEyeClosed] = useState(false);
   const tailRotation = useRef(new Animated.Value(0)).current;
 
@@ -63,8 +68,6 @@ export const CapybaraCharacter: React.FC<CapybaraCharacterProps> = ({ size = 120
     outputRange: ['-15deg', '0deg', '15deg'],
   });
 
-  const scale = size / 120;
-
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       {/* 꼬리 (몸체 뒤에, 왼쪽 위) */}
@@ -75,8 +78,8 @@ export const CapybaraCharacter: React.FC<CapybaraCharacterProps> = ({ size = 120
           {
             width: 30 * scale,
             height: 20 * scale,
-            top: 55 * scale,
-            left: 2 * scale,
+            top: 70 * scale,
+            left: 20 * scale,
             transformOrigin: 'right center',
             transform: [
               { rotate: tailRotateDeg },
@@ -92,8 +95,8 @@ export const CapybaraCharacter: React.FC<CapybaraCharacterProps> = ({ size = 120
         style={[
           styles.body,
           {
-            width: size,
-            height: size,
+            width: size * 1.3,
+            height: size * 1.3,
           },
         ]}
         resizeMode="contain"
@@ -108,22 +111,37 @@ export const CapybaraCharacter: React.FC<CapybaraCharacterProps> = ({ size = 120
         }
         style={[
           styles.eyes,
-          isEyeClosed
-            ? {
-                width: 16 * scale,
-                height: 6 * scale,
-                top: 33 * scale,
-                right: 27 * scale,
-              }
-            : {
-                width: 25 * scale,
-                height: 13 * scale,
-                top: 30 * scale,
-                right: 25 * scale,
-              },
+          {
+            width: 40 * scale,
+            height: 40 * scale,
+            top: 32 * scale,
+            right: 0 * scale,
+          },
         ]}
         resizeMode="contain"
       />
+
+      {/* 장착된 아이템 오버레이 (config 기반) */}
+      {equippedDecorations.map((id) => {
+        const config = DECORATION_CONFIGS[id];
+        if (!config?.mainOverlay) return null;
+        const o = config.mainOverlay;
+        return (
+          <Image
+            key={id}
+            source={o.image}
+            style={{
+              position: 'absolute',
+              zIndex: 1,
+              width: o.width * scale,
+              height: o.height * scale,
+              top: o.top * scale,
+              right: o.right * scale,
+            }}
+            resizeMode="contain"
+          />
+        );
+      })}
     </View>
   );
 };
