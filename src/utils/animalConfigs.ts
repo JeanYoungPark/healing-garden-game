@@ -1,6 +1,6 @@
 // 🐰 Healing Garden - Animal Configurations
 
-import { Dimensions } from 'react-native';
+import { Dimensions, ImageSourcePropType } from 'react-native';
 import { AnimalType, PlantType } from '../types';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -30,6 +30,14 @@ export interface AnimalConfig {
   name: string;        // 표시 이름
   nickname: string;    // 별명 (알럿용)
   emoji: string;
+  collectionImage?: ImageSourcePropType; // 도감 수집 후 이미지
+  collectionShadow?: ImageSourcePropType; // 도감 미수집 그림자 이미지
+  // 도감 이미지 위치 조정 (비율 기반, 아이템 박스 기준)
+  collectionStyle?: {
+    heightRatio?: number;  // 아이템 박스 높이 대비 비율 (기본 0.5)
+    topRatio?: number;     // 아이템 박스 높이 대비 top 비율 (기본 0.12)
+    leftRatio?: number;    // 아이템 박스 너비 대비 left 비율 (기본 0.13)
+  };
   // 정원 내 렌더링 설정
   render: AnimalRenderConfig;
   giftType?: 'seed' | 'water' | 'gold' | 'decoration';  // 선물 종류
@@ -76,6 +84,9 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '토끼',
     nickname: '토깽이',
     emoji: '🐰',
+    collectionImage: require('../assets/ui/common/animal-item-rabbit.png'),
+    collectionShadow: require('../assets/ui/common/animal-shadow-rabbit.png'),
+    collectionStyle: { heightRatio: 0.5, topRatio: 0.12, leftRatio: 0.11 },
     render: { position: 'beside-capybara' },
     giftType: 'seed',
     giftSeedType: 'strawberry',
@@ -143,6 +154,9 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '고양이',
     nickname: '고영희',
     emoji: '🐱',
+    collectionImage: require('../assets/ui/common/animal-item-cat.png'),
+    collectionShadow: require('../assets/ui/common/animal-shadow-cat.png'),
+    collectionStyle: { heightRatio: 0.5, topRatio: 0.12, leftRatio: 0.11 },
     render: {
       position: 'custom',
       containerStyle: {
@@ -168,6 +182,9 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '올빼미',
     nickname: '올뺌희',
     emoji: '🦉',
+    collectionImage: require('../assets/ui/common/animal-item-owl.png'),
+    collectionShadow: require('../assets/ui/common/animal-shadow-owl.png'),
+    collectionStyle: { heightRatio: 0.5, topRatio: 0.12, leftRatio: 0.13 },
     render: {
       position: 'custom',
       containerStyle: {
@@ -191,3 +208,6 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     },
   },
 };
+
+// config에서 자동 파생된 동물 목록 (도감 등에서 사용)
+export const ALL_ANIMAL_TYPES = Object.keys(ANIMAL_CONFIGS) as AnimalType[];

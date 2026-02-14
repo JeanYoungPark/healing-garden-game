@@ -8,6 +8,7 @@ import { modalStyles } from '../styles/modalStyles';
 import { useGardenStore } from '../stores/gardenStore';
 import { PLANT_CONFIGS, ALL_PLANT_TYPES } from '../utils/plantConfigs';
 import { PLANT_STAGE_IMAGES } from '../utils/plantStageConfigs';
+import { ANIMAL_CONFIGS, ALL_ANIMAL_TYPES } from '../utils/animalConfigs';
 import { PlantType } from '../types';
 
 // 미수집 작물 이미지
@@ -55,7 +56,7 @@ interface CollectionModalProps {
 }
 
 export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClose }) => {
-  const { collection, seenCollection, markCollectionAsSeen } = useGardenStore();
+  const { collection, seenCollection, markCollectionAsSeen, claimedAnimals } = useGardenStore();
   const [selectedTab, setSelectedTab] = React.useState<'animal' | 'gift'>('animal');
   const [selectedPlant, setSelectedPlant] = React.useState<PlantType | null>(null);
 
@@ -144,26 +145,34 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                 <View style={styles.grid}>
                   {selectedTab === 'animal' && (
                     <>
-                      {[1, 2, 3, 4].map((item) => (
-                        <View key={item} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
-                          <Image
-                            source={require('../assets/ui/common/gift-item-box.png')}
-                            style={{ width: itemBoxWidth, height: itemBoxHeight }}
-                            resizeMode="contain"
-                          />
-                          <Image
-                            source={
-                              item === 1 ? require('../assets/ui/common/animal-item-01.png') :
-                              item === 2 ? require('../assets/ui/common/animal-item-02.png') :
-                              item === 3 ? require('../assets/ui/common/animal-item-03.png') :
-                              require('../assets/ui/common/animal-item-04.png')
-                            }
-                            style={[styles.giftItem, { height: itemImageHeight, top: itemImageTop }]}
-                            resizeMode="contain"
-                          />
-                          <Text style={[styles.giftItemText, { bottom: itemTextBottom, fontSize: itemFontSize }]}>???</Text>
-                        </View>
-                      ))}
+                      {ALL_ANIMAL_TYPES.filter((t) => ANIMAL_CONFIGS[t].collectionShadow).map((type, index) => {
+                        const config = ANIMAL_CONFIGS[type];
+                        const met = claimedAnimals.includes(type);
+                        const cs = config.collectionStyle;
+                        const imgHeight = itemBoxHeight * (cs?.heightRatio ?? 0.5);
+                        const imgTop = itemBoxHeight * (cs?.topRatio ?? 0.12);
+                        return (
+                          <View key={type} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
+                            <Image
+                              source={require('../assets/ui/common/gift-item-box.png')}
+                              style={{ width: itemBoxWidth, height: itemBoxHeight }}
+                              resizeMode="contain"
+                            />
+                            <Image
+                              source={
+                                met && config.collectionImage
+                                  ? config.collectionImage
+                                  : config.collectionShadow || GIFT_ITEM_IMAGES[index % GIFT_ITEM_IMAGES.length]
+                              }
+                              style={[styles.giftItem, { height: imgHeight, top: imgTop, left: itemBoxWidth * (cs?.leftRatio ?? 0.13) }]}
+                              resizeMode="contain"
+                            />
+                            <Text style={[styles.giftItemText, { bottom: itemTextBottom, fontSize: itemFontSize }]}>
+                              {met ? config.name : '???'}
+                            </Text>
+                          </View>
+                        );
+                      })}
                     </>
                   )}
                   {selectedTab === 'gift' && (
