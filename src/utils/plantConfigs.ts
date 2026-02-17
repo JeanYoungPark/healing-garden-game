@@ -14,7 +14,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     rarity: 'common',
     description: '밝은 주황빛의 건강한 채소예요.',
     story: '첫 번째 당근을 수확했을 때 토끼가 찾아왔어요.',
-    collectionImage: require('../assets/seeds/carrot-harvest.png'),
+    collectionImage: require('../assets/collection/plant-carrot.png'),
+    collectionShadow: require('../assets/collection/plant-shadow-carrot.png'),
   },
   turnip: {
     type: 'turnip',
@@ -27,7 +28,22 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     rarity: 'common',
     description: '하얀 속살이 아삭한 채소예요.',
     story: '토끼가 선물해준 소중한 씨앗이에요.',
-    collectionImage: require('../assets/seeds/turnip.png'),
+    collectionImage: require('../assets/collection/plant-turnip.png'),
+    collectionShadow: require('../assets/collection/plant-shadow-turnip.png'),
+  },
+  potato: {
+    type: 'potato',
+    name: '감자',
+    seedPrice: 0, // 동물 선물로만 획득
+    harvestGold: 200,
+    growthTime: 120, // 2시간
+    waterBonus: 6, // 물 1회당 6분 단축
+    emoji: '🥔',
+    rarity: 'common',
+    description: '포슬포슬한 노란 속살의 채소예요.',
+    story: '부기가 먼 길을 오며 가져온 씨앗이에요.',
+    collectionImage: require('../assets/collection/plant-potato.png'),
+    collectionShadow: require('../assets/collection/plant-shadow-potato.png'),
   },
   strawberry: {
     type: 'strawberry',
@@ -40,7 +56,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     rarity: 'common',
     description: '작고 빨간 봄의 선물이에요.',
     story: '달콤한 향기가 정원을 가득 채워요.',
-    collectionImage: require('../assets/seeds/strawberry.png'),
+    collectionImage: require('../assets/collection/plant-strawberry.png'),
+    collectionShadow: require('../assets/collection/plant-shadow-strawberry.png'),
   },
   watermelon: {
     type: 'watermelon',

@@ -73,23 +73,27 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({ size = 140 }) => {
 
   const currentFrame = FRAME_SEQUENCE[frameIndex];
 
-  const eyeSize = size * 0.3; // 눈 크기를 몸통의 60%로
+  const eyeSize = size * 0.3;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      {/* 몸통 */}
-      <Image
-        source={CAT_FRAMES[currentFrame]}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          width: size,
-          height: size,
-        }}
-        resizeMode="contain"
-        fadeDuration={0}
-      />
+      {/* 모든 프레임을 미리 렌더링, 현재 프레임만 표시 */}
+      {CAT_FRAMES.map((source, i) => (
+        <Image
+          key={i}
+          source={source}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: size,
+            height: size,
+            opacity: i === currentFrame ? 1 : 0,
+          }}
+          resizeMode="contain"
+          fadeDuration={0}
+        />
+      ))}
       {/* 눈 */}
       <Image
         source={eyesClosed ? CAT_EYES_CLOSED : CAT_EYES_OPEN}

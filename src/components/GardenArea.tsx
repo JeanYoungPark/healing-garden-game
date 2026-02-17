@@ -11,10 +11,12 @@ import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 import { RabbitCharacter } from './RabbitCharacter';
 import { CatCharacter } from './CatCharacter';
 import { OwlCharacter } from './OwlCharacter';
+import { TurtleCharacter } from './TurtleCharacter';
 
 // 동물별 전용 컴포넌트 레지스트리 (없으면 이모지로 표시)
 const ANIMAL_COMPONENTS: Partial<Record<AnimalType, React.FC<any>>> = {
   rabbit: RabbitCharacter,
+  turtle: TurtleCharacter,
   cat: CatCharacter,
   owl: ({ size }: { size?: number }) => <OwlCharacter size={size ?? 100} />,
 };
@@ -331,7 +333,9 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                                     position: 'absolute',
                                     width: plotSize * size.w,
                                     height: plotSize * size.h,
-                                    top: plotSize * size.mt,
+                                    ...(size.mb != null
+                                      ? { bottom: plotSize * size.mb }
+                                      : { top: plotSize * (size.mt ?? 0) }),
                                     left: (plotSize - plotSize * size.w) / 2 + plotSize * size.ml,
                                   }}
                                   resizeMode="contain"

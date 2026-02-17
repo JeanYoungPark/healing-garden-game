@@ -1,7 +1,7 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
 import { GardenArea } from '../components/GardenArea';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { SeedBagModal } from '../components/SeedBagModal';
@@ -35,7 +35,6 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const addGold = useGardenStore((state) => state.addGold);
   const waterPlant = useGardenStore((state) => state.waterPlant);
   const markCollectionSeen = useGardenStore((state) => state.markCollectionSeen);
-  const checkForNewVisitors = useGardenStore((state) => state.checkForNewVisitors);
   const claimVisitor = useGardenStore((state) => state.claimVisitor);
   const initFirstVisitMail = useGardenStore((state) => state.initFirstVisitMail);
   const [seedBagVisible, setSeedBagVisible] = useState(false);
@@ -64,33 +63,22 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
     return () => unsub();
   }, [initFirstVisitMail]);
 
-  // 앱 시작 및 포그라운드 복귀 시 동물 방문자 체크
-  const appState = useRef(AppState.currentState);
+  // 앱 시작 시 딱 한 번만 동물 방문자 체크
   useEffect(() => {
-    let unsubHydration: (() => void) | undefined;
+    const run = () => {
+      useGardenStore.getState().checkForNewVisitors();
+    };
 
-    // 이미 hydration이 완료된 경우 즉시 실행
     if (useGardenStore.persist.hasHydrated()) {
-      checkForNewVisitors();
+      run();
     } else {
-      // hydration 대기
-      unsubHydration = useGardenStore.persist.onFinishHydration(() => {
-        checkForNewVisitors();
+      const unsub = useGardenStore.persist.onFinishHydration(() => {
+        run();
+        unsub();
       });
     }
-
-    const sub = AppState.addEventListener('change', (nextState) => {
-      if (appState.current.match(/inactive|background/) && nextState === 'active') {
-        checkForNewVisitors();
-      }
-      appState.current = nextState;
-    });
-
-    return () => {
-      sub.remove();
-      if (unsubHydration) unsubHydration();
-    };
-  }, [checkForNewVisitors]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 심기 모드 상태: null이면 기본(당근), 설정되면 선택된 씨앗
   const [selectedSeed, setSelectedSeed] = useState<PlantType | null>(null);

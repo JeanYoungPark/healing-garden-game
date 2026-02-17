@@ -11,14 +11,8 @@ import { PLANT_STAGE_IMAGES } from '../utils/plantStageConfigs';
 import { ANIMAL_CONFIGS, ALL_ANIMAL_TYPES } from '../utils/animalConfigs';
 import { PlantType } from '../types';
 
-// 미수집 작물 이미지
-const GIFT_ITEM_IMAGES = [
-  require('../assets/ui/common/gift-item-01.png'),
-  require('../assets/ui/common/gift-item-02.png'),
-  require('../assets/ui/common/gift-item-03.png'),
-  require('../assets/ui/common/gift-item-04.png'),
-  require('../assets/ui/common/gift-item-05.png'),
-];
+// 미수집 기본 그림자 (collectionShadow 없는 작물용 fallback)
+const DEFAULT_SHADOW = require('../assets/collection/plant-shadow-carrot.png');
 
 // 배경 크기 계산 (collection-bg: 1070 x 1351)
 const { bgWidth, bgHeight } = calcBackgroundSize(1070, 1351);
@@ -162,7 +156,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                               source={
                                 met && config.collectionImage
                                   ? config.collectionImage
-                                  : config.collectionShadow || GIFT_ITEM_IMAGES[index % GIFT_ITEM_IMAGES.length]
+                                  : config.collectionShadow || DEFAULT_SHADOW
                               }
                               style={[styles.giftItem, { height: imgHeight, top: imgTop, left: itemBoxWidth * (cs?.leftRatio ?? 0.13) }]}
                               resizeMode="contain"
@@ -177,7 +171,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                   )}
                   {selectedTab === 'gift' && (
                     <>
-                      {ALL_PLANT_TYPES.map((type, index) => {
+                      {ALL_PLANT_TYPES.map((type) => {
                         const collected = collection.includes(type);
                         const isNew = collected && !seenCollection.includes(type);
                         const config = PLANT_CONFIGS[type];
@@ -212,7 +206,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                               />
                             ) : (
                               <Image
-                                source={GIFT_ITEM_IMAGES[index % GIFT_ITEM_IMAGES.length]}
+                                source={config.collectionShadow || DEFAULT_SHADOW}
                                 style={[styles.giftItem, { height: itemImageHeight, top: itemImageTop }]}
                                 resizeMode="contain"
                               />

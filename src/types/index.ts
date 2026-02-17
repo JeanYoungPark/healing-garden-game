@@ -1,6 +1,6 @@
 // 🍓 Healing Garden - Type Definitions
 
-export type PlantType = 'carrot' | 'turnip' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
+export type PlantType = 'carrot' | 'turnip' | 'potato' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
 
 export type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog' | 'cat' | 'owl';
 
@@ -35,6 +35,7 @@ export interface PlantConfig {
   description: string; // 작물 설명
   story?: string; // 특별한 이야기 (선택)
   collectionImage?: any; // 도감 표시용 이미지 (없으면 stage 3 이미지 사용)
+  collectionShadow?: any; // 도감 미수집 그림자 이미지
 }
 
 export interface AnimalVisitor {
@@ -83,6 +84,7 @@ export interface GardenState {
   lastRandomVisitDate: string; // 마지막 랜덤 방문 날짜 (YYYY-MM-DD, 자정 리셋용)
   visitCountWithoutHarvest: number; // 수확 없이 앱 접속한 횟수 (고양이 트리거용)
   hasHarvestedThisSession: boolean; // 이번 세션에 수확했는지 여부
+  lastAppOpenDate: string | null; // 마지막 앱 실행 날짜 (YYYY-MM-DD, 거북이 트리거용)
   lastSaveTime: Date;
 }
 

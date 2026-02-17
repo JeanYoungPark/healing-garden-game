@@ -77,19 +77,23 @@ export const RabbitCharacter: React.FC<RabbitCharacterProps> = ({ size = 120 }) 
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      {/* 몸체 - 하단 정렬, 수평 중앙 */}
-      <Image
-        source={RABBIT_FRAMES[currentFrame]}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: (size - frameW) / 2,
-          width: frameW,
-          height: frameH,
-        }}
-        resizeMode="contain"
-        fadeDuration={0}
-      />
+      {/* 모든 프레임을 미리 렌더링, 현재 프레임만 표시 */}
+      {RABBIT_FRAMES.map((source, i) => (
+        <Image
+          key={i}
+          source={source}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: (size - frameW) / 2,
+            width: frameW,
+            height: frameH,
+            opacity: i === currentFrame ? 1 : 0,
+          }}
+          resizeMode="contain"
+          fadeDuration={0}
+        />
+      ))}
 
       {/* 눈 */}
       <Image

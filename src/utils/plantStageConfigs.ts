@@ -6,18 +6,20 @@ import { PlantType } from '../types';
 export interface PlantStageSize {
   w: number;   // 너비 (plotSize 기준 비율)
   h: number;   // 높이
-  mt: number;  // 위쪽 오프셋
+  mt?: number; // 위쪽 오프셋 (mt 또는 mb 중 하나 사용)
+  mb?: number; // 아래쪽 오프셋
   ml: number;  // 왼쪽 오프셋
   tooltipOffset?: number;  // 툴팁 추가 오프셋 (px, 양수=위로)
 }
 
 // 공통 크기 설정
-const DEFAULT_SEED_SIZE = { w: 0.06, h: 0.11, mt: 0.26, ml: 0 };  // 씨앗
+const DEFAULT_SEED_SIZE = { w: 0.06, h: 0.11, mb: 0.23, ml: 0 };  // 씨앗
 
 // 작물별 크기 설정 (stage 1, 2, 3에 공통 적용)
-const CARROT_SIZE = { w: 0.45, h: 0.45, mt: -0.13, ml: -0.02 };
-const TURNIP_SIZE = { w: 0.7, h: 0.7, mt: -0.31, ml: -0.02 };
-const STRAWBERRY_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
+const CARROT_SIZE = { w: 0.45, h: 0.45, mb: 0.27, ml: -0.02 };
+const TURNIP_SIZE = { w: 0.7, h: 0.7, mb: 0.19, ml: -0.02 };
+const POTATO_SIZE = { w: 0.6, h: 0.6, mb: 0.23, ml: -0.02 };
+const STRAWBERRY_SIZE = { w: 0.6, h: 0.6, mb: 0.27, ml: -0.02 };
 const WATERMELON_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 const PEACH_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 const GRAPE_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
@@ -36,6 +38,12 @@ export const PLANT_STAGE_IMAGES: Record<PlantType, Record<number, any>> = {
     1: require('../assets/plants/turnip-stage-1.png'),
     2: require('../assets/plants/turnip-stage-2.png'),
     3: require('../assets/plants/turnip-stage-3.png'),
+  },
+  potato: {
+    0: require('../assets/plants/plant-lv1.png'),
+    1: require('../assets/plants/potato-stage-1.png'),
+    2: require('../assets/plants/potato-stage-2.png'),
+    3: require('../assets/plants/potato-stage-3.png'),
   },
   strawberry: {
     0: require('../assets/plants/plant-lv1.png'),
@@ -83,9 +91,15 @@ export const PLANT_STAGE_SIZES: Record<PlantType, PlantStageSize[]> = {
     { ...TURNIP_SIZE, tooltipOffset: -20 },
     TURNIP_SIZE,
   ],
+  potato: [
+    DEFAULT_SEED_SIZE,
+    POTATO_SIZE,
+    POTATO_SIZE,
+    POTATO_SIZE,
+  ],
   strawberry: [
     DEFAULT_SEED_SIZE,
-    { ...STRAWBERRY_SIZE, tooltipOffset: -70 },
+    { ...STRAWBERRY_SIZE, tooltipOffset: -50 },
     { ...STRAWBERRY_SIZE, tooltipOffset: -20 },
     STRAWBERRY_SIZE,
   ],

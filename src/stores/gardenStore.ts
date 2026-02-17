@@ -31,11 +31,12 @@ interface GardenStore extends GardenState {
   checkForOwlMail: () => void; // 올빼미 편지 체크
   // Animal actions
   checkForNewVisitors: () => void;
-  checkForRandomVisitors: () => void; // 랜덤 재등장 체크
+  checkForRandomVisitors: (excludeType?: AnimalType) => void; // 랜덤 재등장 체크
   claimVisitor: (animalType: AnimalType) => string | null; // returns gift message
   resetDailyRandomVisits: () => void; // 자정 리셋
   incrementVisitCountIfNoHarvest: () => void; // 수확 없이 접속 시 카운터 증가
   removeOwlIfDaytime: () => void; // 낮이면 올빼미 제거
+  updateLastAppOpenDate: () => void; // 앱 실행 날짜 업데이트 (거북이 트리거용)
   // Decoration actions
   equipDecoration: (decorationId: string) => void;
   unequipDecoration: (decorationId: string) => void;
@@ -154,6 +155,7 @@ export const useGardenStore = create<GardenStore>()(
       lastRandomVisitDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
       visitCountWithoutHarvest: 0, // 수확 없이 앱 접속한 횟수 (고양이 트리거용)
       hasHarvestedThisSession: false, // 이번 세션에 수확했는지 여부
+      lastAppOpenDate: null, // 마지막 앱 실행 날짜 (YYYY-MM-DD, 거북이 트리거용)
       lastSaveTime: new Date(),
 
       // Actions
@@ -386,28 +388,18 @@ export const useGardenStore = create<GardenStore>()(
               const visitorMet = !config.trigger.requiredVisitor ||
                                  state.claimedAnimals.includes(config.trigger.requiredVisitor);
 
-              console.log(`=== Checking ${config.type} ===`);
-              console.log('visitCountWithoutHarvest:', state.visitCountWithoutHarvest);
-              console.log('requiredCount:', config.trigger.requiredCount);
-              console.log('countMet:', countMet);
-              console.log('requiredVisitor:', config.trigger.requiredVisitor);
-              console.log('claimedAnimals:', state.claimedAnimals);
-              console.log('visitorMet:', visitorMet);
-
               if (countMet && visitorMet) {
-                console.log(`${config.type} conditions met! Adding visitor.`);
                 newVisitors.push({
                   type: config.type,
                   appearedAt: new Date(),
                   isRandom: false,
                 });
-              } else {
-                console.log(`${config.type} conditions NOT met.`);
               }
             }
           } else if (config.trigger.type === 'mailRead') {
             // 편지 읽은 후 등장하는 동물 (올빼미)
-            const mail = state.mails.find((m) => m.id === config.trigger.requiredMailId);
+            const trigger = config.trigger;
+            const mail = state.mails.find((m) => m.id === trigger.requiredMailId);
 
             // 편지가 읽혀있는지 확인
             if (mail && mail.isRead && mail.readAt) {
@@ -426,6 +418,22 @@ export const useGardenStore = create<GardenStore>()(
                 newVisitors.push({
                   type: config.type,
                   appearedAt: now,
+                  isRandom: false,
+                });
+              }
+            }
+          } else if (config.trigger.type === 'inactiveDays') {
+            // N일 이상 미접속 시 등장하는 동물 (거북이)
+            if (state.lastAppOpenDate) {
+              const lastOpen = new Date(state.lastAppOpenDate);
+              const today = new Date();
+              const diffMs = today.getTime() - lastOpen.getTime();
+              const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+              if (diffDays >= config.trigger.requiredDays) {
+                newVisitors.push({
+                  type: config.type,
+                  appearedAt: new Date(),
                   isRandom: false,
                 });
               }
@@ -531,14 +539,14 @@ export const useGardenStore = create<GardenStore>()(
           lastSaveTime: new Date(),
         });
 
-        // 동물 클릭 후 랜덤 동물 체크
-        setTimeout(() => get().checkForRandomVisitors(), 100);
+        // 동물 클릭 후 랜덤 동물 체크 (방금 퇴장한 동물 제외)
+        setTimeout(() => get().checkForRandomVisitors(animalType), 100);
 
         return giftMessage;
       },
 
-      // 랜덤 재등장 체크
-      checkForRandomVisitors: () => {
+      // 랜덤 재등장 체크 (excludeType: 방금 퇴장한 동물은 즉시 재등장 방지)
+      checkForRandomVisitors: (excludeType?: AnimalType) => {
         const state = get();
 
         // 자정 리셋
@@ -551,8 +559,9 @@ export const useGardenStore = create<GardenStore>()(
         const hasConditionAnimal = state.visitors.some((v) => !v.isRandom);
         if (hasConditionAnimal) return;
 
-        // 이미 방문한 동물 중 랜덤 재등장 가능한 동물들
+        // 이미 방문한 동물 중 랜덤 재등장 가능한 동물들 (방금 퇴장한 동물 제외)
         const eligibleAnimals = state.claimedAnimals
+          .filter((type) => type !== excludeType)
           .map((type) => ANIMAL_CONFIGS[type])
           .filter((config) => config.randomReappear?.enabled);
 
@@ -588,14 +597,9 @@ export const useGardenStore = create<GardenStore>()(
       incrementVisitCountIfNoHarvest: () => {
         const state = get();
 
-        console.log('=== incrementVisitCountIfNoHarvest ===');
-        console.log('hasHarvestedThisSession:', state.hasHarvestedThisSession);
-        console.log('visitCountWithoutHarvest (before):', state.visitCountWithoutHarvest);
-
         // 이번 세션에 수확하지 않았으면 카운터 증가
         if (!state.hasHarvestedThisSession) {
           const newCount = state.visitCountWithoutHarvest + 1;
-          console.log('visitCountWithoutHarvest (after):', newCount);
 
           set({
             visitCountWithoutHarvest: newCount,
@@ -607,7 +611,6 @@ export const useGardenStore = create<GardenStore>()(
           setTimeout(() => get().checkForNewVisitors(), 100);
         } else {
           // 수확했던 세션이면 플래그만 리셋
-          console.log('Session had harvest, resetting flag');
           set({
             hasHarvestedThisSession: false,
           });
@@ -626,6 +629,12 @@ export const useGardenStore = create<GardenStore>()(
             lastSaveTime: new Date(),
           });
         }
+      },
+
+      // 앱 실행 날짜 업데이트 (거북이 미접속 트리거용, checkForNewVisitors 후 호출)
+      updateLastAppOpenDate: () => {
+        const today = new Date().toISOString().split('T')[0];
+        set({ lastAppOpenDate: today });
       },
 
       // 자정 리셋
@@ -725,13 +734,14 @@ export const useGardenStore = create<GardenStore>()(
           lastRandomVisitDate: new Date().toISOString().split('T')[0],
           visitCountWithoutHarvest: 0,
           hasHarvestedThisSession: false,
+          lastAppOpenDate: null,
           lastSaveTime: new Date(),
         });
       },
     }),
     {
       name: 'healing-garden-storage',
-      version: 9, // 꾸미기 아이템 장착 상태 추가
+      version: 10, // 거북이 미접속 트리거용 lastAppOpenDate 추가
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -776,6 +786,9 @@ export const useGardenStore = create<GardenStore>()(
         if (version < 9) {
           persistedState.equippedDecorations = persistedState.equippedDecorations || [];
         }
+        if (version < 10) {
+          persistedState.lastAppOpenDate = persistedState.lastAppOpenDate ?? null;
+        }
 
         return persistedState;
       },
@@ -800,6 +813,7 @@ export const useGardenStore = create<GardenStore>()(
         lastRandomVisitDate: state.lastRandomVisitDate,
         visitCountWithoutHarvest: state.visitCountWithoutHarvest,
         hasHarvestedThisSession: state.hasHarvestedThisSession,
+        lastAppOpenDate: state.lastAppOpenDate,
         lastSaveTime: state.lastSaveTime,
       }),
     }

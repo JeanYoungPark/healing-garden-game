@@ -61,6 +61,9 @@ export interface AnimalConfig {
     requiredMailId: string;  // 읽어야 하는 편지 ID
     delayHours: number;      // 편지를 읽은 후 몇 시간 뒤 등장
   } | {
+    type: 'inactiveDays';    // N일 이상 미접속 시 등장
+    requiredDays: number;
+  } | {
     type: 'disabled';        // 비활성화 (미구현)
   };
   // 랜덤 재등장 설정
@@ -84,8 +87,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '토끼',
     nickname: '토깽이',
     emoji: '🐰',
-    collectionImage: require('../assets/ui/common/animal-item-rabbit.png'),
-    collectionShadow: require('../assets/ui/common/animal-shadow-rabbit.png'),
+    collectionImage: require('../assets/collection/animal-rabbit.png'),
+    collectionShadow: require('../assets/collection/animal-shadow-rabbit.png'),
     collectionStyle: { heightRatio: 0.5, topRatio: 0.12, leftRatio: 0.11 },
     render: { position: 'beside-capybara' },
     giftType: 'seed',
@@ -108,10 +111,17 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     emoji: '🐢',
     render: { position: 'beside-capybara' },
     giftType: 'seed',
-    giftSeedType: 'strawberry',
-    giftSeedCount: 2,
-    giftMessage: '새로운 친구 거붕이가\n딸기 씨앗을 선물로 줬어요!',
-    trigger: { type: 'disabled' }, // TODO: 게임 시작 7일 후 구현
+    giftSeedType: 'potato',
+    giftSeedCount: 1,
+    giftMessage: '먼 길을 걸어온 거붕이가\n감자 씨앗 1개를 선물로 줬어요!',
+    trigger: { type: 'inactiveDays', requiredDays: 7 },
+    randomReappear: {
+      enabled: true,
+      probability: 0.15,     // 15% 확률로 등장 (고양이와 동일)
+      alwaysGift: true,
+      neverGift: false,
+      giftMessage: '거붕이가\n감자 씨앗 1개를 선물로 줬어요!',
+    },
   },
   hedgehog: {
     type: 'hedgehog',
@@ -154,8 +164,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '고양이',
     nickname: '고영희',
     emoji: '🐱',
-    collectionImage: require('../assets/ui/common/animal-item-cat.png'),
-    collectionShadow: require('../assets/ui/common/animal-shadow-cat.png'),
+    collectionImage: require('../assets/collection/animal-cat.png'),
+    collectionShadow: require('../assets/collection/animal-shadow-cat.png'),
     collectionStyle: { heightRatio: 0.5, topRatio: 0.12, leftRatio: 0.11 },
     render: {
       position: 'custom',
@@ -182,8 +192,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '올빼미',
     nickname: '올뺌희',
     emoji: '🦉',
-    collectionImage: require('../assets/ui/common/animal-item-owl.png'),
-    collectionShadow: require('../assets/ui/common/animal-shadow-owl.png'),
+    collectionImage: require('../assets/collection/animal-owl.png'),
+    collectionShadow: require('../assets/collection/animal-shadow-owl.png'),
     collectionStyle: { heightRatio: 0.5, topRatio: 0.12, leftRatio: 0.13 },
     render: {
       position: 'custom',
