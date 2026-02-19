@@ -27,6 +27,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const seeds = useGardenStore((state) => state.seeds);
   const visitors = useGardenStore((state) => state.visitors);
   const mails = useGardenStore((state) => state.mails);
+  const equippedFence = useGardenStore((state) => state.equippedFence);
 
   // 액션들
   const plantSeedInSlot = useGardenStore((state) => state.plantSeedInSlot);
@@ -207,6 +208,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
             plantingMode={isPlantingMode}
             visitors={visitors}
             hasUnreadMail={mails.some((m) => !m.isRead)}
+            equippedFence={equippedFence}
             onPlantPress={handlePlantPress}
             onSlotPress={handleSlotPress}
             onWaterPlant={handleWaterPlant}

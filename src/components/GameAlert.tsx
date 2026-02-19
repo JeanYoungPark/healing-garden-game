@@ -63,5 +63,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Gaegu-Bold',
     color: '#7a6854',
     textAlign: 'center',
+    lineHeight: 24, // 줄간격 추가 (fontSize * 1.6)
   },
 });

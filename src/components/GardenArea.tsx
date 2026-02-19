@@ -8,15 +8,18 @@ import { Plant, AnimalType, AnimalVisitor } from '../types';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PLANT_STAGE_IMAGES, PLANT_STAGE_SIZES } from '../utils/plantStageConfigs';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
+import { FENCE_CONFIGS } from '../utils/fenceConfigs';
 import { RabbitCharacter } from './RabbitCharacter';
 import { CatCharacter } from './CatCharacter';
 import { OwlCharacter } from './OwlCharacter';
 import { TurtleCharacter } from './TurtleCharacter';
+import { RaccoonCharacter } from './RaccoonCharacter';
 
 // 동물별 전용 컴포넌트 레지스트리 (없으면 이모지로 표시)
 const ANIMAL_COMPONENTS: Partial<Record<AnimalType, React.FC<any>>> = {
   rabbit: RabbitCharacter,
   turtle: TurtleCharacter,
+  raccoon: RaccoonCharacter,
   cat: CatCharacter,
   owl: ({ size }: { size?: number }) => <OwlCharacter size={size ?? 100} />,
 };
@@ -29,6 +32,7 @@ interface GardenAreaProps {
   plantingMode: boolean;
   visitors: AnimalVisitor[];
   hasUnreadMail: boolean;
+  equippedFence: string; // 장착된 울타리 ID
   onPlantPress?: (plantId: string) => void;
   onSlotPress?: (slotIndex: number) => void;
   onWaterPlant?: (plantId: string) => void;
@@ -106,6 +110,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
   plantingMode,
   visitors,
   hasUnreadMail,
+  equippedFence,
   onPlantPress,
   onSlotPress,
   onWaterPlant,
@@ -209,7 +214,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
               return (
                 <TouchableOpacity
                   key={visitor.type}
-                  style={[styles.visitorContainer, { left: 150 + idx * 70 }]}
+                  style={[styles.visitorContainer, { left: width * 0.45 + idx * (width * 0.18) }]}
                   activeOpacity={0.7}
                   onPress={() => onVisitorPress?.(visitor.type)}
                 >
@@ -357,9 +362,9 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
             ))}
           </View>
 
-          {/* 울타리 - 밭 바로 아래 */}
+          {/* 울타리 - 밭 바로 아래 (장착된 울타리 렌더링) */}
           <Image
-            source={require('../assets/garden/props/fence.png')}
+            source={FENCE_CONFIGS[equippedFence]?.image || require('../assets/garden/props/fence-rope.png')}
             style={styles.fence}
             resizeMode="contain"
           />
@@ -393,7 +398,7 @@ const styles = StyleSheet.create({
   },
   visitorContainer: {
     position: 'absolute',
-    top: '17%',
+    top: '23%',
     width: 80,
     height: 80,
     justifyContent: 'center',

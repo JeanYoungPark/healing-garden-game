@@ -44,7 +44,7 @@ export interface AnimalConfig {
   giftSeedType?: PlantType;  // 선물로 주는 씨앗 (giftType이 'seed'일 때)
   giftSeedCount?: number;
   giftWaterCount?: number;   // 선물로 주는 물 개수 (giftType이 'water'일 때)
-  giftGoldAmount?: number;   // 선물로 주는 골드 (giftType이 'gold'일 때)
+  giftGoldAmount?: number;   // 선물로 주는 새싹 (giftType이 'gold'일 때)
   giftDecorationId?: string; // 선물로 주는 꾸미기 아이템 ID (giftType이 'decoration'일 때)
   giftMessage: string;      // 선물 알럿 메시지
   // 등장 조건
@@ -63,6 +63,9 @@ export interface AnimalConfig {
   } | {
     type: 'inactiveDays';    // N일 이상 미접속 시 등장
     requiredDays: number;
+  } | {
+    type: 'harvest_count';   // 누적 수확 횟수 조건
+    requiredCount: number;   // 필요한 누적 수확 횟수
   } | {
     type: 'disabled';        // 비활성화 (미구현)
   };
@@ -141,11 +144,17 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     nickname: '너굴이',
     emoji: '🦝',
     render: { position: 'beside-capybara' },
-    giftType: 'seed',
-    giftSeedType: 'peach',
-    giftSeedCount: 1,
-    giftMessage: '새로운 친구 너굴이가\n복숭아 씨앗을 선물로 줬어요!',
-    trigger: { type: 'disabled' }, // TODO: 누적 수확 500회 구현
+    giftType: 'gold',
+    giftGoldAmount: 1000, // 첫 방문 시 기본값 (실제로는 claimVisitor에서 처리)
+    giftMessage: '새로운 친구 너굴이가\n새싹 1000개를 선물로 줬어요!',
+    trigger: { type: 'harvest_count', requiredCount: 500 },
+    randomReappear: {
+      enabled: true,
+      probability: 0.1,      // 10% 확률로 등장
+      alwaysGift: true,      // 항상 선물 줌
+      neverGift: false,
+      giftMessage: '너굴이가\n새싹을 선물로 줬어요!', // 실제 금액은 claimVisitor에서 처리
+    },
   },
   frog: {
     type: 'frog',

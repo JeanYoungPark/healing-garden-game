@@ -63,6 +63,12 @@ export interface DecorationItem {
   receivedAt: Date;
 }
 
+export interface FenceItem {
+  id: string;
+  name: string;
+  purchasedAt: Date;
+}
+
 export interface GardenState {
   plants: Plant[];
   seeds: SeedItem[]; // 씨앗 가방
@@ -77,6 +83,8 @@ export interface GardenState {
   claimedAnimals: AnimalType[]; // 선물을 받은 동물들 (조건 첫 만족 시에만, 랜덤 재등장 시 포함 안됨)
   decorations: DecorationItem[]; // 꾸미기 아이템 인벤토리
   equippedDecorations: string[]; // 장착 중인 꾸미기 아이템 ID 목록
+  fences: FenceItem[]; // 울타리 인벤토리
+  equippedFence: string; // 장착 중인 울타리 ID
   soundEnabled: boolean; // 소리/진동 설정
   notificationEnabled: boolean; // 알림 설정
   firstHarvestTime: Date | null; // 첫 수확 시간
@@ -85,6 +93,7 @@ export interface GardenState {
   visitCountWithoutHarvest: number; // 수확 없이 앱 접속한 횟수 (고양이 트리거용)
   hasHarvestedThisSession: boolean; // 이번 세션에 수확했는지 여부
   lastAppOpenDate: string | null; // 마지막 앱 실행 날짜 (YYYY-MM-DD, 거북이 트리거용)
+  totalHarvests: number; // 누적 수확 횟수 (너구리 트리거용)
   lastSaveTime: Date;
 }
 

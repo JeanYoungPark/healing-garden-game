@@ -7,6 +7,8 @@ import { calcBackgroundSize, calcElementSize } from '../utils/responsive';
 import { modalStyles } from '../styles/modalStyles';
 import { useGardenStore } from '../stores/gardenStore';
 import { GameAlert } from './GameAlert';
+import { ConfirmModal } from './ConfirmModal';
+import { FENCE_CONFIGS, ALL_FENCE_IDS } from '../utils/fenceConfigs';
 
 // 배경 크기 계산 (shop-bg: 1079 x 1488)
 const { bgWidth, bgHeight } = calcBackgroundSize(1079, 1488);
@@ -52,15 +54,102 @@ interface ShopModalProps {
 export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
   const [selectedTab, setSelectedTab] = React.useState<'tab1' | 'tab2'>('tab1');
   const [alertVisible, setAlertVisible] = React.useState(false);
-  const { gold, spendGold } = useGardenStore();
+  const [alertMessage, setAlertMessage] = React.useState('새싹이 부족해요');
+  const [confirmVisible, setConfirmVisible] = React.useState(false);
+  const [pendingPurchase, setPendingPurchase] = React.useState<{
+    type: 'fence' | 'plot';
+    id?: string;
+    name: string;
+    price: number;
+    index?: number; // 밭 인덱스
+  } | null>(null);
+  const gold = useGardenStore((state) => state.gold);
+  const fences = useGardenStore((state) => state.fences);
+  const equippedFence = useGardenStore((state) => state.equippedFence);
+  const purchaseFence = useGardenStore((state) => state.purchaseFence);
+  const equipFence = useGardenStore((state) => state.equipFence);
 
-  const handlePurchase = (price: number) => {
-    if (price === 0) return; // 기본 아이템
-    if (gold < price) {
+  // 울타리 구매/장착 핸들러
+  const handleFenceClick = (fenceId: string) => {
+    const config = FENCE_CONFIGS[fenceId];
+    if (!config) return;
+
+    // 기본 울타리는 바로 장착
+    if (config.isDefault) {
+      equipFence(fenceId);
+      setAlertMessage(`${config.name}를 장착했어요!`);
       setAlertVisible(true);
       return;
     }
-    spendGold(price);
+
+    // 이미 구매한 울타리면 바로 장착
+    if (fences.some((f) => f.id === fenceId)) {
+      equipFence(fenceId);
+      setAlertMessage(`${config.name}를 장착했어요!`);
+      setAlertVisible(true);
+      return;
+    }
+
+    // 새싹 부족 체크
+    if (gold < config.price) {
+      setAlertMessage('새싹이 부족해요');
+      setAlertVisible(true);
+      return;
+    }
+
+    // 구매 확인 모달 표시
+    setPendingPurchase({ type: 'fence', id: fenceId, name: config.name, price: config.price });
+    setConfirmVisible(true);
+  };
+
+  // 구매 확인
+  const handleConfirmPurchase = () => {
+    if (!pendingPurchase) return;
+
+    if (pendingPurchase.type === 'fence' && pendingPurchase.id) {
+      // 울타리 구매
+      const success = purchaseFence(pendingPurchase.id, pendingPurchase.price);
+      if (success) {
+        equipFence(pendingPurchase.id);
+        setAlertMessage(`${pendingPurchase.name}를 구매하고 장착했어요!`);
+        setAlertVisible(true);
+      }
+    } else if (pendingPurchase.type === 'plot') {
+      // 밭 구매 (TODO: 실제 구매 로직 구현)
+      setAlertMessage(`${pendingPurchase.name} 구매 기능은 준비 중이에요!`);
+      setAlertVisible(true);
+    }
+
+    setConfirmVisible(false);
+    setPendingPurchase(null);
+  };
+
+  // 구매 취소
+  const handleCancelPurchase = () => {
+    setConfirmVisible(false);
+    setPendingPurchase(null);
+  };
+
+  // 밭 구매 핸들러
+  const handlePlotPurchase = (price: number, index: number) => {
+    if (price === 0) return; // 기본 아이템
+
+    // 새싹 부족 체크
+    if (gold < price) {
+      setAlertMessage('새싹이 부족해요');
+      setAlertVisible(true);
+      return;
+    }
+
+    // 구매 확인 모달 표시
+    const plotNames = ['기본 밭', '밭 꾸미기 2', '밭 꾸미기 3', '밭 꾸미기 4', '밭 꾸미기 5'];
+    setPendingPurchase({
+      type: 'plot',
+      name: plotNames[index] || `밭 ${index + 1}`,
+      price,
+      index
+    });
+    setConfirmVisible(true);
   };
 
   // farm-plot 이미지 및 가격 매핑
@@ -72,17 +161,20 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
     { image: require('../assets/shop/farm-plot-decor-05.png'), price: 30000 },
   ];
 
-  // fence-decor 이미지 및 가격 매핑
-  const fenceDecorData = [
-    { image: require('../assets/shop/fence-decor-01.png'), price: 0 },
-    { image: require('../assets/shop/fence-decor-02.png'), price: 5000 },
-    { image: require('../assets/shop/fence-decor-03.png'), price: 10000 },
-    { image: require('../assets/shop/fence-decor-04.png'), price: 20000 },
-    { image: require('../assets/shop/fence-decor-05.png'), price: 30000 },
-  ];
-
-  // 선택된 탭에 따라 표시할 데이터 결정
-  const shopItemsData = selectedTab === 'tab1' ? farmPlotData : fenceDecorData;
+  // 울타리 데이터 (fenceConfigs 기반)
+  const fenceItemsData = ALL_FENCE_IDS.map(id => {
+    const config = FENCE_CONFIGS[id];
+    const isPurchased = config.isDefault || fences.some((f) => f.id === id);
+    const isEquipped = equippedFence === id;
+    return {
+      id,
+      image: config.shopImage || config.image, // 상점 아이콘 우선 사용
+      name: config.name,
+      price: config.price,
+      isPurchased,
+      isEquipped,
+    };
+  });
 
   return (
     <Modal
@@ -157,39 +249,77 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                 nestedScrollEnabled={true}
               >
                 <View style={styles.grid}>
-                  {shopItemsData.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={[styles.itemBoxWrapper, { width: itemBoxWidth }]}
-                      activeOpacity={0.7}
-                      onPress={() => handlePurchase(item.price)}
-                    >
-                      <Image
-                        source={require('../assets/garden/props/shop-item-box.png')}
-                        style={{ width: itemBoxWidth, height: itemBoxHeight }}
-                        resizeMode="contain"
-                      />
-                      <Image
-                        source={item.image}
-                        style={[
-                          styles.itemImage,
-                          { height: itemImageHeight, top: itemImageTop }
-                        ]}
-                        resizeMode="contain"
-                      />
-                      {/* 가격 표시 */}
-                      <View style={[styles.priceContainer, { top: priceTop }]}>
+                  {selectedTab === 'tab1' ? (
+                    // 밭 탭
+                    farmPlotData.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[styles.itemBoxWrapper, { width: itemBoxWidth }]}
+                        activeOpacity={0.7}
+                        onPress={() => handlePlotPurchase(item.price, index)}
+                      >
                         <Image
-                          source={require('../assets/ui/common/leaf-coin-shop.png')}
-                          style={styles.priceIcon}
+                          source={require('../assets/garden/props/shop-item-box.png')}
+                          style={{ width: itemBoxWidth, height: itemBoxHeight }}
                           resizeMode="contain"
                         />
-                        <Text style={styles.priceText}>
-                          {item.price === 0 ? '기본' : item.price.toLocaleString()}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                        <Image
+                          source={item.image}
+                          style={[
+                            styles.itemImage,
+                            { height: itemImageHeight, top: itemImageTop }
+                          ]}
+                          resizeMode="contain"
+                        />
+                        {/* 가격 표시 */}
+                        <View style={[styles.priceContainer, { top: priceTop }]}>
+                          <Image
+                            source={require('../assets/ui/common/leaf-coin-shop.png')}
+                            style={styles.priceIcon}
+                            resizeMode="contain"
+                          />
+                          <Text style={styles.priceText}>
+                            {item.price === 0 ? '기본' : item.price.toLocaleString()}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    // 울타리 탭
+                    fenceItemsData.map((item) => (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={[styles.itemBoxWrapper, { width: itemBoxWidth }]}
+                        activeOpacity={0.7}
+                        onPress={() => handleFenceClick(item.id)}
+                      >
+                        <Image
+                          source={require('../assets/garden/props/shop-item-box.png')}
+                          style={{ width: itemBoxWidth, height: itemBoxHeight }}
+                          resizeMode="contain"
+                        />
+                        <Image
+                          source={item.image}
+                          style={[
+                            styles.itemImage,
+                            { height: itemImageHeight * 0.4, top: itemImageTop + itemImageHeight * 0.3 }
+                          ]}
+                          resizeMode="contain"
+                        />
+                        {/* 가격 표시 */}
+                        <View style={[styles.priceContainer, { top: priceTop }]}>
+                          <Image
+                            source={require('../assets/ui/common/leaf-coin-shop.png')}
+                            style={styles.priceIcon}
+                            resizeMode="contain"
+                          />
+                          <Text style={styles.priceText}>
+                            {item.isPurchased ? (item.isEquipped ? '장착중' : '보유중') : (item.price === 0 ? '기본' : item.price.toLocaleString())}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))
+                  )}
                 </View>
               </ScrollView>
 
@@ -213,10 +343,21 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
         </View>
       </View>
 
-      {/* 골드 부족 토스트 */}
+      {/* 구매 확인 모달 */}
+      <ConfirmModal
+        visible={confirmVisible}
+        title="구매 확인"
+        message={pendingPurchase ? `${pendingPurchase.name}을(를)\n새싹 ${pendingPurchase.price.toLocaleString()}개로 구매하시겠습니까?` : ''}
+        confirmText="구매"
+        cancelText="취소"
+        onConfirm={handleConfirmPurchase}
+        onCancel={handleCancelPurchase}
+      />
+
+      {/* 상점 알럿 */}
       <GameAlert
         visible={alertVisible}
-        message="골드가 부족해요!"
+        message={alertMessage}
         onClose={() => setAlertVisible(false)}
       />
     </Modal>

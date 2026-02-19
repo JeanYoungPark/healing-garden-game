@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, DecorationItem, GardenState } from '../types';
+import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, DecorationItem, FenceItem, GardenState } from '../types';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 
 // 상수
@@ -41,6 +41,9 @@ interface GardenStore extends GardenState {
   equipDecoration: (decorationId: string) => void;
   unequipDecoration: (decorationId: string) => void;
   toggleEquipDecoration: (decorationId: string) => void;
+  // Fence actions
+  purchaseFence: (fenceId: string, price: number) => boolean;
+  equipFence: (fenceId: string) => void;
   // Dev
   resetGame: () => void;
 }
@@ -127,6 +130,15 @@ const convertDatesToObjects = (state: any) => {
     });
   }
 
+  // fences 배열
+  if (state.fences && Array.isArray(state.fences)) {
+    state.fences.forEach((fence: any) => {
+      if (fence.purchasedAt && typeof fence.purchasedAt === 'string') {
+        fence.purchasedAt = new Date(fence.purchasedAt);
+      }
+    });
+  }
+
   return state;
 };
 
@@ -138,7 +150,7 @@ export const useGardenStore = create<GardenStore>()(
       plants: [],
       seeds: [], // 구매한 씨앗만 (당근은 기본이라 포함 안 함)
       level: 1,
-      gold: 0, // 시작 골드 0
+      gold: 0, // 시작 새싹 0
       water: 5, // 시작 물방울 (최대치)
       lastWaterRechargeTime: new Date(),
       collection: [],
@@ -148,6 +160,8 @@ export const useGardenStore = create<GardenStore>()(
       claimedAnimals: [],
       decorations: [],
       equippedDecorations: [],
+      fences: [], // 구매한 울타리
+      equippedFence: 'rope', // 기본 울타리
       soundEnabled: true,
       notificationEnabled: true,
       firstHarvestTime: null, // 첫 수확 시간
@@ -156,6 +170,7 @@ export const useGardenStore = create<GardenStore>()(
       visitCountWithoutHarvest: 0, // 수확 없이 앱 접속한 횟수 (고양이 트리거용)
       hasHarvestedThisSession: false, // 이번 세션에 수확했는지 여부
       lastAppOpenDate: null, // 마지막 앱 실행 날짜 (YYYY-MM-DD, 거북이 트리거용)
+      totalHarvests: 0, // 누적 수확 횟수 (너구리 트리거용)
       lastSaveTime: new Date(),
 
       // Actions
@@ -224,6 +239,7 @@ export const useGardenStore = create<GardenStore>()(
             firstHarvestTime,
             hasHarvestedThisSession: true, // 수확 완료
             visitCountWithoutHarvest: 0, // 카운터 리셋
+            totalHarvests: state.totalHarvests + 1, // 누적 수확 횟수 증가
             lastSaveTime: new Date(),
           };
         });
@@ -438,6 +454,15 @@ export const useGardenStore = create<GardenStore>()(
                 });
               }
             }
+          } else if (config.trigger.type === 'harvest_count') {
+            // 누적 수확 횟수 조건 (너구리)
+            if (state.totalHarvests >= config.trigger.requiredCount) {
+              newVisitors.push({
+                type: config.type,
+                appearedAt: new Date(),
+                isRandom: false,
+              });
+            }
           }
         }
 
@@ -480,6 +505,7 @@ export const useGardenStore = create<GardenStore>()(
         // 선물 추가
         let updatedSeeds = state.seeds;
         let updatedWater = state.water;
+        let updatedGold = state.gold;
         let updatedDecorations = state.decorations;
         let giftMessage = null;
 
@@ -517,6 +543,23 @@ export const useGardenStore = create<GardenStore>()(
             } else if (config.giftType === 'water') {
               // 물 선물 (5개 제한 없음)
               updatedWater = state.water + (config.giftWaterCount || 0);
+            } else if (config.giftType === 'gold') {
+              // 새싹 선물 (너구리 전용)
+              if (animalType === 'raccoon') {
+                if (isFirstVisit) {
+                  // 첫 방문: 1000개
+                  updatedGold = state.gold + 1000;
+                  giftMessage = '새로운 친구 너굴이가\n새싹 1000개를 선물로 줬어요!';
+                } else {
+                  // 재방문: 100~1000 랜덤 (100단위)
+                  const randomAmount = Math.floor(Math.random() * 10 + 1) * 100; // 100~1000
+                  updatedGold = state.gold + randomAmount;
+                  giftMessage = `너굴이가\n새싹 ${randomAmount}개를 선물로 줬어요!`;
+                }
+              } else {
+                // 다른 동물의 새싹 선물 (기본값)
+                updatedGold = state.gold + (config.giftGoldAmount || 0);
+              }
             } else if (config.giftType === 'decoration') {
               // 꾸미기 아이템 선물
               const decorationId = config.giftDecorationId || 'unknown';
@@ -535,6 +578,7 @@ export const useGardenStore = create<GardenStore>()(
           claimedAnimals: updatedClaimedAnimals,
           seeds: updatedSeeds,
           water: updatedWater,
+          gold: updatedGold,
           decorations: updatedDecorations,
           lastSaveTime: new Date(),
         });
@@ -711,6 +755,31 @@ export const useGardenStore = create<GardenStore>()(
         }
       },
 
+      // 울타리 구매
+      purchaseFence: (fenceId: string, price: number) => {
+        const state = get();
+
+        // 이미 구매했는지 체크
+        if (state.fences.some((f) => f.id === fenceId)) return false;
+
+        // 새싹 부족 체크
+        if (state.gold < price) return false;
+
+        // 구매 처리
+        set({
+          gold: state.gold - price,
+          fences: [...state.fences, { id: fenceId, name: fenceId, purchasedAt: new Date() }],
+          lastSaveTime: new Date(),
+        });
+
+        return true;
+      },
+
+      // 울타리 장착
+      equipFence: (fenceId: string) => {
+        set({ equippedFence: fenceId, lastSaveTime: new Date() });
+      },
+
       resetGame: () => {
         AsyncStorage.removeItem('healing-garden-storage');
         set({
@@ -727,6 +796,8 @@ export const useGardenStore = create<GardenStore>()(
           claimedAnimals: [],
           decorations: [],
           equippedDecorations: [],
+          fences: [],
+          equippedFence: 'rope',
           soundEnabled: true,
           notificationEnabled: true,
           firstHarvestTime: null,
@@ -735,13 +806,14 @@ export const useGardenStore = create<GardenStore>()(
           visitCountWithoutHarvest: 0,
           hasHarvestedThisSession: false,
           lastAppOpenDate: null,
+          totalHarvests: 0,
           lastSaveTime: new Date(),
         });
       },
     }),
     {
       name: 'healing-garden-storage',
-      version: 10, // 거북이 미접속 트리거용 lastAppOpenDate 추가
+      version: 12, // 울타리 시스템 추가
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -789,6 +861,13 @@ export const useGardenStore = create<GardenStore>()(
         if (version < 10) {
           persistedState.lastAppOpenDate = persistedState.lastAppOpenDate ?? null;
         }
+        if (version < 11) {
+          persistedState.totalHarvests = persistedState.totalHarvests ?? 0;
+        }
+        if (version < 12) {
+          persistedState.fences = persistedState.fences ?? [];
+          persistedState.equippedFence = persistedState.equippedFence ?? 'rope';
+        }
 
         return persistedState;
       },
@@ -806,6 +885,8 @@ export const useGardenStore = create<GardenStore>()(
         claimedAnimals: state.claimedAnimals,
         decorations: state.decorations,
         equippedDecorations: state.equippedDecorations,
+        fences: state.fences,
+        equippedFence: state.equippedFence,
         soundEnabled: state.soundEnabled,
         notificationEnabled: state.notificationEnabled,
         firstHarvestTime: state.firstHarvestTime,
@@ -814,6 +895,7 @@ export const useGardenStore = create<GardenStore>()(
         visitCountWithoutHarvest: state.visitCountWithoutHarvest,
         hasHarvestedThisSession: state.hasHarvestedThisSession,
         lastAppOpenDate: state.lastAppOpenDate,
+        totalHarvests: state.totalHarvests,
         lastSaveTime: state.lastSaveTime,
       }),
     }
