@@ -13,13 +13,13 @@ export interface PlantStageSize {
 }
 
 // 공통 크기 설정
-const DEFAULT_SEED_SIZE = { w: 0.06, h: 0.11, mb: 0.23, ml: 0 };  // 씨앗
+const DEFAULT_SEED_SIZE = { w: 0.06, h: 0.11, mb: 0.3 };  // 씨앗
 
 // 작물별 크기 설정 (stage 1, 2, 3에 공통 적용)
-const CARROT_SIZE = { w: 0.45, h: 0.45, mb: 0.27, ml: -0.02 };
-const TURNIP_SIZE = { w: 0.7, h: 0.7, mb: 0.19, ml: -0.02 };
-const POTATO_SIZE = { w: 0.6, h: 0.6, mb: 0.23, ml: -0.02 };
-const STRAWBERRY_SIZE = { w: 0.6, h: 0.6, mb: 0.27, ml: -0.02 };
+const CARROT_SIZE = { w: 0.45, h: 0.45, mb: 0.34 };
+const TURNIP_SIZE = { w: 0.7, h: 0.7, mb: 0.27 };
+const POTATO_SIZE = { w: 0.6, h: 0.6, mb: 0.26, ml: -0.02 };
+const STRAWBERRY_SIZE = { w: 0.6, h: 0.6, mb: 0.33, ml: -0.02 };
 const WATERMELON_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 const PEACH_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 const GRAPE_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };

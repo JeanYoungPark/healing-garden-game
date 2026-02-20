@@ -23,7 +23,6 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
         style={styles.statBox}
         resizeMode="stretch"
       >
-        {/* 카피바라 아이콘 */}
         <View style={styles.capybaraContainer}>
           <Image
             source={require('../assets/ui/common/capybara-level.png')}
