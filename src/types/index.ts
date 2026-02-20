@@ -69,6 +69,12 @@ export interface FenceItem {
   purchasedAt: Date;
 }
 
+export interface PlotItem {
+  id: string;
+  name: string;
+  purchasedAt: Date;
+}
+
 export interface GardenState {
   plants: Plant[];
   seeds: SeedItem[]; // 씨앗 가방
@@ -85,6 +91,8 @@ export interface GardenState {
   equippedDecorations: string[]; // 장착 중인 꾸미기 아이템 ID 목록
   fences: FenceItem[]; // 울타리 인벤토리
   equippedFence: string; // 장착 중인 울타리 ID
+  plots: PlotItem[]; // 밭 인벤토리
+  equippedPlot: string; // 장착 중인 밭 ID
   soundEnabled: boolean; // 소리/진동 설정
   notificationEnabled: boolean; // 알림 설정
   firstHarvestTime: Date | null; // 첫 수확 시간

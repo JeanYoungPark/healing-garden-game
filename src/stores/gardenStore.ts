@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, DecorationItem, FenceItem, GardenState } from '../types';
+import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, DecorationItem, FenceItem, PlotItem, GardenState } from '../types';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 
 // 상수
@@ -44,6 +44,9 @@ interface GardenStore extends GardenState {
   // Fence actions
   purchaseFence: (fenceId: string, price: number) => boolean;
   equipFence: (fenceId: string) => void;
+  // Plot actions
+  purchasePlot: (plotId: string, price: number) => boolean;
+  equipPlot: (plotId: string) => void;
   // Dev
   resetGame: () => void;
 }
@@ -162,6 +165,8 @@ export const useGardenStore = create<GardenStore>()(
       equippedDecorations: [],
       fences: [], // 구매한 울타리
       equippedFence: 'rope', // 기본 울타리
+      plots: [], // 구매한 밭
+      equippedPlot: 'basic', // 기본 밭
       soundEnabled: true,
       notificationEnabled: true,
       firstHarvestTime: null, // 첫 수확 시간
@@ -780,6 +785,31 @@ export const useGardenStore = create<GardenStore>()(
         set({ equippedFence: fenceId, lastSaveTime: new Date() });
       },
 
+      // 밭 구매
+      purchasePlot: (plotId: string, price: number) => {
+        const state = get();
+
+        // 이미 구매했는지 체크
+        if (state.plots.some((p) => p.id === plotId)) return false;
+
+        // 새싹 부족 체크
+        if (state.gold < price) return false;
+
+        // 구매 처리
+        set({
+          gold: state.gold - price,
+          plots: [...state.plots, { id: plotId, name: plotId, purchasedAt: new Date() }],
+          lastSaveTime: new Date(),
+        });
+
+        return true;
+      },
+
+      // 밭 장착
+      equipPlot: (plotId: string) => {
+        set({ equippedPlot: plotId, lastSaveTime: new Date() });
+      },
+
       resetGame: () => {
         AsyncStorage.removeItem('healing-garden-storage');
         set({
@@ -798,6 +828,8 @@ export const useGardenStore = create<GardenStore>()(
           equippedDecorations: [],
           fences: [],
           equippedFence: 'rope',
+          plots: [],
+          equippedPlot: 'basic',
           soundEnabled: true,
           notificationEnabled: true,
           firstHarvestTime: null,
@@ -813,7 +845,7 @@ export const useGardenStore = create<GardenStore>()(
     }),
     {
       name: 'healing-garden-storage',
-      version: 12, // 울타리 시스템 추가
+      version: 13, // 밭 시스템 추가
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -868,6 +900,10 @@ export const useGardenStore = create<GardenStore>()(
           persistedState.fences = persistedState.fences ?? [];
           persistedState.equippedFence = persistedState.equippedFence ?? 'rope';
         }
+        if (version < 13) {
+          persistedState.plots = persistedState.plots ?? [];
+          persistedState.equippedPlot = persistedState.equippedPlot ?? 'basic';
+        }
 
         return persistedState;
       },
@@ -887,6 +923,8 @@ export const useGardenStore = create<GardenStore>()(
         equippedDecorations: state.equippedDecorations,
         fences: state.fences,
         equippedFence: state.equippedFence,
+        plots: state.plots,
+        equippedPlot: state.equippedPlot,
         soundEnabled: state.soundEnabled,
         notificationEnabled: state.notificationEnabled,
         firstHarvestTime: state.firstHarvestTime,

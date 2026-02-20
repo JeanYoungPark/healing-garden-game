@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   topIcon: {
-    width: 35,
-    height: 35,
+    width: 36,
+    height: 36,
   },
   redDot: {
     position: 'absolute',

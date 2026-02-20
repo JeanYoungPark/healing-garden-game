@@ -9,6 +9,7 @@ import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PLANT_STAGE_IMAGES, PLANT_STAGE_SIZES } from '../utils/plantStageConfigs';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 import { FENCE_CONFIGS } from '../utils/fenceConfigs';
+import { PLOT_CONFIGS } from '../utils/plotConfigs';
 import { RabbitCharacter } from './RabbitCharacter';
 import { CatCharacter } from './CatCharacter';
 import { OwlCharacter } from './OwlCharacter';
@@ -33,6 +34,7 @@ interface GardenAreaProps {
   visitors: AnimalVisitor[];
   hasUnreadMail: boolean;
   equippedFence: string; // 장착된 울타리 ID
+  equippedPlot: string; // 장착된 밭 ID
   onPlantPress?: (plantId: string) => void;
   onSlotPress?: (slotIndex: number) => void;
   onWaterPlant?: (plantId: string) => void;
@@ -111,6 +113,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
   visitors,
   hasUnreadMail,
   equippedFence,
+  equippedPlot,
   onPlantPress,
   onSlotPress,
   onWaterPlant,
@@ -297,7 +300,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                     >
                       <Animated.View style={{ transform: [{ scale: slotScales[slotIndex] }] }}>
                         <ImageBackground
-                          source={require('../assets/garden/props/farm-plot.png')}
+                          source={PLOT_CONFIGS[equippedPlot]?.image || require('../assets/garden/props/farm-plot.png')}
                           style={[
                             styles.plotSlot,
                             {

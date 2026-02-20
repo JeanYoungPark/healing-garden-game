@@ -28,6 +28,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const visitors = useGardenStore((state) => state.visitors);
   const mails = useGardenStore((state) => state.mails);
   const equippedFence = useGardenStore((state) => state.equippedFence);
+  const equippedPlot = useGardenStore((state) => state.equippedPlot);
 
   // 액션들
   const plantSeedInSlot = useGardenStore((state) => state.plantSeedInSlot);
@@ -209,6 +210,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
             visitors={visitors}
             hasUnreadMail={mails.some((m) => !m.isRead)}
             equippedFence={equippedFence}
+            equippedPlot={equippedPlot}
             onPlantPress={handlePlantPress}
             onSlotPress={handleSlotPress}
             onWaterPlant={handleWaterPlant}
@@ -296,8 +298,6 @@ const styles = StyleSheet.create({
   },
   seedBagButton: {
     padding: 8,
-    marginTop: 4,
-    marginLeft: -8,
   },
   seedBadge: {
     position: 'absolute',
@@ -311,12 +311,12 @@ const styles = StyleSheet.create({
     borderColor: '#7a6854',
   },
   navIcon: {
-    width: 37,
-    height: 37,
+    width: 46,
+    height: 46,
   },
   shopIcon: {
-    width: 44,
-    height: 44,
+    width: 46,
+    height: 46,
   },
   gardenContainer: {
     flex: 1,

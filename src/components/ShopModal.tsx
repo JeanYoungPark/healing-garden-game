@@ -9,6 +9,7 @@ import { useGardenStore } from '../stores/gardenStore';
 import { GameAlert } from './GameAlert';
 import { ConfirmModal } from './ConfirmModal';
 import { FENCE_CONFIGS, ALL_FENCE_IDS } from '../utils/fenceConfigs';
+import { PLOT_CONFIGS, ALL_PLOT_IDS } from '../utils/plotConfigs';
 
 // 배경 크기 계산 (shop-bg: 1079 x 1488)
 const { bgWidth, bgHeight } = calcBackgroundSize(1079, 1488);
@@ -68,6 +69,10 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
   const equippedFence = useGardenStore((state) => state.equippedFence);
   const purchaseFence = useGardenStore((state) => state.purchaseFence);
   const equipFence = useGardenStore((state) => state.equipFence);
+  const plots = useGardenStore((state) => state.plots);
+  const equippedPlot = useGardenStore((state) => state.equippedPlot);
+  const purchasePlot = useGardenStore((state) => state.purchasePlot);
+  const equipPlot = useGardenStore((state) => state.equipPlot);
 
   // 울타리 구매/장착 핸들러
   const handleFenceClick = (fenceId: string) => {
@@ -114,10 +119,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
         setAlertMessage(`${pendingPurchase.name}를 구매하고 장착했어요!`);
         setAlertVisible(true);
       }
-    } else if (pendingPurchase.type === 'plot') {
-      // 밭 구매 (TODO: 실제 구매 로직 구현)
-      setAlertMessage(`${pendingPurchase.name} 구매 기능은 준비 중이에요!`);
-      setAlertVisible(true);
+    } else if (pendingPurchase.type === 'plot' && pendingPurchase.id) {
+      // 밭 구매
+      const success = purchasePlot(pendingPurchase.id, pendingPurchase.price);
+      if (success) {
+        equipPlot(pendingPurchase.id);
+        setAlertMessage(`${pendingPurchase.name}을 구매하고 장착했어요!`);
+        setAlertVisible(true);
+      }
     }
 
     setConfirmVisible(false);
@@ -130,36 +139,53 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
     setPendingPurchase(null);
   };
 
-  // 밭 구매 핸들러
-  const handlePlotPurchase = (price: number, index: number) => {
-    if (price === 0) return; // 기본 아이템
+  // 밭 구매/장착 핸들러
+  const handlePlotClick = (plotId: string) => {
+    const config = PLOT_CONFIGS[plotId];
+    if (!config) return;
+
+    // 기본 밭은 바로 장착
+    if (config.isDefault) {
+      equipPlot(plotId);
+      setAlertMessage(`${config.name}을 장착했어요!`);
+      setAlertVisible(true);
+      return;
+    }
+
+    // 이미 구매한 밭이면 바로 장착
+    if (plots.some((p) => p.id === plotId)) {
+      equipPlot(plotId);
+      setAlertMessage(`${config.name}을 장착했어요!`);
+      setAlertVisible(true);
+      return;
+    }
 
     // 새싹 부족 체크
-    if (gold < price) {
+    if (gold < config.price) {
       setAlertMessage('새싹이 부족해요');
       setAlertVisible(true);
       return;
     }
 
     // 구매 확인 모달 표시
-    const plotNames = ['기본 밭', '밭 꾸미기 2', '밭 꾸미기 3', '밭 꾸미기 4', '밭 꾸미기 5'];
-    setPendingPurchase({
-      type: 'plot',
-      name: plotNames[index] || `밭 ${index + 1}`,
-      price,
-      index
-    });
+    setPendingPurchase({ type: 'plot', id: plotId, name: config.name, price: config.price });
     setConfirmVisible(true);
   };
 
-  // farm-plot 이미지 및 가격 매핑
-  const farmPlotData = [
-    { image: require('../assets/shop/farm-plot-decor-01.png'), price: 0 },
-    { image: require('../assets/shop/farm-plot-decor-02.png'), price: 5000 },
-    { image: require('../assets/shop/farm-plot-decor-03.png'), price: 10000 },
-    { image: require('../assets/shop/farm-plot-decor-04.png'), price: 20000 },
-    { image: require('../assets/shop/farm-plot-decor-05.png'), price: 30000 },
-  ];
+  // 밭 데이터 (plotConfigs 기반)
+  const plotItemsData = ALL_PLOT_IDS.map(id => {
+    const config = PLOT_CONFIGS[id];
+    const isPurchased = config.isDefault || plots.some((p) => p.id === id);
+    const isEquipped = equippedPlot === id;
+    return {
+      id,
+      image: config.shopImage || config.image, // 상점 아이콘 우선 사용
+      name: config.name,
+      price: config.price,
+      isPurchased,
+      isEquipped,
+    };
+  });
 
   // 울타리 데이터 (fenceConfigs 기반)
   const fenceItemsData = ALL_FENCE_IDS.map(id => {
@@ -251,12 +277,12 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                 <View style={styles.grid}>
                   {selectedTab === 'tab1' ? (
                     // 밭 탭
-                    farmPlotData.map((item, index) => (
+                    plotItemsData.map((item) => (
                       <TouchableOpacity
-                        key={index}
+                        key={item.id}
                         style={[styles.itemBoxWrapper, { width: itemBoxWidth }]}
                         activeOpacity={0.7}
-                        onPress={() => handlePlotPurchase(item.price, index)}
+                        onPress={() => handlePlotClick(item.id)}
                       >
                         <Image
                           source={require('../assets/garden/props/shop-item-box.png')}
@@ -279,7 +305,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                             resizeMode="contain"
                           />
                           <Text style={styles.priceText}>
-                            {item.price === 0 ? '기본' : item.price.toLocaleString()}
+                            {item.isPurchased ? (item.isEquipped ? '장착중' : '보유중') : (item.price === 0 ? '기본' : item.price.toLocaleString())}
                           </Text>
                         </View>
                       </TouchableOpacity>
