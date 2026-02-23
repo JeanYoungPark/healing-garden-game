@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PlantType, AnimalType, SeedItem, AnimalVisitor, MailItem, DecorationItem, FenceItem, PlotItem, GardenState } from '../types';
+import { Plant, PlantType, AnimalType, AnimalVisitor, MailItem, GardenState } from '../types';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
 
 // 상수

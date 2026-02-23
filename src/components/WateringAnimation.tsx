@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Image, Animated } from 'react-native';
+import { StyleSheet, Image, Animated } from 'react-native';
 
 // 물 프레임 이미지 + 크기·위치 (4컷: 1컷은 빈 상태, 2~4컷 물방울 증가)
 const WATER_FRAMES: { source: any; w: number; h: number; top: number; right: number }[] = [
@@ -54,7 +54,7 @@ export const WateringAnimation: React.FC<WateringAnimationProps> = ({ visible, p
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [visible]);
+  }, [visible, onComplete, opacity]);
 
   if (!visible) return null;
 

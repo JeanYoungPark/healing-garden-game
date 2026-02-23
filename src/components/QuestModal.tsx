@@ -1,7 +1,7 @@
 // 🌱 Healing Garden - Quest Modal
 
 import React from 'react';
-import { StyleSheet, View, Image, Modal, ImageBackground, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, Modal, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import { calcBackgroundSize } from '../utils/responsive';
 import { modalStyles } from '../styles/modalStyles';
 

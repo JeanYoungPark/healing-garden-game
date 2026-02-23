@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity } from 'react-native';
-import { COLORS } from '../utils/colors';
 import { calcBackgroundSize } from '../utils/responsive';
 
 interface ResourceBarProps {

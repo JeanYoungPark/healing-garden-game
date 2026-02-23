@@ -13,7 +13,7 @@ import { PlantType } from '../types';
 const { bgWidth, bgHeight } = calcBackgroundSize(1000, 1402);
 
 // 씨앗 박스 크기 계산 (seed-box: 800 x 300)
-const { width: seedBoxWidth, height: seedBoxHeight } = calcElementSize(bgWidth, 0.75, 800, 300);
+const { height: seedBoxHeight } = calcElementSize(bgWidth, 0.75, 800, 300);
 
 // 스크롤 영역 마진 (배경 높이 기준)
 const scrollMarginTop = bgHeight * 0.25;
@@ -22,18 +22,11 @@ const scrollMarginBottom = bgHeight * 0.08;
 // 하단 그라데이션 높이 (배경 높이 기준)
 const fadeHeight = bgHeight * 0.05;
 
-// 씨앗 박스 간격 (배경 높이 기준)
-const seedBoxMargin = bgHeight * 0.01;
-
 // 모달 제목 크기 계산 (배경 너비 기준)
 const modalTitleFontSize = bgWidth * 0.07;
 
 // 씨앗 이미지 크기
 const seedImageSize = seedBoxHeight * 0.7;
-
-// 씨앗 이미지 매핑 (구매한 씨앗용)
-const SEED_IMAGES: Partial<Record<PlantType, any>> = {
-};
 
 interface SeedBagModalProps {
   visible: boolean;

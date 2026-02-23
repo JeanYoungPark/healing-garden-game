@@ -17,11 +17,7 @@ import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PlantType, AnimalType } from '../types';
 import { calcBackgroundSize } from '../utils/responsive';
 
-interface GardenScreenProps {
-  navigation?: any;
-}
-
-export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
+export const GardenScreen: React.FC = () => {
   // Zustand selector로 상태 구독
   const plants = useGardenStore((state) => state.plants);
   const water = useGardenStore((state) => state.water);
@@ -31,6 +27,16 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const equippedFence = useGardenStore((state) => state.equippedFence);
   const equippedPlot = useGardenStore((state) => state.equippedPlot);
 
+  // 액션들
+  const plantSeedInSlot = useGardenStore((state) => state.plantSeedInSlot);
+  const consumeSeed = useGardenStore((state) => state.useSeed);
+  const harvestPlant = useGardenStore((state) => state.harvestPlant);
+  const addGold = useGardenStore((state) => state.addGold);
+  const waterPlant = useGardenStore((state) => state.waterPlant);
+  const markCollectionSeen = useGardenStore((state) => state.markCollectionSeen);
+  const claimVisitor = useGardenStore((state) => state.claimVisitor);
+  const initFirstVisitMail = useGardenStore((state) => state.initFirstVisitMail);
+
   // 하단바 배경 크기 계산
   const { bgWidth, bgHeight } = calcBackgroundSize(1081, 153);
 
@@ -39,16 +45,6 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const bottomSeparatorWidth = bgWidth * 0.004;
   const bottomSeparatorHeight = bgWidth * 0.07;
   const bottomTextSize = bgWidth * 0.04;
-
-  // 액션들
-  const plantSeedInSlot = useGardenStore((state) => state.plantSeedInSlot);
-  const useSeed = useGardenStore((state) => state.useSeed);
-  const harvestPlant = useGardenStore((state) => state.harvestPlant);
-  const addGold = useGardenStore((state) => state.addGold);
-  const waterPlant = useGardenStore((state) => state.waterPlant);
-  const markCollectionSeen = useGardenStore((state) => state.markCollectionSeen);
-  const claimVisitor = useGardenStore((state) => state.claimVisitor);
-  const initFirstVisitMail = useGardenStore((state) => state.initFirstVisitMail);
   const [seedBagVisible, setSeedBagVisible] = useState(false);
   const [seedBagChecked, setSeedBagChecked] = useState(false); // 씨앗가방 확인 여부
   const [shopVisible, setShopVisible] = useState(false);
@@ -103,7 +99,7 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
     const seedType = currentSeedType;
 
     // 씨앗 소비
-    if (!useSeed(seedType)) return;
+    if (!consumeSeed(seedType)) return;
 
     // 슬롯에 심기
     const success = plantSeedInSlot(slotIndex, seedType);
@@ -112,13 +108,13 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
 
     // 한정 씨앗이 다 떨어지면 모드 해제
     if (isPlantingMode) {
-      const seeds = useGardenStore.getState().seeds;
-      const seedItem = seeds.find((s) => s.type === seedType);
+      const currentSeeds = useGardenStore.getState().seeds;
+      const seedItem = currentSeeds.find((s) => s.type === seedType);
       if (!seedItem || seedItem.count === 0) {
         setSelectedSeed(null);
       }
     }
-  }, [currentSeedType, isPlantingMode, plantSeedInSlot, useSeed]);
+  }, [currentSeedType, isPlantingMode, plantSeedInSlot, consumeSeed]);
 
   const handleSelectSeed = useCallback((seedType: PlantType) => {
     // 당근 선택 시에는 기본 모드로 (인디케이터 안 보임)

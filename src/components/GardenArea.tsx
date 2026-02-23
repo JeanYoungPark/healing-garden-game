@@ -91,7 +91,7 @@ const FloatingTooltip: React.FC<{ text: string; topOffset: number; onDone: () =>
         useNativeDriver: true,
       }),
     ]).start(() => onDone());
-  }, []);
+  }, [onDone, opacity, translateY]);
 
   return (
     <Animated.View
@@ -344,7 +344,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                                     ...(size.mb != null
                                       ? { bottom: plotSize * size.mb }
                                       : { top: plotSize * (size.mt ?? 0) }),
-                                    left: (plotSize - plotSize * size.w) / 2 + plotSize * size.ml,
+                                    left: (plotSize - plotSize * size.w) / 2 + plotSize * (size.ml ?? 0),
                                   }}
                                   resizeMode="contain"
                                 />

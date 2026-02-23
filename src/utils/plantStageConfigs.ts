@@ -8,7 +8,7 @@ export interface PlantStageSize {
   h: number;   // 높이
   mt?: number; // 위쪽 오프셋 (mt 또는 mb 중 하나 사용)
   mb?: number; // 아래쪽 오프셋
-  ml: number;  // 왼쪽 오프셋
+  ml?: number;  // 왼쪽 오프셋 (선택적, 기본값 0)
   tooltipOffset?: number;  // 툴팁 추가 오프셋 (px, 양수=위로)
 }
 

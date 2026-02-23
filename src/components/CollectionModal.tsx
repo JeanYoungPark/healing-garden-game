@@ -139,7 +139,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                 <View style={styles.grid}>
                   {selectedTab === 'animal' && (
                     <>
-                      {ALL_ANIMAL_TYPES.filter((t) => ANIMAL_CONFIGS[t].collectionShadow).map((type, index) => {
+                      {ALL_ANIMAL_TYPES.filter((t) => ANIMAL_CONFIGS[t].collectionShadow).map((type) => {
                         const config = ANIMAL_CONFIGS[type];
                         const met = claimedAnimals.includes(type);
                         const cs = config.collectionStyle;

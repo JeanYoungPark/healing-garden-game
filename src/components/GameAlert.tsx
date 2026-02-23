@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Animated } from 'react-native';
+import { StyleSheet, Text, Animated } from 'react-native';
 
 interface GameAlertProps {
   visible: boolean;
@@ -27,7 +27,7 @@ export const GameAlert: React.FC<GameAlertProps> = ({ visible, message, onClose,
         }, duration);
       });
     }
-  }, [visible]);
+  }, [visible, opacity, scale, duration, onClose]);
 
   if (!visible) return null;
 

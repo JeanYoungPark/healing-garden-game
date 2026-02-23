@@ -1,10 +1,8 @@
 // 🌱 Healing Garden - Layered Background Component
 
 import React from 'react';
-import { StyleSheet, View, Dimensions, ImageBackground } from 'react-native';
+import { StyleSheet, View, ImageBackground } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-
-const { width, height } = Dimensions.get('window');
 
 export const LayeredBackground: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (

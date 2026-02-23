@@ -17,7 +17,7 @@ const { bgWidth, bgHeight } = calcBackgroundSize(1136, 1437);
 const { width: mailItemWidth, height: mailItemHeight } = calcElementSize(bgWidth, 0.75, 869, 254);
 
 // 새 메일 뱃지 크기 계산 (mail-new-badge: 47 x 48)
-const { width: badgeWidth, height: badgeHeight } = calcElementSize(mailItemWidth, 0.08, 47, 48);
+// const { width: badgeWidth, height: badgeHeight } = calcElementSize(mailItemWidth, 0.08, 47, 48);
 
 // 아이템 간격 (배경 높이 기준)
 const mailItemMargin = bgHeight * 0.01;
