@@ -1,7 +1,7 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Image, Text, ImageBackground } from 'react-native';
 import { GardenArea } from '../components/GardenArea';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { SeedBagModal } from '../components/SeedBagModal';
@@ -15,6 +15,7 @@ import { GameAlert } from '../components/GameAlert';
 import { useGardenStore } from '../stores/gardenStore';
 import { PLANT_CONFIGS } from '../utils/plantConfigs';
 import { PlantType, AnimalType } from '../types';
+import { calcBackgroundSize } from '../utils/responsive';
 
 interface GardenScreenProps {
   navigation?: any;
@@ -29,6 +30,15 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
   const mails = useGardenStore((state) => state.mails);
   const equippedFence = useGardenStore((state) => state.equippedFence);
   const equippedPlot = useGardenStore((state) => state.equippedPlot);
+
+  // 하단바 배경 크기 계산
+  const { bgWidth, bgHeight } = calcBackgroundSize(1081, 153);
+
+  // 하단 아이콘 크기 계산 (배경 너비 기준)
+  const bottomIconSize = bgWidth * 0.085;  // 상단 아이콘과 동일한 비율
+  const bottomSeparatorWidth = bgWidth * 0.004;
+  const bottomSeparatorHeight = bgWidth * 0.07;
+  const bottomTextSize = bgWidth * 0.04;
 
   // 액션들
   const plantSeedInSlot = useGardenStore((state) => state.plantSeedInSlot);
@@ -152,37 +162,59 @@ export const GardenScreen: React.FC<GardenScreenProps> = ({ navigation }) => {
     >
       <View style={styles.container}>
         {/* Bottom Navigation - 가로 배치 */}
-        <View style={styles.bottomNav}>
-
-          {/* Shop Button */}
-          <TouchableOpacity
-            style={styles.navButton}
-            activeOpacity={0.7}
-            onPress={() => setShopVisible(true)}
-          >
-            <Image
-              source={require('../assets/garden/icons/shop-icon.png')}
-              style={styles.shopIcon}
+        <View style={styles.bottomNavContainer}>
+          <View style={styles.bottomNav}>
+            <ImageBackground
+              source={require('../assets/ui/common/resource-bar-bg.png')}
+              style={[styles.bottomNavBg, { width: bgWidth, height: bgHeight }]}
               resizeMode="contain"
-            />
-          </TouchableOpacity>
+            >
+            <View style={styles.bottomNavContent}>
+              {/* 왼쪽 영역: 상점 */}
+              <View style={styles.bottomNavSection}>
+                <TouchableOpacity
+                  style={styles.bottomNavItem}
+                  activeOpacity={0.7}
+                  onPress={() => setShopVisible(true)}
+                >
+                  <Image
+                    source={require('../assets/garden/icons/shop-icon.png')}
+                    style={{ width: bottomIconSize, height: bottomIconSize }}
+                    resizeMode="contain"
+                  />
+                  <Text style={[styles.bottomNavText, { fontSize: bottomTextSize }]}>상점</Text>
+                </TouchableOpacity>
+              </View>
 
-          {/* Seed Bag Button */}
-          <TouchableOpacity
-            style={styles.seedBagButton}
-            activeOpacity={0.7}
-            onPress={() => {
-              setSeedBagVisible(true);
-              setSeedBagChecked(true); // 씨앗가방 확인함
-            }}
-          >
-            <Image
-              source={require('../assets/garden/icons/seed-bag-icon.png')}
-              style={styles.navIcon}
-              resizeMode="contain"
-            />
-            {seeds.length > 0 && !seedBagChecked && <View style={styles.seedBadge} />}
-          </TouchableOpacity>
+              {/* 구분선 */}
+              <Image
+                source={require('../assets/ui/common/separator.png')}
+                style={{ width: bottomSeparatorWidth, height: bottomSeparatorHeight }}
+                resizeMode="contain"
+              />
+
+              {/* 오른쪽 영역: 씨앗 */}
+              <View style={styles.bottomNavSection}>
+                <TouchableOpacity
+                  style={styles.bottomNavItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setSeedBagVisible(true);
+                    setSeedBagChecked(true); // 씨앗가방 확인함
+                  }}
+                >
+                  <Image
+                    source={require('../assets/garden/icons/seed-bag-icon.png')}
+                    style={{ width: bottomIconSize, height: bottomIconSize }}
+                    resizeMode="contain"
+                  />
+                  <Text style={[styles.bottomNavText, { fontSize: bottomTextSize }]}>씨앗</Text>
+                  {seeds.length > 0 && !seedBagChecked && <View style={styles.seedBadge} />}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ImageBackground>
+          </View>
         </View>
 
         {/* 심기 모드 인디케이터 */}
@@ -284,39 +316,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  bottomNav: {
+  bottomNavContainer: {
     position: 'absolute',
-    left: 7,
-    bottom: 7,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: 0,
+    width: '100%',
+    paddingHorizontal: 6,
+    bottom: 16,
     zIndex: 10,
+    alignItems: 'center',
   },
-  navButton: {
-    padding: 8,
+  bottomNav: {
+    alignItems: 'center',
   },
-  seedBagButton: {
-    padding: 8,
+  bottomNavBg: {
+    overflow: 'visible',
+  },
+  bottomNavContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    height: '100%',
+  },
+  bottomNavSection: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomNavItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    position: 'relative',
+  },
+  bottomNavText: {
+    color: '#A1887F',
+    fontFamily: 'Gaegu-Bold',
   },
   seedBadge: {
     position: 'absolute',
-    top: 5,
-    right: 8,
+    top: -2,
+    right: -2,
     width: 10,
     height: 10,
     borderRadius: 5,
     backgroundColor: '#E08080',
     borderWidth: 1.5,
     borderColor: '#7a6854',
-  },
-  navIcon: {
-    width: 46,
-    height: 46,
-  },
-  shopIcon: {
-    width: 46,
-    height: 46,
   },
   gardenContainer: {
     flex: 1,

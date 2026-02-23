@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   visitorContainer: {
     position: 'absolute',
-    top: '23%',
+    top: '18%',
     width: 80,
     height: 80,
     justifyContent: 'center',
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   farmGroup: {
-    marginTop: height * 0.15,
+    marginTop: height * 0.10,
     alignItems: 'center',
     width: '100%',
     zIndex: 10,

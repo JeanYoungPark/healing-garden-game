@@ -1,70 +1,130 @@
 // 🌱 Healing Garden - Resource Bar Component (Kawaii Cozy Style)
 
 import React from 'react';
-import { StyleSheet, Text, View, Image, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity } from 'react-native';
 import { COLORS } from '../utils/colors';
+import { calcBackgroundSize } from '../utils/responsive';
 
 interface ResourceBarProps {
-  level: number;
   gold: number;
   water: number;
+  onQuestPress?: () => void;
+  onCollectionPress?: () => void;
+  onSettingsPress?: () => void;
+  hasNewCollection?: boolean;
 }
 
+// 숫자를 K, M 단위로 축약
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  return num.toString();
+};
+
 export const ResourceBar: React.FC<ResourceBarProps> = ({
-  level,
   gold,
   water,
+  onQuestPress,
+  onCollectionPress,
+  onSettingsPress,
+  hasNewCollection,
 }) => {
+  const { bgWidth, bgHeight } = calcBackgroundSize(1081, 153);
+
+  // 배경 너비 기준 비례 크기 계산
+  const resourceIconSize = bgWidth * 0.04; // 리소스 아이콘 크기 (새싹, 물방울)
+  const topIconSize = bgWidth * 0.085; // 상단 아이콘 크기 (퀘스트, 도감, 설정)
+  const addIconSize = bgWidth * 0.06; // 더하기 아이콘
+  const fontSize = bgWidth * 0.05; // 텍스트 크기
+  const separatorWidth = bgWidth * 0.004; // 구분선 너비
+  const separatorHeight = bgWidth * 0.07; // 구분선 높이
+  const redDotSize = bgWidth * 0.02; // 빨간 점 크기
+
   return (
     <View style={styles.container}>
-      {/* 레벨 박스 */}
       <ImageBackground
-        source={require('../assets/ui/common/header-box.png')}
-        style={styles.statBox}
-        resizeMode="stretch"
+        source={require('../assets/ui/common/resource-bar-bg.png')}
+        style={[styles.background, { width: bgWidth, height: bgHeight }]}
+        resizeMode="contain"
       >
-        <View style={styles.capybaraContainer}>
-          <Image
-            source={require('../assets/ui/common/capybara-level.png')}
-            style={styles.capybaraImage}
-            resizeMode="contain"
-          />
-        </View>
-        <View style={[styles.statContent, styles.levelContent]}>
-          <Text style={styles.label}>LV</Text>
-          <Text style={styles.valueText}>{level}</Text>
-        </View>
-      </ImageBackground>
+        <View style={styles.content}>
+          {/* 왼쪽: 리소스 */}
+          <View style={styles.leftSection}>
+            {/* 새싹 */}
+            <View style={styles.statItem}>
+              <Image
+                source={require('../assets/ui/common/leaf-coin.png')}
+                style={{ width: resourceIconSize, height: resourceIconSize }}
+                resizeMode="contain"
+              />
+              <Text style={[styles.valueText, { fontSize }]}>{formatNumber(gold)}</Text>
+              <Image
+                source={require('../assets/ui/common/add-icon.png')}
+                style={{ width: addIconSize, height: addIconSize }}
+                resizeMode="contain"
+              />
+            </View>
 
-      {/* 코인 박스 */}
-      <ImageBackground
-        source={require('../assets/ui/common/header-box.png')}
-        style={styles.statBox}
-        resizeMode="stretch"
-      >
-        <View style={styles.statContentRight}>
-          <Text style={styles.valueText}>{gold}</Text>
-          <Image
-            source={require('../assets/ui/common/leaf-coin.png')}
-            style={styles.coinIcon}
-            resizeMode="contain"
-          />
-        </View>
-      </ImageBackground>
+            {/* 물방울 */}
+            <View style={styles.statItem}>
+              <Image
+                source={require('../assets/ui/common/water-drop.png')}
+                style={{ width: resourceIconSize * 0.85, height: resourceIconSize * 0.85 }}
+                resizeMode="contain"
+              />
+              <Text style={[styles.valueText, { fontSize }]}>{water}/5</Text>
+              <Image
+                source={require('../assets/ui/common/add-icon.png')}
+                style={{ width: addIconSize, height: addIconSize }}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
 
-      {/* 물방울 박스 */}
-      <ImageBackground
-        source={require('../assets/ui/common/header-box.png')}
-        style={styles.statBox}
-        resizeMode="stretch"
-      >
-        <View style={styles.statContentRight}>
-          <Text style={styles.valueText}>{water}/5</Text>
+          {/* 구분선 */}
           <Image
-            source={require('../assets/ui/common/water-drop.png')}
-            style={styles.waterIcon}
+            source={require('../assets/ui/common/separator.png')}
+            style={{ width: separatorWidth, height: separatorHeight }}
             resizeMode="contain"
           />
+
+          {/* 오른쪽: 아이콘 */}
+          <View style={styles.rightSection}>
+            <TouchableOpacity onPress={onQuestPress} activeOpacity={0.7}>
+              <Image
+                source={require('../assets/garden/icons/quest-icon.png')}
+                style={{ width: topIconSize, height: topIconSize }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={onCollectionPress} activeOpacity={0.7} style={styles.iconButton}>
+              <Image
+                source={require('../assets/garden/icons/collection-icon.png')}
+                style={{ width: topIconSize, height: topIconSize }}
+                resizeMode="contain"
+              />
+              {hasNewCollection && (
+                <View style={[styles.redDot, {
+                  width: redDotSize,
+                  height: redDotSize,
+                  borderRadius: redDotSize / 2
+                }]} />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={onSettingsPress} activeOpacity={0.7}>
+              <Image
+                source={require('../assets/garden/icons/settings-icon.png')}
+                style={{ width: topIconSize, height: topIconSize }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </ImageBackground>
     </View>
@@ -73,72 +133,50 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
+    paddingHorizontal: 6,
+    paddingVertical: 16,
+    alignItems: 'center',
+    overflow: 'visible',
+  },
+  background: {
+    overflow: 'visible',
+  },
+  content: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
-    paddingVertical: 16,
-    gap: 8,
-    overflow: 'visible',
-  },
-  statBox: {
-    flex: 1,
-    height: 30,
-    position: 'relative',
-    overflow: 'visible',
-  },
-  capybaraContainer: {
-    position: 'absolute',
-    left: 7,
-    top: -5,
-    zIndex: 2,
-    width: 35,
-    height: 35,
-  },
-  capybaraImage: {
-    width: '100%',
     height: '100%',
   },
-  statContent: {
-    flex: 1,
+  leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    zIndex: 1,
-    paddingTop: 2,
-    paddingBottom: 6,
+    gap: 15,
   },
-  statContentRight: {
-    flex: 1,
+  rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
-    zIndex: 1,
-    paddingTop: 2,
-    paddingBottom: 6,
-    paddingRight: 18,
   },
-  levelContent: {
-    paddingLeft: 28,
+  iconButton: {
+    position: 'relative',
   },
-  label: {
-    fontSize: 13,
-    color: '#A1887F',
-    fontFamily: 'Gaegu-Bold',
+  redDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#E08080',
+    borderWidth: 1.5,
+    borderColor: '#7a6854',
   },
   valueText: {
-    fontSize: 15,
     color: '#A1887F',
     fontFamily: 'Gaegu-Bold',
-  },
-  coinIcon: {
-    width: 14,
-    height: 14,
-  },
-  waterIcon: {
-    width: 10,
-    height: 10,
   },
 });

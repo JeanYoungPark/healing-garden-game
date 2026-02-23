@@ -37,14 +37,14 @@ const styles = StyleSheet.create({
   },
   sky: {
     position: 'absolute',
-    top: 0,
+    top: -35,
     left: 0,
     right: 0,
     bottom: 0,
   },
   groundContainer: {
     position: 'absolute',
-    top: 0,
+    top: -35,
     bottom: 0,
     left: 0,
     right: 0,
