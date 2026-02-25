@@ -300,7 +300,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                     >
                       <Animated.View style={{ transform: [{ scale: slotScales[slotIndex] }] }}>
                         <ImageBackground
-                          source={PLOT_CONFIGS[equippedPlot]?.image || require('../assets/garden/props/farm-plot.png')}
+                          source={PLOT_CONFIGS[equippedPlot]?.image || require('../assets/garden/props/farm-plot-01.png')}
                           style={[
                             styles.plotSlot,
                             {
@@ -367,7 +367,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
 
           {/* 울타리 - 밭 바로 아래 (장착된 울타리 렌더링) */}
           <Image
-            source={FENCE_CONFIGS[equippedFence]?.image || require('../assets/garden/props/fence-rope.png')}
+            source={FENCE_CONFIGS[equippedFence]?.image || require('../assets/garden/props/fence-01.png')}
             style={styles.fence}
             resizeMode="contain"
           />
@@ -467,8 +467,8 @@ const styles = StyleSheet.create({
     color: '#7a6854',
   },
   fence: {
-    width: width * 0.9,
-    height: width * 0.9 * 0.19, // 이미지 비율 132/700
+    width: width * 1.1,
+    height: width * 1.1 * 0.19, // 이미지 비율 132/700
     marginTop: height * 0.04,
   },
   mailAlert: {

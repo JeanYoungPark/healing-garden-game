@@ -59,6 +59,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
   const [confirmVisible, setConfirmVisible] = React.useState(false);
   const [pendingPurchase, setPendingPurchase] = React.useState<{
     type: 'fence' | 'plot';
+    action: 'purchase' | 'equip'; // 구매 또는 장착
     id?: string;
     name: string;
     price: number;
@@ -79,19 +80,17 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
     const config = FENCE_CONFIGS[fenceId];
     if (!config) return;
 
-    // 기본 울타리는 바로 장착
+    // 기본 울타리도 교체 확인
     if (config.isDefault) {
-      equipFence(fenceId);
-      setAlertMessage(`${config.name}를 장착했어요!`);
-      setAlertVisible(true);
+      setPendingPurchase({ type: 'fence', action: 'equip', id: fenceId, name: config.name, price: 0 });
+      setConfirmVisible(true);
       return;
     }
 
-    // 이미 구매한 울타리면 바로 장착
+    // 이미 구매한 울타리면 교체 확인
     if (fences.some((f) => f.id === fenceId)) {
-      equipFence(fenceId);
-      setAlertMessage(`${config.name}를 장착했어요!`);
-      setAlertVisible(true);
+      setPendingPurchase({ type: 'fence', action: 'equip', id: fenceId, name: config.name, price: 0 });
+      setConfirmVisible(true);
       return;
     }
 
@@ -103,28 +102,42 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
     }
 
     // 구매 확인 모달 표시
-    setPendingPurchase({ type: 'fence', id: fenceId, name: config.name, price: config.price });
+    setPendingPurchase({ type: 'fence', action: 'purchase', id: fenceId, name: config.name, price: config.price });
     setConfirmVisible(true);
   };
 
-  // 구매 확인
+  // 구매/장착 확인
   const handleConfirmPurchase = () => {
     if (!pendingPurchase) return;
 
     if (pendingPurchase.type === 'fence' && pendingPurchase.id) {
-      // 울타리 구매
-      const success = purchaseFence(pendingPurchase.id, pendingPurchase.price);
-      if (success) {
+      if (pendingPurchase.action === 'purchase') {
+        // 울타리 구매
+        const success = purchaseFence(pendingPurchase.id, pendingPurchase.price);
+        if (success) {
+          equipFence(pendingPurchase.id);
+          setAlertMessage(`${pendingPurchase.name}를 구매하고 장착했어요!`);
+          setAlertVisible(true);
+        }
+      } else {
+        // 울타리 장착
         equipFence(pendingPurchase.id);
-        setAlertMessage(`${pendingPurchase.name}를 구매하고 장착했어요!`);
+        setAlertMessage('장착했어요!');
         setAlertVisible(true);
       }
     } else if (pendingPurchase.type === 'plot' && pendingPurchase.id) {
-      // 밭 구매
-      const success = purchasePlot(pendingPurchase.id, pendingPurchase.price);
-      if (success) {
+      if (pendingPurchase.action === 'purchase') {
+        // 밭 구매
+        const success = purchasePlot(pendingPurchase.id, pendingPurchase.price);
+        if (success) {
+          equipPlot(pendingPurchase.id);
+          setAlertMessage(`${pendingPurchase.name}을 구매하고 장착했어요!`);
+          setAlertVisible(true);
+        }
+      } else {
+        // 밭 장착
         equipPlot(pendingPurchase.id);
-        setAlertMessage(`${pendingPurchase.name}을 구매하고 장착했어요!`);
+        setAlertMessage('장착했어요!');
         setAlertVisible(true);
       }
     }
@@ -144,19 +157,17 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
     const config = PLOT_CONFIGS[plotId];
     if (!config) return;
 
-    // 기본 밭은 바로 장착
+    // 기본 밭도 교체 확인
     if (config.isDefault) {
-      equipPlot(plotId);
-      setAlertMessage(`${config.name}을 장착했어요!`);
-      setAlertVisible(true);
+      setPendingPurchase({ type: 'plot', action: 'equip', id: plotId, name: config.name, price: 0 });
+      setConfirmVisible(true);
       return;
     }
 
-    // 이미 구매한 밭이면 바로 장착
+    // 이미 구매한 밭이면 교체 확인
     if (plots.some((p) => p.id === plotId)) {
-      equipPlot(plotId);
-      setAlertMessage(`${config.name}을 장착했어요!`);
-      setAlertVisible(true);
+      setPendingPurchase({ type: 'plot', action: 'equip', id: plotId, name: config.name, price: 0 });
+      setConfirmVisible(true);
       return;
     }
 
@@ -168,7 +179,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
     }
 
     // 구매 확인 모달 표시
-    setPendingPurchase({ type: 'plot', id: plotId, name: config.name, price: config.price });
+    setPendingPurchase({ type: 'plot', action: 'purchase', id: plotId, name: config.name, price: config.price });
     setConfirmVisible(true);
   };
 
@@ -311,7 +322,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                       </TouchableOpacity>
                     ))
                   ) : (
-                    // 울타리 탭
+                    // 울타리 탭 (2열 레이아웃)
                     fenceItemsData.map((item) => (
                       <TouchableOpacity
                         key={item.id}
@@ -328,7 +339,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
                           source={item.image}
                           style={[
                             styles.itemImage,
-                            { height: itemImageHeight * 0.4, top: itemImageTop + itemImageHeight * 0.3 }
+                            { height: itemImageHeight * 0.6, top: itemImageTop + itemImageHeight * 0.2 }
                           ]}
                           resizeMode="contain"
                         />
@@ -369,12 +380,17 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
         </View>
       </View>
 
-      {/* 구매 확인 모달 */}
+      {/* 구매/장착 확인 모달 */}
       <ConfirmModal
         visible={confirmVisible}
-        title="구매 확인"
-        message={pendingPurchase ? `${pendingPurchase.name}을(를)\n새싹 ${pendingPurchase.price.toLocaleString()}개로 구매하시겠습니까?` : ''}
-        confirmText="구매"
+        title={pendingPurchase?.action === 'purchase' ? '구매 확인' : '교체 확인'}
+        message={pendingPurchase
+          ? pendingPurchase.action === 'purchase'
+            ? `${pendingPurchase.name}을(를)\n새싹 ${pendingPurchase.price.toLocaleString()}개로 구매하시겠습니까?`
+            : '장착하시겠습니까?'
+          : ''
+        }
+        confirmText={pendingPurchase?.action === 'purchase' ? '구매' : '확인'}
         cancelText="취소"
         onConfirm={handleConfirmPurchase}
         onCancel={handleCancelPurchase}
