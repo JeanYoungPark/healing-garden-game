@@ -31,7 +31,7 @@ export const FENCE_CONFIGS: Record<string, FenceConfig> = {
     image: require('../assets/garden/props/fence-02.png'),
     shopImage: require('../assets/shop/fence-decor-02.png'),
     description: '울타리 꾸미기 2',
-    price: 0,
+    price: 5000,
   },
   'wood-flower': {
     id: 'wood-flower',
@@ -40,7 +40,7 @@ export const FENCE_CONFIGS: Record<string, FenceConfig> = {
     image: require('../assets/garden/props/fence-03.png'),
     shopImage: require('../assets/shop/fence-decor-03.png'),
     description: '울타리 꾸미기 3',
-    price: 0,
+    price: 10000,
   },
   fence4: {
     id: 'fence4',
@@ -49,7 +49,7 @@ export const FENCE_CONFIGS: Record<string, FenceConfig> = {
     image: require('../assets/garden/props/fence-04.png'),
     shopImage: require('../assets/shop/fence-decor-04.png'),
     description: '울타리 꾸미기 4',
-    price: 0,
+    price: 15000,
   },
   fence5: {
     id: 'fence5',
@@ -58,7 +58,7 @@ export const FENCE_CONFIGS: Record<string, FenceConfig> = {
     image: require('../assets/garden/props/fence-05.png'),
     shopImage: require('../assets/shop/fence-decor-05.png'),
     description: '울타리 꾸미기 5',
-    price: 0,
+    price: 20000,
   },
   fence6: {
     id: 'fence6',
@@ -67,7 +67,7 @@ export const FENCE_CONFIGS: Record<string, FenceConfig> = {
     image: require('../assets/garden/props/fence-06.png'),
     shopImage: require('../assets/shop/fence-decor-06.png'),
     description: '울타리 꾸미기 6',
-    price: 0,
+    price: 25000,
   },
   fence7: {
     id: 'fence7',
@@ -76,7 +76,7 @@ export const FENCE_CONFIGS: Record<string, FenceConfig> = {
     image: require('../assets/garden/props/fence-07.png'),
     shopImage: require('../assets/shop/fence-decor-07.png'),
     description: '울타리 꾸미기 7',
-    price: 0,
+    price: 30000,
   },
   fence8: {
     id: 'fence8',
@@ -85,7 +85,7 @@ export const FENCE_CONFIGS: Record<string, FenceConfig> = {
     image: require('../assets/garden/props/fence-08.png'),
     shopImage: require('../assets/shop/fence-decor-08.png'),
     description: '울타리 꾸미기 8',
-    price: 0,
+    price: 35000,
   },
 };
 

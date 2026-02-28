@@ -386,7 +386,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({ visible, onClose }) => {
         title={pendingPurchase?.action === 'purchase' ? '구매 확인' : '교체 확인'}
         message={pendingPurchase
           ? pendingPurchase.action === 'purchase'
-            ? `${pendingPurchase.name}을(를)\n새싹 ${pendingPurchase.price.toLocaleString()}개로 구매하시겠습니까?`
+            ? `구매하시겠습니까?`
             : '장착하시겠습니까?'
           : ''
         }

@@ -31,7 +31,7 @@ export const PLOT_CONFIGS: Record<string, PlotConfig> = {
     image: require('../assets/garden/props/farm-plot-02.png'),
     shopImage: require('../assets/shop/farm-plot-decor-02.png'),
     description: '밭 꾸미기 2',
-    price: 0,
+    price: 5000,
   },
   style3: {
     id: 'style3',
@@ -40,7 +40,7 @@ export const PLOT_CONFIGS: Record<string, PlotConfig> = {
     image: require('../assets/garden/props/farm-plot-03.png'),
     shopImage: require('../assets/shop/farm-plot-decor-03.png'),
     description: '밭 꾸미기 3',
-    price: 0,
+    price: 10000,
   },
   style4: {
     id: 'style4',
@@ -49,7 +49,7 @@ export const PLOT_CONFIGS: Record<string, PlotConfig> = {
     image: require('../assets/garden/props/farm-plot-04.png'),
     shopImage: require('../assets/shop/farm-plot-decor-04.png'),
     description: '밭 꾸미기 4',
-    price: 0,
+    price: 15000,
   },
   style5: {
     id: 'style5',
@@ -58,7 +58,7 @@ export const PLOT_CONFIGS: Record<string, PlotConfig> = {
     image: require('../assets/garden/props/farm-plot-05.png'),
     shopImage: require('../assets/shop/farm-plot-decor-05.png'),
     description: '밭 꾸미기 5',
-    price: 0,
+    price: 20000,
   },
   style6: {
     id: 'style6',
@@ -67,7 +67,7 @@ export const PLOT_CONFIGS: Record<string, PlotConfig> = {
     image: require('../assets/garden/props/farm-plot-06.png'),
     shopImage: require('../assets/shop/farm-plot-decor-06.png'),
     description: '밭 꾸미기 6',
-    price: 0,
+    price: 25000,
   },
   style7: {
     id: 'style7',
@@ -76,7 +76,7 @@ export const PLOT_CONFIGS: Record<string, PlotConfig> = {
     image: require('../assets/garden/props/farm-plot-07.png'),
     shopImage: require('../assets/shop/farm-plot-decor-07.png'),
     description: '밭 꾸미기 7',
-    price: 0,
+    price: 30000,
   },
   style8: {
     id: 'style8',
@@ -85,7 +85,7 @@ export const PLOT_CONFIGS: Record<string, PlotConfig> = {
     image: require('../assets/garden/props/farm-plot-08.png'),
     shopImage: require('../assets/shop/farm-plot-decor-08.png'),
     description: '밭 꾸미기 8',
-    price: 0,
+    price: 35000,
   },
 };
 

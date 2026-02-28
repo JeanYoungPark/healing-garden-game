@@ -467,8 +467,8 @@ const styles = StyleSheet.create({
     color: '#7a6854',
   },
   fence: {
-    width: width * 1.1,
-    height: width * 1.1 * 0.19, // 이미지 비율 132/700
+    width: width * 1,
+    height: width * 1 * 0.19, // 이미지 비율 132/700
     marginTop: height * 0.04,
   },
   mailAlert: {
