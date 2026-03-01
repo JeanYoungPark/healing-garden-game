@@ -8,6 +8,16 @@ export type PlantStage = 0 | 1 | 2 | 3; // 씨앗, 새싹, 꽃, 과일
 
 export type Rarity = 'common' | 'rare' | 'epic';
 
+export type QuestId = 'plant' | 'water' | 'harvest' | 'activeTime' | 'claimAnimal';
+
+export interface DailyQuestState {
+  date: string;                        // "YYYY-MM-DD" 리셋 감지용
+  progress: Record<string, number>;    // questId → 현재 카운트
+  rewardClaimed: boolean;              // 전체 보상 수령 여부
+  activeTimeAccumulated: number;       // 누적 활동 초
+  lastActiveTimestamp: number | null;  // 마지막 틱 시점 (런타임, persist 안 함)
+}
+
 export interface Plant {
   id: string;
   slotIndex: number; // 그리드 위치 (0-8)
@@ -102,6 +112,7 @@ export interface GardenState {
   hasHarvestedThisSession: boolean; // 이번 세션에 수확했는지 여부
   lastAppOpenDate: string | null; // 마지막 앱 실행 날짜 (YYYY-MM-DD, 거북이 트리거용)
   totalHarvests: number; // 누적 수확 횟수 (너구리 트리거용)
+  dailyQuest: DailyQuestState; // 일일 퀘스트 상태
   lastSaveTime: Date;
 }
 

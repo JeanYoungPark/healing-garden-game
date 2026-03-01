@@ -1,7 +1,7 @@
 // 🍓 Healing Garden - Garden Screen (Kawaii Cozy Style)
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image, Text, ImageBackground } from 'react-native';
+import { AppState, StyleSheet, View, TouchableOpacity, Image, Text, ImageBackground } from 'react-native';
 import { GardenArea } from '../components/GardenArea';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { SeedBagModal } from '../components/SeedBagModal';
@@ -86,6 +86,44 @@ export const GardenScreen: React.FC = () => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 일일 퀘스트: 자정 리셋 + 활동 시간 추적
+  useEffect(() => {
+    const initQuest = () => {
+      useGardenStore.getState().resetDailyQuestsIfNeeded();
+      useGardenStore.getState().startActiveTimeTracking();
+    };
+
+    if (useGardenStore.persist.hasHydrated()) {
+      initQuest();
+    } else {
+      const unsub = useGardenStore.persist.onFinishHydration(() => {
+        initQuest();
+        unsub();
+      });
+    }
+
+    // 1분마다 활동 시간 틱
+    const tickInterval = setInterval(() => {
+      useGardenStore.getState().tickActiveTime();
+    }, 60000);
+
+    // AppState 리스너: foreground/background 전환
+    const appStateSubscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        useGardenStore.getState().resetDailyQuestsIfNeeded();
+        useGardenStore.getState().startActiveTimeTracking();
+      } else if (nextState === 'background' || nextState === 'inactive') {
+        useGardenStore.getState().stopActiveTimeTracking();
+      }
+    });
+
+    return () => {
+      clearInterval(tickInterval);
+      appStateSubscription.remove();
+      useGardenStore.getState().stopActiveTimeTracking();
+    };
   }, []);
 
   // 심기 모드 상태: null이면 기본(당근), 설정되면 선택된 씨앗

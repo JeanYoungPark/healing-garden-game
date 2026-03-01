@@ -3,12 +3,25 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, PlantType, AnimalType, AnimalVisitor, MailItem, GardenState } from '../types';
+import { Plant, PlantType, AnimalType, AnimalVisitor, MailItem, GardenState, QuestId, DailyQuestState } from '../types';
 import { ANIMAL_CONFIGS } from '../utils/animalConfigs';
+import { QUEST_CONFIGS, QUEST_REWARD_GOLD } from '../utils/questConfigs';
 
 // 상수
 const MAX_WATER = 5;
 const WATER_RECHARGE_MINUTES = 120; // 2시간마다 1개 충전
+
+// 오늘 날짜 문자열
+const getTodayString = () => new Date().toISOString().split('T')[0];
+
+// 일일 퀘스트 초기값
+const createInitialDailyQuest = (): DailyQuestState => ({
+  date: getTodayString(),
+  progress: {},
+  rewardClaimed: false,
+  activeTimeAccumulated: 0,
+  lastActiveTimestamp: null,
+});
 
 interface GardenStore extends GardenState {
   // Actions
@@ -47,6 +60,13 @@ interface GardenStore extends GardenState {
   // Plot actions
   purchasePlot: (plotId: string, price: number) => boolean;
   equipPlot: (plotId: string) => void;
+  // Quest actions
+  incrementQuestProgress: (questId: QuestId, amount?: number) => void;
+  resetDailyQuestsIfNeeded: () => void;
+  claimQuestReward: () => boolean;
+  tickActiveTime: () => void;
+  startActiveTimeTracking: () => void;
+  stopActiveTimeTracking: () => void;
   // Dev
   resetGame: () => void;
 }
@@ -176,6 +196,7 @@ export const useGardenStore = create<GardenStore>()(
       hasHarvestedThisSession: false, // 이번 세션에 수확했는지 여부
       lastAppOpenDate: null, // 마지막 앱 실행 날짜 (YYYY-MM-DD, 거북이 트리거용)
       totalHarvests: 0, // 누적 수확 횟수 (너구리 트리거용)
+      dailyQuest: createInitialDailyQuest(),
       lastSaveTime: new Date(),
 
       // Actions
@@ -201,6 +222,9 @@ export const useGardenStore = create<GardenStore>()(
           lastSaveTime: new Date(),
         });
 
+        // 퀘스트 진행
+        get().incrementQuestProgress('plant');
+
         return true;
       },
 
@@ -223,6 +247,9 @@ export const useGardenStore = create<GardenStore>()(
           water: state.water - 1,
           lastSaveTime: new Date(),
         }));
+
+        // 퀘스트 진행
+        get().incrementQuestProgress('water');
       },
 
       harvestPlant: (plantId: string) => {
@@ -248,6 +275,9 @@ export const useGardenStore = create<GardenStore>()(
             lastSaveTime: new Date(),
           };
         });
+
+        // 퀘스트 진행
+        get().incrementQuestProgress('harvest');
       },
 
       addGold: (amount: number) => {
@@ -588,6 +618,9 @@ export const useGardenStore = create<GardenStore>()(
           lastSaveTime: new Date(),
         });
 
+        // 퀘스트 진행
+        get().incrementQuestProgress('claimAnimal');
+
         // 동물 클릭 후 랜덤 동물 체크 (방금 퇴장한 동물 제외)
         setTimeout(() => get().checkForRandomVisitors(animalType), 100);
 
@@ -810,6 +843,109 @@ export const useGardenStore = create<GardenStore>()(
         set({ equippedPlot: plotId, lastSaveTime: new Date() });
       },
 
+      // 퀘스트 카운터 증가
+      incrementQuestProgress: (questId: QuestId, amount: number = 1) => {
+        set((state) => {
+          const dq = state.dailyQuest;
+          const current = dq.progress[questId] || 0;
+          return {
+            dailyQuest: {
+              ...dq,
+              progress: { ...dq.progress, [questId]: current + amount },
+            },
+            lastSaveTime: new Date(),
+          };
+        });
+      },
+
+      // 자정 리셋 (날짜 비교)
+      resetDailyQuestsIfNeeded: () => {
+        const state = get();
+        const today = getTodayString();
+        if (state.dailyQuest.date !== today) {
+          set({
+            dailyQuest: createInitialDailyQuest(),
+            lastSaveTime: new Date(),
+          });
+        }
+      },
+
+      // 전체 보상 수령
+      claimQuestReward: () => {
+        const state = get();
+        const dq = state.dailyQuest;
+        if (dq.rewardClaimed) return false;
+
+        // 모든 퀘스트 완료 확인
+        const allDone = QUEST_CONFIGS.every((q) => (dq.progress[q.id] || 0) >= q.target);
+        if (!allDone) return false;
+
+        set({
+          gold: state.gold + QUEST_REWARD_GOLD,
+          dailyQuest: { ...dq, rewardClaimed: true },
+          lastSaveTime: new Date(),
+        });
+        return true;
+      },
+
+      // 활동 시간 틱 (1분마다 호출)
+      tickActiveTime: () => {
+        set((state) => {
+          const dq = state.dailyQuest;
+          const now = Date.now();
+
+          // lastActiveTimestamp가 없으면 첫 틱
+          if (!dq.lastActiveTimestamp) {
+            return {
+              dailyQuest: { ...dq, lastActiveTimestamp: now },
+            };
+          }
+
+          // 경과 시간 (초)
+          const elapsedSec = Math.floor((now - dq.lastActiveTimestamp) / 1000);
+          if (elapsedSec < 30) return state; // 최소 30초 경과해야 기록
+
+          const newAccumulated = dq.activeTimeAccumulated + elapsedSec;
+          const newMinutes = Math.floor(newAccumulated / 60);
+          const currentProgress = dq.progress['activeTime'] || 0;
+
+          return {
+            dailyQuest: {
+              ...dq,
+              activeTimeAccumulated: newAccumulated,
+              lastActiveTimestamp: now,
+              progress: {
+                ...dq.progress,
+                activeTime: Math.max(currentProgress, newMinutes),
+              },
+            },
+            lastSaveTime: new Date(),
+          };
+        });
+      },
+
+      // 활동 시간 추적 시작
+      startActiveTimeTracking: () => {
+        set((state) => ({
+          dailyQuest: {
+            ...state.dailyQuest,
+            lastActiveTimestamp: Date.now(),
+          },
+        }));
+      },
+
+      // 활동 시간 추적 중지
+      stopActiveTimeTracking: () => {
+        // 중지 전 마지막 틱
+        get().tickActiveTime();
+        set((state) => ({
+          dailyQuest: {
+            ...state.dailyQuest,
+            lastActiveTimestamp: null,
+          },
+        }));
+      },
+
       resetGame: () => {
         AsyncStorage.removeItem('healing-garden-storage');
         set({
@@ -839,13 +975,14 @@ export const useGardenStore = create<GardenStore>()(
           hasHarvestedThisSession: false,
           lastAppOpenDate: null,
           totalHarvests: 0,
+          dailyQuest: createInitialDailyQuest(),
           lastSaveTime: new Date(),
         });
       },
     }),
     {
       name: 'healing-garden-storage',
-      version: 13, // 밭 시스템 추가
+      version: 14, // 일일 퀘스트 시스템 추가
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -904,6 +1041,15 @@ export const useGardenStore = create<GardenStore>()(
           persistedState.plots = persistedState.plots ?? [];
           persistedState.equippedPlot = persistedState.equippedPlot ?? 'basic';
         }
+        if (version < 14) {
+          persistedState.dailyQuest = persistedState.dailyQuest ?? {
+            date: new Date().toISOString().split('T')[0],
+            progress: {},
+            rewardClaimed: false,
+            activeTimeAccumulated: 0,
+            lastActiveTimestamp: null,
+          };
+        }
 
         return persistedState;
       },
@@ -934,6 +1080,10 @@ export const useGardenStore = create<GardenStore>()(
         hasHarvestedThisSession: state.hasHarvestedThisSession,
         lastAppOpenDate: state.lastAppOpenDate,
         totalHarvests: state.totalHarvests,
+        dailyQuest: {
+          ...state.dailyQuest,
+          lastActiveTimestamp: null, // 런타임 전용, persist 안 함
+        },
         lastSaveTime: state.lastSaveTime,
       }),
     }
