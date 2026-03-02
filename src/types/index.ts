@@ -1,6 +1,6 @@
 // 🍓 Healing Garden - Type Definitions
 
-export type PlantType = 'carrot' | 'turnip' | 'potato' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple';
+export type PlantType = 'carrot' | 'turnip' | 'potato' | 'strawberry' | 'watermelon' | 'peach' | 'grape' | 'apple' | 'eggplant';
 
 export type AnimalType = 'rabbit' | 'turtle' | 'hedgehog' | 'raccoon' | 'frog' | 'cat' | 'owl';
 

@@ -13,17 +13,18 @@ export interface PlantStageSize {
 }
 
 // 공통 크기 설정
-const DEFAULT_SEED_SIZE = { w: 0.06, h: 0.11, mb: 0.3 };  // 씨앗
+const DEFAULT_SEED_SIZE = { w: 0.06, h: 0.11, mb: 0.28 };  // 씨앗
 
 // 작물별 크기 설정 (stage 1, 2, 3에 공통 적용)
-const CARROT_SIZE = { w: 0.45, h: 0.45, mb: 0.34 };
-const TURNIP_SIZE = { w: 0.7, h: 0.7, mb: 0.27 };
+const CARROT_SIZE = { w: 0.45, h: 0.45, mb: 0.32 };
+const TURNIP_SIZE = { w: 0.7, h: 0.7, mb: 0.25 };
 const POTATO_SIZE = { w: 0.6, h: 0.6, mb: 0.26, ml: -0.02 };
 const STRAWBERRY_SIZE = { w: 0.6, h: 0.6, mb: 0.33, ml: -0.02 };
 const WATERMELON_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 const PEACH_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 const GRAPE_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 const APPLE_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
+const EGGPLANT_SIZE = { w: 0.5, h: 0.5, mt: -0.15, ml: -0.02 };
 
 // 작물별 단계 이미지 (0: 씨앗, 1: 새싹, 2: 성장, 3: 수확 가능)
 export const PLANT_STAGE_IMAGES: Record<PlantType, Record<number, any>> = {
@@ -70,6 +71,12 @@ export const PLANT_STAGE_IMAGES: Record<PlantType, Record<number, any>> = {
     3: require('../assets/plants/plant-lv1.png'),
   },
   apple: {
+    0: require('../assets/plants/plant-lv1.png'),
+    1: require('../assets/plants/plant-lv1.png'),
+    2: require('../assets/plants/plant-lv1.png'),
+    3: require('../assets/plants/plant-lv1.png'),
+  },
+  eggplant: {
     0: require('../assets/plants/plant-lv1.png'),
     1: require('../assets/plants/plant-lv1.png'),
     2: require('../assets/plants/plant-lv1.png'),
@@ -126,5 +133,11 @@ export const PLANT_STAGE_SIZES: Record<PlantType, PlantStageSize[]> = {
     APPLE_SIZE,
     APPLE_SIZE,
     APPLE_SIZE,
+  ],
+  eggplant: [
+    DEFAULT_SEED_SIZE,
+    EGGPLANT_SIZE,
+    EGGPLANT_SIZE,
+    EGGPLANT_SIZE,
   ],
 };

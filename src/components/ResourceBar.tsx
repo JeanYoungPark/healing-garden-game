@@ -11,6 +11,7 @@ interface ResourceBarProps {
   onCollectionPress?: () => void;
   onSettingsPress?: () => void;
   hasNewCollection?: boolean;
+  canClaimQuestReward?: boolean;
 }
 
 // 숫자를 K, M 단위로 축약
@@ -31,6 +32,7 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
   onCollectionPress,
   onSettingsPress,
   hasNewCollection,
+  canClaimQuestReward,
 }) => {
   const { bgWidth, bgHeight } = calcBackgroundSize(1081, 153);
 
@@ -93,12 +95,19 @@ export const ResourceBar: React.FC<ResourceBarProps> = ({
 
           {/* 오른쪽: 아이콘 */}
           <View style={styles.rightSection}>
-            <TouchableOpacity onPress={onQuestPress} activeOpacity={0.7}>
+            <TouchableOpacity onPress={onQuestPress} activeOpacity={0.7} style={styles.iconButton}>
               <Image
                 source={require('../assets/garden/icons/quest-icon.png')}
                 style={{ width: topIconSize, height: topIconSize }}
                 resizeMode="contain"
               />
+              {canClaimQuestReward && (
+                <View style={[styles.redDot, {
+                  width: redDotSize,
+                  height: redDotSize,
+                  borderRadius: redDotSize / 2
+                }]} />
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity onPress={onCollectionPress} activeOpacity={0.7} style={styles.iconButton}>
@@ -169,7 +178,7 @@ const styles = StyleSheet.create({
   redDot: {
     position: 'absolute',
     top: -2,
-    right: -2,
+    right: -4,
     backgroundColor: '#E08080',
     borderWidth: 1.5,
     borderColor: '#7a6854',

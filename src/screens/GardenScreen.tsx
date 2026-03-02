@@ -45,6 +45,7 @@ export const GardenScreen: React.FC = () => {
   const bottomSeparatorWidth = bgWidth * 0.004;
   const bottomSeparatorHeight = bgWidth * 0.07;
   const bottomTextSize = bgWidth * 0.04;
+  const badgeSize = bgWidth * 0.02;
   const [seedBagVisible, setSeedBagVisible] = useState(false);
   const [seedBagChecked, setSeedBagChecked] = useState(false); // 씨앗가방 확인 여부
   const [shopVisible, setShopVisible] = useState(false);
@@ -243,7 +244,7 @@ export const GardenScreen: React.FC = () => {
                     resizeMode="contain"
                   />
                   <Text style={[styles.bottomNavText, { fontSize: bottomTextSize }]}>씨앗</Text>
-                  {seeds.length > 0 && !seedBagChecked && <View style={styles.seedBadge} />}
+                  {seeds.length > 0 && !seedBagChecked && <View style={[styles.seedBadge, { width: badgeSize, height: badgeSize, borderRadius: badgeSize / 2 }]} />}
                 </TouchableOpacity>
               </View>
             </View>
@@ -389,11 +390,8 @@ const styles = StyleSheet.create({
   },
   seedBadge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    top: 0,
+    right: -8,
     backgroundColor: '#E08080',
     borderWidth: 1.5,
     borderColor: '#7a6854',

@@ -142,9 +142,6 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                       {ALL_ANIMAL_TYPES.filter((t) => ANIMAL_CONFIGS[t].collectionShadow).map((type) => {
                         const config = ANIMAL_CONFIGS[type];
                         const met = claimedAnimals.includes(type);
-                        const cs = config.collectionStyle;
-                        const imgHeight = itemBoxHeight * (cs?.heightRatio ?? 0.5);
-                        const imgTop = itemBoxHeight * (cs?.topRatio ?? 0.12);
                         return (
                           <View key={type} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
                             <Image
@@ -158,7 +155,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                                   ? config.collectionImage
                                   : config.collectionShadow || DEFAULT_SHADOW
                               }
-                              style={[styles.giftItem, { height: imgHeight, top: imgTop, left: itemBoxWidth * (cs?.leftRatio ?? 0.13) }]}
+                              style={[styles.giftItem, { height: itemImageHeight, top: itemImageTop }]}
                               resizeMode="contain"
                             />
                             <Text style={[styles.giftItemText, { bottom: itemTextBottom, fontSize: itemFontSize }]}>

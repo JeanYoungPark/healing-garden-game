@@ -112,6 +112,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '거북이',
     nickname: '거붕이',
     emoji: '🐢',
+    collectionImage: require('../assets/collection/animal-turtle.png'),
+    collectionShadow: require('../assets/collection/animal-shadow-turtle.png'),
     render: { position: 'beside-capybara' },
     giftType: 'seed',
     giftSeedType: 'potato',
@@ -143,6 +145,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     name: '너구리',
     nickname: '너굴이',
     emoji: '🦝',
+    collectionImage: require('../assets/collection/animal-raccoon.png'),
+    collectionShadow: require('../assets/collection/animal-shadow-raccoon.png'),
     render: { position: 'beside-capybara' },
     giftType: 'gold',
     giftGoldAmount: 1000, // 첫 방문 시 기본값 (실제로는 claimVisitor에서 처리)

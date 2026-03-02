@@ -7,6 +7,7 @@ import { LayeredBackground } from './LayeredBackground';
 import { ResourceBar } from './ResourceBar';
 import { BackButton } from './BackButton';
 import { useGardenStore } from '../stores/gardenStore';
+import { QUEST_CONFIGS } from '../utils/questConfigs';
 
 interface ScreenLayoutProps {
   children: React.ReactNode;
@@ -28,8 +29,10 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   onSettingsPress,
 }) => {
   const insets = useSafeAreaInsets();
-  const { gold, water, collection, seenCollection } = useGardenStore();
+  const { gold, water, collection, seenCollection, dailyQuest } = useGardenStore();
   const hasNewCollection = collection.length > seenCollection.length;
+  const canClaimQuestReward = !dailyQuest.rewardClaimed &&
+    QUEST_CONFIGS.every((q) => (dailyQuest.progress[q.id] || 0) >= q.target);
 
   return (
     <LayeredBackground>
@@ -43,6 +46,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
               onCollectionPress={onCollectionPress}
               onSettingsPress={onSettingsPress}
               hasNewCollection={hasNewCollection}
+              canClaimQuestReward={canClaimQuestReward}
             />
           </View>
         )}

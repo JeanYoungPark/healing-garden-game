@@ -106,6 +106,22 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     rarity: 'epic',
     description: '빛나는 붉은 빛의 특별한 과일이에요.',
     story: '정원에서 가장 귀한 보석 같은 존재예요.',
+    collectionImage: require('../assets/collection/plant-apple.png'),
+    collectionShadow: require('../assets/collection/plant-shadow-apple.png'),
+  },
+  eggplant: {
+    type: 'eggplant',
+    name: '가지',
+    seedPrice: 150,
+    harvestGold: 500,
+    growthTime: 270, // 4시간 30분
+    waterBonus: 28,
+    emoji: '🍆',
+    rarity: 'epic',
+    description: '윤기 나는 보랏빛 채소예요.',
+    story: '정원에 고귀한 빛깔이 더해졌어요.',
+    collectionImage: require('../assets/collection/plant-eggplant.png'),
+    collectionShadow: require('../assets/collection/plant-shadow-eggplant.png'),
   },
 };
 
