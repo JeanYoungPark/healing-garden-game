@@ -193,40 +193,15 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         ref={ref}
         style={styles.gardenArea}
       >
-        {/* 카피바라 애니메이션 - 밭 위쪽 (터치 시 꾸미기 모달) */}
-        <TouchableOpacity
-          style={styles.capybaraAnimation}
-          activeOpacity={0.7}
-          onPress={onCapybaraPress}
-        >
-          <CapybaraCharacter />
-        </TouchableOpacity>
-
-        {/* 동물 방문자 (config 기반 렌더링) */}
-        {(() => {
-          let besideIndex = 0;
-          return visitors.map((visitor) => {
+        {/* Custom positioned visitors (absolute in gardenArea) */}
+        {visitors
+          .filter((v) => ANIMAL_CONFIGS[v.type].render.position === 'custom')
+          .map((visitor) => {
             const config = ANIMAL_CONFIGS[visitor.type];
             const Component = ANIMAL_COMPONENTS[visitor.type];
             const content = Component
               ? <Component />
               : <Text style={styles.visitorEmoji}>{config.emoji}</Text>;
-
-            if (config.render.position === 'beside-capybara') {
-              const idx = besideIndex++;
-              return (
-                <TouchableOpacity
-                  key={visitor.type}
-                  style={[styles.visitorContainer, { left: width * 0.45 + idx * (width * 0.18) }]}
-                  activeOpacity={0.7}
-                  onPress={() => onVisitorPress?.(visitor.type)}
-                >
-                  {content}
-                </TouchableOpacity>
-              );
-            }
-
-            // custom position
             return (
               <TouchableOpacity
                 key={visitor.type}
@@ -237,38 +212,73 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                 {content}
               </TouchableOpacity>
             );
-          });
-        })()}
+          })}
 
-        {/* 우체통 아이콘 - 카피바라 오른쪽 */}
-        <TouchableOpacity
-          style={styles.postBoxIcon}
-          activeOpacity={0.7}
-          onPress={onMailboxPress}
-        >
-          <Image
-            source={require('../assets/garden/icons/post-box.png')}
-            style={styles.postBoxImage}
-            resizeMode="contain"
-          />
-          {hasUnreadMail && (
-            <View style={styles.mailAlert}>
-              {/* 갈색 테두리 (4방향 오프셋) */}
-              {[
-                { top: -1.5, left: 0 },
-                { top: 1.5, left: 0 },
-                { top: 0, left: -1.5 },
-                { top: 0, left: 1.5 },
-              ].map((offset, i) => (
-                <Text key={i} style={[styles.mailAlertStroke, offset]}>!</Text>
-              ))}
-              <Text style={styles.mailAlertText}>!</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        {/* 밭 기준 정렬 컨테이너 (화면 높이 무관하게 일정한 간격) */}
+        <View style={styles.gardenContent}>
+          {/* 캐릭터 영역 (카피바라 + 방문 동물 + 우체통) */}
+          <View style={styles.charactersArea}>
+            <TouchableOpacity
+              style={styles.capybaraAnimation}
+              activeOpacity={0.7}
+              onPress={onCapybaraPress}
+            >
+              <CapybaraCharacter />
+            </TouchableOpacity>
 
-        {/* 밭과 울타리 그룹 */}
-        <View style={styles.farmGroup}>
+            {/* beside-capybara visitors */}
+            {(() => {
+              let besideIndex = 0;
+              return visitors
+                .filter((v) => ANIMAL_CONFIGS[v.type].render.position === 'beside-capybara')
+                .map((visitor) => {
+                  const config = ANIMAL_CONFIGS[visitor.type];
+                  const Component = ANIMAL_COMPONENTS[visitor.type];
+                  const content = Component
+                    ? <Component />
+                    : <Text style={styles.visitorEmoji}>{config.emoji}</Text>;
+                  const idx = besideIndex++;
+                  return (
+                    <TouchableOpacity
+                      key={visitor.type}
+                      style={[styles.visitorContainer, { left: width * 0.45 + idx * (width * 0.18) }]}
+                      activeOpacity={0.7}
+                      onPress={() => onVisitorPress?.(visitor.type)}
+                    >
+                      {content}
+                    </TouchableOpacity>
+                  );
+                });
+            })()}
+
+            <TouchableOpacity
+              style={styles.postBoxIcon}
+              activeOpacity={0.7}
+              onPress={onMailboxPress}
+            >
+              <Image
+                source={require('../assets/garden/icons/post-box.png')}
+                style={styles.postBoxImage}
+                resizeMode="contain"
+              />
+              {hasUnreadMail && (
+                <View style={styles.mailAlert}>
+                  {[
+                    { top: -1.5, left: 0 },
+                    { top: 1.5, left: 0 },
+                    { top: 0, left: -1.5 },
+                    { top: 0, left: 1.5 },
+                  ].map((offset, i) => (
+                    <Text key={i} style={[styles.mailAlertStroke, offset]}>!</Text>
+                  ))}
+                  <Text style={styles.mailAlertText}>!</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* 밭과 울타리 그룹 */}
+          <View style={styles.farmGroup}>
           {/* 3x3 밭 그리드 - 행별 View로 zIndex 제어 */}
           <View style={styles.gridContainer}>
             {[0, 1, 2].map((row) => (
@@ -372,6 +382,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
             resizeMode="contain"
           />
         </View>
+        </View>
       </View>
     </View>
   );
@@ -391,9 +402,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  gardenContent: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  charactersArea: {
+    width: '100%',
+    height: 120,
+    position: 'relative',
+  },
   capybaraAnimation: {
     position: 'absolute',
-    top: '12%',
+    bottom: 30,
     left: 0,
     width: 120,
     height: 120,
@@ -401,7 +421,7 @@ const styles = StyleSheet.create({
   },
   visitorContainer: {
     position: 'absolute',
-    top: '18%',
+    bottom: 20,
     width: 80,
     height: 80,
     justifyContent: 'center',
@@ -418,7 +438,7 @@ const styles = StyleSheet.create({
   },
   postBoxIcon: {
     position: 'absolute',
-    top: '15%',
+    bottom: 10,
     right: '4%',
     width: 120,
     height: 120,
@@ -429,7 +449,6 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   farmGroup: {
-    marginTop: height * 0.10,
     alignItems: 'center',
     width: '100%',
     zIndex: 10,

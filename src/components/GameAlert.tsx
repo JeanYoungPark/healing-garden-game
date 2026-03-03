@@ -11,23 +11,31 @@ interface GameAlertProps {
 export const GameAlert: React.FC<GameAlertProps> = ({ visible, message, onClose, duration = 800 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.8)).current;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (visible) {
       opacity.setValue(0);
       scale.setValue(0.8);
 
+      let timerId: ReturnType<typeof setTimeout> | null = null;
+
       Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
         Animated.spring(scale, { toValue: 1, friction: 6, useNativeDriver: true }),
       ]).start(() => {
-        setTimeout(() => {
+        timerId = setTimeout(() => {
           Animated.timing(opacity, { toValue: 0, duration: 300, useNativeDriver: true })
-            .start(() => onClose());
+            .start(() => onCloseRef.current());
         }, duration);
       });
+
+      return () => {
+        if (timerId) clearTimeout(timerId);
+      };
     }
-  }, [visible, opacity, scale, duration, onClose]);
+  }, [visible, opacity, scale, duration]);
 
   if (!visible) return null;
 
