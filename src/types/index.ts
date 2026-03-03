@@ -98,6 +98,7 @@ export interface GardenState {
   visitors: AnimalVisitor[]; // 정원에 방문한 동물들
   claimedAnimals: AnimalType[]; // 선물을 받은 동물들 (조건 첫 만족 시에만, 랜덤 재등장 시 포함 안됨)
   decorations: DecorationItem[]; // 꾸미기 아이템 인벤토리
+  hasNewDecoration: boolean; // 새 꾸미기 아이템 알림
   equippedDecorations: string[]; // 장착 중인 꾸미기 아이템 ID 목록
   fences: FenceItem[]; // 울타리 인벤토리
   equippedFence: string; // 장착 중인 울타리 ID

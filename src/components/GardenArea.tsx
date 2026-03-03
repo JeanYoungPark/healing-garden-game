@@ -33,6 +33,7 @@ interface GardenAreaProps {
   plantingMode: boolean;
   visitors: AnimalVisitor[];
   hasUnreadMail: boolean;
+  hasNewDecoration: boolean;
   equippedFence: string; // 장착된 울타리 ID
   equippedPlot: string; // 장착된 밭 ID
   onPlantPress?: (plantId: string) => void;
@@ -112,6 +113,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
   plantingMode,
   visitors,
   hasUnreadMail,
+  hasNewDecoration,
   equippedFence,
   equippedPlot,
   onPlantPress,
@@ -193,27 +195,6 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
         ref={ref}
         style={styles.gardenArea}
       >
-        {/* Custom positioned visitors (absolute in gardenArea) */}
-        {visitors
-          .filter((v) => ANIMAL_CONFIGS[v.type].render.position === 'custom')
-          .map((visitor) => {
-            const config = ANIMAL_CONFIGS[visitor.type];
-            const Component = ANIMAL_COMPONENTS[visitor.type];
-            const content = Component
-              ? <Component />
-              : <Text style={styles.visitorEmoji}>{config.emoji}</Text>;
-            return (
-              <TouchableOpacity
-                key={visitor.type}
-                style={[styles.customVisitorContainer, config.render.containerStyle as any]}
-                activeOpacity={0.7}
-                onPress={() => onVisitorPress?.(visitor.type)}
-              >
-                {content}
-              </TouchableOpacity>
-            );
-          })}
-
         {/* 밭 기준 정렬 컨테이너 (화면 높이 무관하게 일정한 간격) */}
         <View style={styles.gardenContent}>
           {/* 캐릭터 영역 (카피바라 + 방문 동물 + 우체통) */}
@@ -224,6 +205,19 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
               onPress={onCapybaraPress}
             >
               <CapybaraCharacter />
+              {hasNewDecoration && (
+                <View style={styles.capybaraAlert}>
+                  {[
+                    { top: -1.5, left: 0 },
+                    { top: 1.5, left: 0 },
+                    { top: 0, left: -1.5 },
+                    { top: 0, left: 1.5 },
+                  ].map((offset, i) => (
+                    <Text key={i} style={[styles.mailAlertStroke, offset]}>!</Text>
+                  ))}
+                  <Text style={styles.mailAlertText}>!</Text>
+                </View>
+              )}
             </TouchableOpacity>
 
             {/* beside-capybara visitors */}
@@ -331,7 +325,7 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
                               return (
                                 <FloatingTooltip
                                   key={t.id}
-                                  text={getRemainingTime(plant)}
+                                  text={`${PLANT_CONFIGS[plant.type].name} ${getRemainingTime(plant)}`}
                                   topOffset={-plotSize * sz.h - (sz.tooltipOffset || 0)}
                                   onDone={() => handleTooltipDone(t.id)}
                                 />
@@ -383,6 +377,27 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
           />
         </View>
         </View>
+
+        {/* Custom positioned visitors (gardenArea 기준, gardenContent 위에 렌더) */}
+        {visitors
+          .filter((v) => ANIMAL_CONFIGS[v.type].render.position === 'custom')
+          .map((visitor) => {
+            const config = ANIMAL_CONFIGS[visitor.type];
+            const Component = ANIMAL_COMPONENTS[visitor.type];
+            const content = Component
+              ? <Component />
+              : <Text style={styles.visitorEmoji}>{config.emoji}</Text>;
+            return (
+              <TouchableOpacity
+                key={visitor.type}
+                style={[styles.customVisitorContainer, config.render.containerStyle as any]}
+                activeOpacity={0.7}
+                onPress={() => onVisitorPress?.(visitor.type)}
+              >
+                {content}
+              </TouchableOpacity>
+            );
+          })}
       </View>
     </View>
   );
@@ -489,6 +504,14 @@ const styles = StyleSheet.create({
     width: width * 1,
     height: width * 1 * 0.19, // 이미지 비율 132/700
     marginTop: height * 0.04,
+  },
+  capybaraAlert: {
+    position: 'absolute',
+    top: -10,
+    right: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   mailAlert: {
     position: 'absolute',

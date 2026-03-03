@@ -47,6 +47,8 @@ export interface AnimalConfig {
   giftGoldAmount?: number;   // 선물로 주는 새싹 (giftType이 'gold'일 때)
   giftDecorationId?: string; // 선물로 주는 꾸미기 아이템 ID (giftType이 'decoration'일 때)
   giftMessage: string;      // 선물 알럿 메시지
+  description?: string;     // 도감 설명
+  story?: string;           // 도감 특별 이야기
   // 등장 조건
   trigger: {
     type: 'harvest';         // 특정 작물 수확 후 등장
@@ -98,6 +100,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftSeedType: 'strawberry',
     giftSeedCount: 1,
     giftMessage: '당근밭을 보고 반가워하는 토깽이가\n딸기 씨앗 1개를 선물로 줬어요!',
+    description: '당근을 좋아하는 귀여운 토끼예요.',
+    story: '당근밭 냄새를 맡고 찾아왔어요.',
     trigger: { type: 'harvest', requiredPlant: 'carrot' },
     randomReappear: {
       enabled: true,
@@ -119,6 +123,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftSeedType: 'potato',
     giftSeedCount: 1,
     giftMessage: '먼 길을 걸어온 거붕이가\n감자 씨앗 1개를 선물로 줬어요!',
+    description: '느리지만 먼 길도 마다하지 않는 거북이예요.',
+    story: '오랜만에 찾아온 정원이 반가웠나봐요.',
     trigger: { type: 'inactiveDays', requiredDays: 7 },
     randomReappear: {
       enabled: true,
@@ -151,6 +157,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftType: 'gold',
     giftGoldAmount: 1000, // 첫 방문 시 기본값 (실제로는 claimVisitor에서 처리)
     giftMessage: '새로운 친구 너굴이가\n새싹 1000개를 선물로 줬어요!',
+    description: '새싹을 잔뜩 모아서 가져오는 너구리예요.',
+    story: '부지런히 모은 새싹을 나눠주고 싶대요.',
     trigger: { type: 'harvest_count', requiredCount: 500 },
     randomReappear: {
       enabled: true,
@@ -191,6 +199,8 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftType: 'water',
     giftWaterCount: 1,
     giftMessage: '길을 지나다 들른 고영희가\n물 1개를 선물로 줬어요!',
+    description: '자유롭게 돌아다니는 도도한 고양이예요.',
+    story: '가끔 정원에 들러 물을 나눠줘요.',
     trigger: { type: 'condition', condition: 'visitWithoutHarvest', requiredCount: 2, requiredVisitor: 'rabbit' },
     randomReappear: {
       enabled: true,
@@ -208,16 +218,12 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     collectionImage: require('../assets/collection/animal-owl.png'),
     collectionShadow: require('../assets/collection/animal-shadow-owl.png'),
     collectionStyle: { heightRatio: 0.5, topRatio: 0.12, leftRatio: 0.13 },
-    render: {
-      position: 'custom',
-      containerStyle: {
-        top: '20%', right: '26%',
-        width: screenWidth * 0.26, height: screenWidth * 0.26, zIndex: 6,
-      },
-    },
+    render: { position: 'beside-capybara' },
     giftType: 'decoration',
     giftDecorationId: 'glasses',
     giftMessage: '밤하늘의 친구 올뺌희가\n안경을 선물로 줬어요!',
+    description: '밤에만 찾아오는 신비로운 올빼미예요.',
+    story: '어둠 속에서 반짝이는 눈이 매력적이에요.',
     trigger: { type: 'mailRead', requiredMailId: 'owl-visit', delayHours: 24 },
     randomReappear: {
       enabled: true,

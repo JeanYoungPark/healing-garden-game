@@ -37,6 +37,7 @@ interface GardenStore extends GardenState {
   toggleNotification: () => void;
   markCollectionSeen: () => void;
   markCollectionAsSeen: (plantType: PlantType) => void;
+  clearNewDecorationFlag: () => void;
   // Mail actions
   initFirstVisitMail: () => void;
   readMail: (mailId: string) => void;
@@ -69,6 +70,7 @@ interface GardenStore extends GardenState {
   stopActiveTimeTracking: () => void;
   // Dev
   resetGame: () => void;
+  devForceVisitor: (animalType: AnimalType) => void;
 }
 
 // 밤 시간대 체크 함수 (18:00 ~ 03:00)
@@ -182,6 +184,7 @@ export const useGardenStore = create<GardenStore>()(
       visitors: [],
       claimedAnimals: [],
       decorations: [],
+      hasNewDecoration: false,
       equippedDecorations: [],
       fences: [], // 구매한 울타리
       equippedFence: 'rope', // 기본 울타리
@@ -344,6 +347,10 @@ export const useGardenStore = create<GardenStore>()(
 
       markCollectionSeen: () => {
         set((state) => ({ seenCollection: [...state.collection] }));
+      },
+
+      clearNewDecorationFlag: () => {
+        set({ hasNewDecoration: false });
       },
 
       markCollectionAsSeen: (plantType: PlantType) => {
@@ -615,6 +622,7 @@ export const useGardenStore = create<GardenStore>()(
           water: updatedWater,
           gold: updatedGold,
           decorations: updatedDecorations,
+          hasNewDecoration: updatedDecorations.length > state.decorations.length ? true : state.hasNewDecoration,
           lastSaveTime: new Date(),
         });
 
@@ -946,6 +954,15 @@ export const useGardenStore = create<GardenStore>()(
         }));
       },
 
+      devForceVisitor: (animalType: AnimalType) => {
+        const state = get();
+        if (state.visitors.some((v) => v.type === animalType)) return;
+        set({
+          visitors: [...state.visitors, { type: animalType, appearedAt: new Date(), isRandom: false }],
+          lastSaveTime: new Date(),
+        });
+      },
+
       resetGame: () => {
         AsyncStorage.removeItem('healing-garden-storage');
         set({
@@ -961,6 +978,7 @@ export const useGardenStore = create<GardenStore>()(
           visitors: [],
           claimedAnimals: [],
           decorations: [],
+      hasNewDecoration: false,
           equippedDecorations: [],
           fences: [],
           equippedFence: 'rope',
@@ -982,7 +1000,7 @@ export const useGardenStore = create<GardenStore>()(
     }),
     {
       name: 'healing-garden-storage',
-      version: 14, // 일일 퀘스트 시스템 추가
+      version: 15, // 새 꾸미기 아이템 알림 플래그 추가
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -1050,6 +1068,9 @@ export const useGardenStore = create<GardenStore>()(
             lastActiveTimestamp: null,
           };
         }
+        if (version < 15) {
+          persistedState.hasNewDecoration = persistedState.hasNewDecoration ?? false;
+        }
 
         return persistedState;
       },
@@ -1066,6 +1087,7 @@ export const useGardenStore = create<GardenStore>()(
         visitors: state.visitors,
         claimedAnimals: state.claimedAnimals,
         decorations: state.decorations,
+        hasNewDecoration: state.hasNewDecoration,
         equippedDecorations: state.equippedDecorations,
         fences: state.fences,
         equippedFence: state.equippedFence,

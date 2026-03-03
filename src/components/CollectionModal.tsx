@@ -9,7 +9,7 @@ import { useGardenStore } from '../stores/gardenStore';
 import { PLANT_CONFIGS, ALL_PLANT_TYPES } from '../utils/plantConfigs';
 import { PLANT_STAGE_IMAGES } from '../utils/plantStageConfigs';
 import { ANIMAL_CONFIGS, ALL_ANIMAL_TYPES } from '../utils/animalConfigs';
-import { PlantType } from '../types';
+import { PlantType, AnimalType } from '../types';
 
 // 미수집 기본 그림자 (collectionShadow 없는 작물용 fallback)
 const DEFAULT_SHADOW = require('../assets/collection/plant-shadow-carrot.png');
@@ -53,6 +53,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
   const { collection, seenCollection, markCollectionAsSeen, claimedAnimals } = useGardenStore();
   const [selectedTab, setSelectedTab] = React.useState<'animal' | 'gift'>('animal');
   const [selectedPlant, setSelectedPlant] = React.useState<PlantType | null>(null);
+  const [selectedAnimal, setSelectedAnimal] = React.useState<AnimalType | null>(null);
 
   return (
     <Modal
@@ -143,7 +144,13 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                         const config = ANIMAL_CONFIGS[type];
                         const met = claimedAnimals.includes(type);
                         return (
-                          <View key={type} style={[styles.giftItemWrapper, { width: itemBoxWidth }]}>
+                          <TouchableOpacity
+                            key={type}
+                            style={[styles.giftItemWrapper, { width: itemBoxWidth }]}
+                            disabled={!met}
+                            activeOpacity={0.7}
+                            onPress={() => met && setSelectedAnimal(type)}
+                          >
                             <Image
                               source={require('../assets/ui/common/gift-item-box.png')}
                               style={{ width: itemBoxWidth, height: itemBoxHeight }}
@@ -161,14 +168,14 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                             <Text style={[styles.giftItemText, { bottom: itemTextBottom, fontSize: itemFontSize }]}>
                               {met ? config.name : '???'}
                             </Text>
-                          </View>
+                          </TouchableOpacity>
                         );
                       })}
                     </>
                   )}
                   {selectedTab === 'gift' && (
                     <>
-                      {ALL_PLANT_TYPES.map((type) => {
+                      {ALL_PLANT_TYPES.filter((t) => PLANT_CONFIGS[t].collectionShadow).map((type) => {
                         const collected = collection.includes(type);
                         const isNew = collected && !seenCollection.includes(type);
                         const config = PLANT_CONFIGS[type];
@@ -237,6 +244,67 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
             </TouchableOpacity>
           </ImageBackground>
         </View>
+
+        {/* 동물 상세 정보 모달 */}
+        {selectedAnimal && (() => {
+          const animalConfig = ANIMAL_CONFIGS[selectedAnimal];
+          const giftLabel =
+            animalConfig.giftType === 'seed' && animalConfig.giftSeedType
+              ? `${PLANT_CONFIGS[animalConfig.giftSeedType].name} 씨앗 ${animalConfig.giftSeedCount}개`
+              : animalConfig.giftType === 'water'
+              ? `물 ${animalConfig.giftWaterCount}개`
+              : animalConfig.giftType === 'gold'
+              ? `새싹 ${animalConfig.giftGoldAmount}개`
+              : animalConfig.giftType === 'decoration'
+              ? '특별한 선물'
+              : '';
+          return (
+            <View style={styles.detailModalOverlay} pointerEvents="box-none">
+              <TouchableOpacity
+                style={StyleSheet.absoluteFill}
+                activeOpacity={1}
+                onPress={() => setSelectedAnimal(null)}
+              />
+              <View style={styles.detailCard}>
+                <View style={styles.detailContent}>
+                  <Image
+                    source={animalConfig.collectionImage!}
+                    style={styles.detailImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.detailName}>{animalConfig.name}</Text>
+                  <Text style={styles.detailRarity}>{animalConfig.nickname}</Text>
+
+                  <View style={styles.divider} />
+
+                  {giftLabel ? (
+                    <View style={styles.detailInfoRow}>
+                      <Text style={styles.detailLabel}>선물</Text>
+                      <Text style={styles.detailValue}>{giftLabel}</Text>
+                    </View>
+                  ) : null}
+
+                  <View style={styles.divider} />
+
+                  {animalConfig.description && (
+                    <Text style={styles.detailDescription}>{animalConfig.description}</Text>
+                  )}
+                  {animalConfig.story && (
+                    <Text style={styles.detailStory}>{animalConfig.story}</Text>
+                  )}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.detailCloseButton}
+                  onPress={() => setSelectedAnimal(null)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.detailCloseText}>X</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        })()}
 
         {/* 작물 상세 정보 모달 */}
         {selectedPlant && (

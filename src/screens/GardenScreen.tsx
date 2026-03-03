@@ -26,6 +26,7 @@ export const GardenScreen: React.FC = () => {
   const mails = useGardenStore((state) => state.mails);
   const equippedFence = useGardenStore((state) => state.equippedFence);
   const equippedPlot = useGardenStore((state) => state.equippedPlot);
+  const hasNewDecoration = useGardenStore((state) => state.hasNewDecoration);
 
   // 액션들
   const plantSeedInSlot = useGardenStore((state) => state.plantSeedInSlot);
@@ -35,6 +36,7 @@ export const GardenScreen: React.FC = () => {
   const waterPlant = useGardenStore((state) => state.waterPlant);
   const markCollectionSeen = useGardenStore((state) => state.markCollectionSeen);
   const claimVisitor = useGardenStore((state) => state.claimVisitor);
+  const clearNewDecorationFlag = useGardenStore((state) => state.clearNewDecorationFlag);
   const initFirstVisitMail = useGardenStore((state) => state.initFirstVisitMail);
 
   // 하단바 배경 크기 계산
@@ -276,6 +278,7 @@ export const GardenScreen: React.FC = () => {
             plantingMode={isPlantingMode}
             visitors={visitors}
             hasUnreadMail={mails.some((m) => !m.isRead)}
+            hasNewDecoration={hasNewDecoration}
             equippedFence={equippedFence}
             equippedPlot={equippedPlot}
             onPlantPress={handlePlantPress}
@@ -283,7 +286,7 @@ export const GardenScreen: React.FC = () => {
             onWaterPlant={handleWaterPlant}
             onMailboxPress={() => setMailboxVisible(true)}
             onVisitorPress={handleVisitorPress}
-            onCapybaraPress={() => setDressUpVisible(true)}
+            onCapybaraPress={() => { setDressUpVisible(true); clearNewDecorationFlag(); }}
           />
         </View>
 
