@@ -56,6 +56,13 @@ export const MailboxModal: React.FC<MailboxModalProps> = ({ visible, onClose, on
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+  // 모달이 닫힐 때 알럿 상태 초기화
+  React.useEffect(() => {
+    if (!visible) {
+      setAlertVisible(false);
+    }
+  }, [visible]);
+
   const handleMailPress = (mail: MailItem) => {
     if (!mail.isRead) readMail(mail.id);
     setSelectedMail(mail);

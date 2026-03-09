@@ -50,7 +50,7 @@ interface CollectionModalProps {
 }
 
 export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClose }) => {
-  const { collection, seenCollection, markCollectionAsSeen, claimedAnimals } = useGardenStore();
+  const { collection, seenCollection, markCollectionAsSeen, claimedAnimals, seenAnimals, markAnimalAsSeen } = useGardenStore();
   const [selectedTab, setSelectedTab] = React.useState<'animal' | 'gift'>('animal');
   const [selectedPlant, setSelectedPlant] = React.useState<PlantType | null>(null);
   const [selectedAnimal, setSelectedAnimal] = React.useState<AnimalType | null>(null);
@@ -143,19 +143,30 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({ visible, onClo
                       {ALL_ANIMAL_TYPES.filter((t) => ANIMAL_CONFIGS[t].collectionShadow).map((type) => {
                         const config = ANIMAL_CONFIGS[type];
                         const met = claimedAnimals.includes(type);
+                        const isNew = met && !seenAnimals.includes(type);
                         return (
                           <TouchableOpacity
                             key={type}
                             style={[styles.giftItemWrapper, { width: itemBoxWidth }]}
                             disabled={!met}
                             activeOpacity={0.7}
-                            onPress={() => met && setSelectedAnimal(type)}
+                            onPress={() => {
+                              if (met) {
+                                setSelectedAnimal(type);
+                                if (isNew) {
+                                  markAnimalAsSeen(type);
+                                }
+                              }
+                            }}
                           >
                             <Image
                               source={require('../assets/ui/common/gift-item-box.png')}
                               style={{ width: itemBoxWidth, height: itemBoxHeight }}
                               resizeMode="contain"
                             />
+                            {isNew && (
+                              <Text style={[styles.newBadge, { fontSize: itemBoxHeight * 0.08 }]}>NEW</Text>
+                            )}
                             <Image
                               source={
                                 met && config.collectionImage

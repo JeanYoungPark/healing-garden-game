@@ -26,8 +26,8 @@ export const PLANT_CONFIGS: Record<PlantType, PlantConfig> = {
     waterBonus: 3, // 물 1회당 3분 단축
     emoji: '🥬',
     rarity: 'common',
-    description: '하얀 속살이 아삭한 채소예요.',
-    story: '토끼가 선물해준 소중한 씨앗이에요.',
+    description: '첫 방문 기념으로 받은 소중한 씨앗이에요.',
+    story: '하얀 속살이 아삭아삭한 채소예요.',
     collectionImage: require('../assets/collection/plant-turnip.png'),
     collectionShadow: require('../assets/collection/plant-shadow-turnip.png'),
   },

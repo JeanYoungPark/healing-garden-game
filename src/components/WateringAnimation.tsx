@@ -22,6 +22,8 @@ const REPEAT_DURATION = 3000; // 3초 반복
 export const WateringAnimation: React.FC<WateringAnimationProps> = ({ visible, plotSize, onComplete }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const [frameIndex, setFrameIndex] = useState(0);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     if (!visible) {
@@ -46,7 +48,7 @@ export const WateringAnimation: React.FC<WateringAnimationProps> = ({ visible, p
       Animated.timing(opacity, { toValue: 0, duration: 300, useNativeDriver: true })
         .start(() => {
           setFrameIndex(0);
-          onComplete();
+          onCompleteRef.current();
         });
     }, REPEAT_DURATION);
 
@@ -54,7 +56,7 @@ export const WateringAnimation: React.FC<WateringAnimationProps> = ({ visible, p
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [visible, onComplete, opacity]);
+  }, [visible, opacity]);
 
   if (!visible) return null;
 

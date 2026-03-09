@@ -37,6 +37,8 @@ interface GardenStore extends GardenState {
   toggleNotification: () => void;
   markCollectionSeen: () => void;
   markCollectionAsSeen: (plantType: PlantType) => void;
+  markSeedsSeen: () => void;
+  markAnimalAsSeen: (animalType: AnimalType) => void;
   clearNewDecorationFlag: () => void;
   // Mail actions
   initFirstVisitMail: () => void;
@@ -180,6 +182,8 @@ export const useGardenStore = create<GardenStore>()(
       lastWaterRechargeTime: new Date(),
       collection: [],
       seenCollection: [],
+      seenSeeds: [],
+      seenAnimals: [],
       mails: [],
       visitors: [],
       claimedAnimals: [],
@@ -302,7 +306,12 @@ export const useGardenStore = create<GardenStore>()(
       useWater: () => {
         const state = get();
         if (state.water > 0) {
-          set({ water: state.water - 1, lastSaveTime: new Date() });
+          const updates: Partial<GardenState> = { water: state.water - 1, lastSaveTime: new Date() };
+          // 최대치에서 처음 사용 시 충전 타이머 시작
+          if (state.water === MAX_WATER) {
+            updates.lastWaterRechargeTime = new Date();
+          }
+          set(updates);
           return true;
         }
         return false;
@@ -347,6 +356,21 @@ export const useGardenStore = create<GardenStore>()(
 
       markCollectionSeen: () => {
         set((state) => ({ seenCollection: [...state.collection] }));
+      },
+
+      markSeedsSeen: () => {
+        set((state) => ({
+          seenSeeds: state.seeds.map((s) => s.type),
+        }));
+      },
+
+      markAnimalAsSeen: (animalType: AnimalType) => {
+        set((state) => {
+          if (!state.seenAnimals.includes(animalType)) {
+            return { seenAnimals: [...state.seenAnimals, animalType] };
+          }
+          return state;
+        });
       },
 
       clearNewDecorationFlag: () => {
@@ -1000,7 +1024,7 @@ export const useGardenStore = create<GardenStore>()(
     }),
     {
       name: 'healing-garden-storage',
-      version: 15, // 새 꾸미기 아이템 알림 플래그 추가
+      version: 17, // 도감 동물 NEW 뱃지 (seenAnimals)
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
@@ -1071,6 +1095,14 @@ export const useGardenStore = create<GardenStore>()(
         if (version < 15) {
           persistedState.hasNewDecoration = persistedState.hasNewDecoration ?? false;
         }
+        if (version < 16) {
+          // 기존 유저: 이미 가진 씨앗은 본 것으로 처리
+          persistedState.seenSeeds = (persistedState.seeds || []).map((s: any) => s.type);
+        }
+        if (version < 17) {
+          // 기존 유저: 이미 만난 동물은 본 것으로 처리
+          persistedState.seenAnimals = [...(persistedState.claimedAnimals || [])];
+        }
 
         return persistedState;
       },
@@ -1083,6 +1115,8 @@ export const useGardenStore = create<GardenStore>()(
         lastWaterRechargeTime: state.lastWaterRechargeTime,
         collection: state.collection,
         seenCollection: state.seenCollection,
+        seenSeeds: state.seenSeeds,
+        seenAnimals: state.seenAnimals,
         mails: state.mails,
         visitors: state.visitors,
         claimedAnimals: state.claimedAnimals,

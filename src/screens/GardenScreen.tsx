@@ -37,6 +37,8 @@ export const GardenScreen: React.FC = () => {
   const markCollectionSeen = useGardenStore((state) => state.markCollectionSeen);
   const claimVisitor = useGardenStore((state) => state.claimVisitor);
   const clearNewDecorationFlag = useGardenStore((state) => state.clearNewDecorationFlag);
+  const markSeedsSeen = useGardenStore((state) => state.markSeedsSeen);
+  const seenSeeds = useGardenStore((state) => state.seenSeeds);
   const initFirstVisitMail = useGardenStore((state) => state.initFirstVisitMail);
 
   // 하단바 배경 크기 계산
@@ -49,7 +51,6 @@ export const GardenScreen: React.FC = () => {
   const bottomTextSize = bgWidth * 0.04;
   const badgeSize = bgWidth * 0.02;
   const [seedBagVisible, setSeedBagVisible] = useState(false);
-  const [seedBagChecked, setSeedBagChecked] = useState(false); // 씨앗가방 확인 여부
   const [shopVisible, setShopVisible] = useState(false);
   const [questVisible, setQuestVisible] = useState(false);
   const [collectionVisible, setCollectionVisible] = useState(false);
@@ -237,7 +238,7 @@ export const GardenScreen: React.FC = () => {
                   activeOpacity={0.7}
                   onPress={() => {
                     setSeedBagVisible(true);
-                    setSeedBagChecked(true); // 씨앗가방 확인함
+                    markSeedsSeen();
                   }}
                 >
                   <Image
@@ -246,7 +247,7 @@ export const GardenScreen: React.FC = () => {
                     resizeMode="contain"
                   />
                   <Text style={[styles.bottomNavText, { fontSize: bottomTextSize }]}>씨앗</Text>
-                  {seeds.length > 0 && !seedBagChecked && <View style={[styles.seedBadge, { width: badgeSize, height: badgeSize, borderRadius: badgeSize / 2 }]} />}
+                  {seeds.some((s) => !seenSeeds.includes(s.type)) && <View style={[styles.seedBadge, { width: badgeSize, height: badgeSize, borderRadius: badgeSize / 2 }]} />}
                 </TouchableOpacity>
               </View>
             </View>
@@ -258,7 +259,7 @@ export const GardenScreen: React.FC = () => {
         {isPlantingMode && (
           <View style={styles.plantingIndicator}>
             <Text style={styles.plantingText}>
-              {PLANT_CONFIGS[currentSeedType].emoji} {PLANT_CONFIGS[currentSeedType].name} 씨앗 심는 중...
+              {PLANT_CONFIGS[currentSeedType].name} 씨앗 심는 중...
             </Text>
             <TouchableOpacity
               style={styles.cancelButton}

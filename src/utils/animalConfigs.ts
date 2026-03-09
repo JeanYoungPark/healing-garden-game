@@ -191,7 +191,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     render: {
       position: 'custom',
       containerStyle: {
-        bottom: '15%', right: '5%',
+        bottom: '-50%', right: '10%',
         width: screenWidth * 0.36, height: screenWidth * 0.36, zIndex: 15,
         marginLeft: screenWidth * -0.18,
       },

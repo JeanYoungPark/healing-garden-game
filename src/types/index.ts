@@ -94,6 +94,8 @@ export interface GardenState {
   lastWaterRechargeTime: Date; // 마지막 물 충전 시간
   collection: PlantType[];
   seenCollection: PlantType[]; // 도감에서 확인한 수집 목록
+  seenSeeds: PlantType[]; // 씨앗가방에서 확인한 씨앗 종류
+  seenAnimals: AnimalType[]; // 도감에서 확인한 동물 목록
   mails: MailItem[]; // 우편함
   visitors: AnimalVisitor[]; // 정원에 방문한 동물들
   claimedAnimals: AnimalType[]; // 선물을 받은 동물들 (조건 첫 만족 시에만, 랜덤 재등장 시 포함 안됨)

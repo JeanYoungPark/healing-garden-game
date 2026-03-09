@@ -78,6 +78,8 @@ const getRemainingTime = (plant: Plant): string => {
 const FloatingTooltip: React.FC<{ text: string; topOffset: number; onDone: () => void }> = ({ text, topOffset, onDone }) => {
   const opacity = useRef(new Animated.Value(1)).current;
   const translateY = useRef(new Animated.Value(0)).current;
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   React.useEffect(() => {
     Animated.parallel([
@@ -91,8 +93,8 @@ const FloatingTooltip: React.FC<{ text: string; topOffset: number; onDone: () =>
         duration: 1200,
         useNativeDriver: true,
       }),
-    ]).start(() => onDone());
-  }, [onDone, opacity, translateY]);
+    ]).start(() => onDoneRef.current());
+  }, [opacity, translateY]);
 
   return (
     <Animated.View
@@ -163,6 +165,9 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
     return plants.find((p) => p.slotIndex === slotIndex);
   };
 
+  // 물주기 애니메이션 상태
+  const [wateringSlot, setWateringSlot] = useState<number | null>(null);
+
   const handlePlantTap = useCallback((slotIndex: number) => {
     tooltipIdRef.current += 1;
     const id = tooltipIdRef.current;
@@ -173,15 +178,10 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
     setTooltips((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  // 물주기 애니메이션 상태
-  const [wateringSlot, setWateringSlot] = useState<number | null>(null);
-
   const handleLongPress = useCallback((slotIndex: number) => {
     const plant = plants.find((p) => p.slotIndex === slotIndex);
     if (!plant) return;
-    // 이미 수확 가능하면 무시
     if (calculateStage(plant) >= 3) return;
-    // 물 없으면 무시
     if (water <= 0) return;
 
     setWateringSlot(slotIndex);
@@ -370,34 +370,36 @@ export const GardenArea = forwardRef<View, GardenAreaProps>(({
           </View>
 
           {/* 울타리 - 밭 바로 아래 (장착된 울타리 렌더링) */}
-          <Image
-            source={FENCE_CONFIGS[equippedFence]?.image || require('../assets/garden/props/fence-01.png')}
-            style={styles.fence}
-            resizeMode="contain"
-          />
-        </View>
-        </View>
+          <View style={styles.fenceArea}>
+            <Image
+              source={FENCE_CONFIGS[equippedFence]?.image || require('../assets/garden/props/fence-01.png')}
+              style={styles.fence}
+              resizeMode="contain"
+            />
 
-        {/* Custom positioned visitors (gardenArea 기준, gardenContent 위에 렌더) */}
-        {visitors
-          .filter((v) => ANIMAL_CONFIGS[v.type].render.position === 'custom')
-          .map((visitor) => {
-            const config = ANIMAL_CONFIGS[visitor.type];
-            const Component = ANIMAL_COMPONENTS[visitor.type];
-            const content = Component
-              ? <Component />
-              : <Text style={styles.visitorEmoji}>{config.emoji}</Text>;
-            return (
-              <TouchableOpacity
-                key={visitor.type}
-                style={[styles.customVisitorContainer, config.render.containerStyle as any]}
-                activeOpacity={0.7}
-                onPress={() => onVisitorPress?.(visitor.type)}
-              >
-                {content}
-              </TouchableOpacity>
-            );
-          })}
+            {/* Custom positioned visitors (울타리 기준) */}
+            {visitors
+              .filter((v) => ANIMAL_CONFIGS[v.type].render.position === 'custom')
+              .map((visitor) => {
+                const config = ANIMAL_CONFIGS[visitor.type];
+                const Component = ANIMAL_COMPONENTS[visitor.type];
+                const content = Component
+                  ? <Component />
+                  : <Text style={styles.visitorEmoji}>{config.emoji}</Text>;
+                return (
+                  <TouchableOpacity
+                    key={visitor.type}
+                    style={[styles.customVisitorContainer, config.render.containerStyle as any]}
+                    activeOpacity={0.7}
+                    onPress={() => onVisitorPress?.(visitor.type)}
+                  >
+                    {content}
+                  </TouchableOpacity>
+                );
+              })}
+          </View>
+        </View>
+        </View>
       </View>
     </View>
   );
@@ -499,6 +501,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Gaegu-Bold',
     color: '#7a6854',
+  },
+  fenceArea: {
+    alignItems: 'center',
+    width: '100%',
+    position: 'relative',
   },
   fence: {
     width: width * 1,
