@@ -533,8 +533,10 @@ export const useGardenStore = create<GardenStore>()(
         }
 
         if (newVisitors.length > 0) {
+          // 조건 동물이 등장하면 랜덤 동물은 퇴장
+          const existingVisitors = state.visitors.filter((v) => !v.isRandom);
           set({
-            visitors: [...state.visitors, ...newVisitors],
+            visitors: [...existingVisitors, ...newVisitors],
             lastSaveTime: new Date(),
           });
         }

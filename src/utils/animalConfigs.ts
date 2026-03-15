@@ -105,7 +105,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     trigger: { type: 'harvest', requiredPlant: 'carrot' },
     randomReappear: {
       enabled: true,
-      probability: 0.3,      // 30% 확률로 등장
+      probability: 0.15,     // 15% 확률로 등장
       alwaysGift: true,      // 항상 선물 줌
       neverGift: false,
       giftMessage: '토깽이가\n딸기 씨앗 1개를 선물로 줬어요!',
@@ -125,7 +125,7 @@ export const ANIMAL_CONFIGS: Record<AnimalType, AnimalConfig> = {
     giftMessage: '먼 길을 걸어온 거붕이가\n감자 씨앗 1개를 선물로 줬어요!',
     description: '느리지만 먼 길도 마다하지 않는 거북이예요.',
     story: '오랜만에 찾아온 정원이 반가웠나봐요.',
-    trigger: { type: 'inactiveDays', requiredDays: 7 },
+    trigger: { type: 'inactiveDays', requiredDays: 3 },
     randomReappear: {
       enabled: true,
       probability: 0.15,     // 15% 확률로 등장 (고양이와 동일)
